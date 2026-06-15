@@ -1,6 +1,15 @@
-# Track I: Tanager Rocks + Mine-Waste Atlas (Competition Submission)
+# Track I: Tanager Rocks (Competition Submission)
 
-This folder coordinates **Track I** of the Planet Tanager Open Data Competition strategy. Track I is a unified submission spanning three technical components that share data, infrastructure, and a narrative.
+> **Re-scoped 2026-06-10 — `spec.md` is authoritative.** The flagship is now
+> **mineral / alteration mapping at two named US mine sites** (Bingham Canyon
+> hero + Goldfield breadth), solo build, tight scope. The three-part
+> ML-geochemistry + national-atlas plan described in the rest of this file is
+> **superseded** (archived at `archive_pre_competition/spec_3part_geochem_superseded.md`):
+> the ML-geochem angle moved to the `TanagerFM` individual entry, and the
+> national atlas / commodity-scoring system was cut. The sections below are
+> retained for context but no longer describe the active plan — follow `spec.md`.
+
+This folder coordinates **Track I** of the Planet Tanager Open Data Competition strategy.
 
 ## Three Parts, One Submission
 
