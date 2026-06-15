@@ -1,0 +1,59 @@
+[project]
+name = "tanager-rocks"
+version = "0.1.0"
+description = "Mineral and hydrothermal-alteration mapping from Planet Tanager 425-band VSWIR surface reflectance at named US mine sites (Bingham Canyon, Goldfield), with a Sentinel-2 band-ablation comparison and an EMIT cross-sensor benchmark. Track I of the Planet Tanager Open Data Competition."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Alex Bradley", email = "abradley@wustl.edu" }]
+keywords = ["hyperspectral", "tanager", "mineral-mapping", "alteration", "mine-waste", "remote-sensing"]
+
+dependencies = [
+    "tanager-spec",          # shared data layer: stac / io / mask / bands / srf / sample
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "scipy>=1.12",           # continuum removal, matched-filter algebra
+    "xarray>=2024.1",
+    "rioxarray>=0.15",
+    "rasterio>=1.3",
+    "spectral>=0.23",        # SAM / MTMF and ENVI spectral-library reading
+    "pystac-client>=0.7",    # EMIT (LP DAAC) cross-sensor query
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+tanager-minmap = "tanager_rocks.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/bradleylab/tanager-rocks"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tanager_rocks"]
+
+# tanager-spec is a sibling repo in the Tanager workspace, consumed as an
+# editable path dependency (same pattern as tanager-isofit). It is the
+# canonical data layer; this repo does not re-implement ingest/mask/SRF/STAC.
+[tool.uv.sources]
+tanager-spec = { path = "../tanager-spec", editable = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# pycodestyle, pyflakes, isort, pyupgrade, numpy-specific
+select = ["E", "F", "I", "UP", "NPY"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

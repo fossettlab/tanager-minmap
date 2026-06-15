@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      # Check out both repos as siblings so the `../tanager-spec` path
+      # dependency in pyproject.toml resolves (tanager-spec is the shared
+      # data layer, consumed as an editable path dep, not from PyPI).
+      - name: Check out tanager-rocks
+        uses: actions/checkout@v4
+        with:
+          path: tanager-rocks
+
+      - name: Check out tanager-spec (shared data layer)
+        uses: actions/checkout@v4
+        with:
+          repository: bradleylab/tanager-spec
+          path: tanager-spec
+          # If tanager-spec is private, add a PAT with repo:read scope:
+          # token: ${{ secrets.TANAGER_SPEC_TOKEN }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync environment
+        working-directory: tanager-rocks
+        run: uv sync --extra dev
+
+      - name: Ruff lint
+        working-directory: tanager-rocks
+        run: uv run ruff check src tests
+
+      - name: Ruff format check
+        working-directory: tanager-rocks
+        run: uv run ruff format --check src tests
+
+      - name: Pytest
+        working-directory: tanager-rocks
+        run: uv run pytest
