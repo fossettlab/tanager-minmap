@@ -26,9 +26,15 @@ yet fixed; they will be completed as the corresponding modules are built.
 ## Sites
 
 Bingham Canyon / Kennecott (UT, hero) and the Goldfield district (NV,
-alteration showcase). Site footprints recorded in `config.SITES` are
-approximate scene-centroid coordinates and are flagged `confirmed=False` until
-verified against USGS USMIN/MRDS and a basemap (data-integrity rule).
+alteration showcase). `scripts/confirm_sites.py` walked the open STAC catalog
+(2026-06-15) and matched the scenes whose footprints intersect each site:
+Bingham returns 2 scenes (2025-09-11, cloud 3–13 %) and Goldfield 5 scenes
+(2024-09-25 and 2025-02-22, cloud 0–2 %), matching the spec's scene counts.
+All carry the `ortho_sr_hdf5` asset, and EMIT L2A overlaps both sites (88 and
+80 granules), so the product and EMIT-overlap portions of the Week-1 gate are
+met. Scene IDs are recorded in `config.SITES`. Site *identity* remains
+`confirmed=False` until cross-checked against USGS USMIN/MRDS footprints on a
+basemap (data-integrity rule).
 
 ## Pipeline overview
 

@@ -20,8 +20,14 @@ def test_package_imports():
 
 def test_sites_present_and_unconfirmed():
     assert set(config.SITES) == {"bingham", "goldfield"}
-    # Data-integrity rule: site footprints are unconfirmed until Week-1 checks.
+    # Data-integrity rule: site identity is unconfirmed until the USMIN overlay.
     assert all(not s.confirmed for s in config.SITES.values())
+
+
+def test_scene_ids_match_declared_count():
+    # The confirmed scene list and the spec's scene count must agree.
+    for site in config.SITES.values():
+        assert len(site.scene_ids) == site.n_scenes
 
 
 def test_diagnostics_match_spec():

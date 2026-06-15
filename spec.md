@@ -129,7 +129,7 @@ submission (data-integrity rule).
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| EMIT does not overlap either site | Medium | Medium | Run the comparison at whichever site EMIT covers; confirm Wk 1 |
+| ~~EMIT does not overlap either site~~ (retired 2026-06-15) | — | — | Resolved: EMIT L2A overlaps **both** sites (88 granules Bingham, 80 Goldfield) per `scripts/confirm_sites.py` |
 | 30 m too coarse for small piles | Medium | Medium | Bingham tailings + Goldfield alteration are large; report detection limit |
 | Spectral-library mismatch at exotic phases | Medium | Low | Restrict to the well-characterized alteration assemblage |
 | Validation map unavailable for a site | Low | Medium | Goldfield/Cuprite are USGS-mapped; lead validation there |
@@ -149,5 +149,11 @@ submission/
 
 ## Open items
 
-- Confirm EMIT granule overlap at Bingham vs Goldfield (Wk 1 STAC cross-query).
-- Confirm exact site names/footprints against USGS USMIN/MRDS before asserting.
+- ✅ **Product + scenes confirmed (2026-06-15).** `scripts/confirm_sites.py`
+  walked the open STAC catalog: Bingham = 2 scenes, Goldfield = 5 scenes
+  (counts match this spec), all carrying the `ortho_sr_hdf5` asset. Scene IDs
+  recorded in `tanager_rocks.config.SITES`.
+- ✅ **EMIT overlap confirmed (2026-06-15)** at both sites (88 / 80 granules).
+- ⬜ Confirm exact site *identity*/footprints against USGS USMIN/MRDS on a
+  basemap before asserting site names in the submission (`confirmed` stays
+  `False` in `config.SITES` until then).

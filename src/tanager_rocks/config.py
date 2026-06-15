@@ -25,10 +25,14 @@ class SiteSpec:
     """A study site.
 
     Coordinates are *approximate scene-centroid* values taken from ``spec.md``.
-    Per the data-integrity rule they are NOT authoritative site footprints:
-    ``confirmed=False`` until verified against USGS USMIN/MRDS and a basemap
-    in Week 1 (see ``spec.md`` open items). Downstream code that asserts a
-    named site must check ``confirmed``.
+
+    ``scene_ids`` are the Tanager scenes whose footprints intersect the site,
+    confirmed 2026-06-15 by ``scripts/confirm_sites.py`` walking the open STAC
+    catalog (all carry the ``ortho_sr_hdf5`` asset; EMIT L2A overlaps both
+    sites). ``confirmed`` stays ``False`` per the data-integrity rule until the
+    site *identity* is checked against USGS USMIN/MRDS footprints on a basemap
+    (the scene/product/EMIT side of the Week-1 gate is done; the USMIN overlay
+    is not). Downstream code that asserts a named site must check ``confirmed``.
     """
 
     site_id: str
@@ -36,11 +40,13 @@ class SiteSpec:
     role: str  # "hero" | "alteration_showcase"
     n_scenes: int
     centroids: tuple[tuple[float, float], ...]  # (lat, lon), approximate
+    scene_ids: tuple[str, ...] = ()
     confirmed: bool = False
 
 
-# Sites from spec.md "Sites" table. Goldfield centroids are a coarse range in
-# the spec; recorded here as the range corners pending Week-1 confirmation.
+# Sites from spec.md "Sites" table; scene_ids from scripts/confirm_sites.py.
+# Goldfield centroids are a coarse range in the spec, recorded as the range
+# corners. Scene counts match the spec (Bingham 2, Goldfield 5).
 SITES: dict[str, SiteSpec] = {
     "bingham": SiteSpec(
         site_id="bingham",
@@ -48,6 +54,10 @@ SITES: dict[str, SiteSpec] = {
         role="hero",
         n_scenes=2,
         centroids=((40.56, -112.08), (40.78, -112.01)),
+        scene_ids=(
+            "20250911_191523_58_4001",
+            "20250911_191547_88_4001",
+        ),
     ),
     "goldfield": SiteSpec(
         site_id="goldfield",
@@ -55,6 +65,13 @@ SITES: dict[str, SiteSpec] = {
         role="alteration_showcase",
         n_scenes=5,
         centroids=((37.4, -117.2), (37.7, -117.1)),
+        scene_ids=(
+            "20240925_185504_87_4001",
+            "20240925_185509_74_4001",
+            "20250222_190233_00_4001",
+            "20250222_190237_16_4001",
+            "20250222_190241_32_4001",
+        ),
     ),
 }
 
