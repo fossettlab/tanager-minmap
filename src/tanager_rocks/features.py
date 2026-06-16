@@ -1,92 +1,116 @@
-"""Continuum removal and diagnostic-absorption feature mapping.
+"""Continuum-removed diagnostic-absorption band-depth mapping.
 
-Implements spec.md pipeline step 3: continuum-remove the masked SR cube and
-map the diagnostic absorptions that distinguish the alteration assemblage —
-the 2200 nm Al-OH doublet (alunite vs kaolinite/dickite), 2265 nm jarosite,
-2340 nm gypsum/carbonate, and the VNIR Fe-oxide features (hematite/goethite).
+Implements spec.md step 3 with the Clark & Roush (1984) continuum-removed
+band-depth method: for each diagnostic absorption a straight continuum is drawn
+between two shoulder wavelengths, and the band depth is ``1 - R_center / R_cont``.
+This is the USGS Tetracorder-style per-feature approach, and it targets the
+named absorptions directly (2200 nm Al-OH, 2265 nm jarosite, 2340 nm gypsum).
 
-Input cubes come from :func:`tanager_spec.io.load_tanager_sr_hdf5` after
-:mod:`tanager_spec.mask`; the wavelength axis comes from the same cube.
+Feature definitions are NOT hard-coded here. A :class:`FeatureDef` carries its
+shoulder wavelengths plus a ``source`` string; the shoulders are meant to be
+derived from the reference spectral-library endmembers
+(:mod:`tanager_rocks.speclib`) so they are data-driven, not invented. Input
+cubes come from :func:`tanager_spec.io.load_tanager_sr_hdf5` after masking.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 import xarray as xr
 
-from .config import DIAGNOSTIC_NM
+
+@dataclass(frozen=True)
+class FeatureDef:
+    """A diagnostic absorption: its center, two continuum shoulders, provenance.
+
+    ``source`` records where the wavelengths came from (a library endmember or a
+    citation) so no value in a map traces back to a guess.
+    """
+
+    name: str
+    center_nm: float
+    lo_shoulder_nm: float
+    hi_shoulder_nm: float
+    source: str
+
+    def __post_init__(self) -> None:
+        if not self.lo_shoulder_nm < self.center_nm < self.hi_shoulder_nm:
+            raise ValueError(
+                f"{self.name}: shoulders must bracket the center "
+                f"({self.lo_shoulder_nm} < {self.center_nm} < {self.hi_shoulder_nm})"
+            )
 
 
-def continuum_removed(cube: xr.DataArray, wavelengths_nm: np.ndarray) -> xr.DataArray:
-    """Continuum-remove a reflectance cube along the spectral axis.
+def _nearest_band(wavelengths: np.ndarray, target_nm: float) -> int:
+    """Index of the band whose center is nearest ``target_nm``."""
+    return int(np.argmin(np.abs(np.asarray(wavelengths, dtype=float) - target_nm)))
+
+
+def band_depth(
+    cube: xr.DataArray,
+    wavelengths: np.ndarray,
+    feature: FeatureDef,
+) -> xr.DataArray:
+    """Continuum-removed band depth of one diagnostic absorption.
+
+    The continuum at the center is the linear interpolation, in wavelength,
+    between the reflectance at the two shoulder bands. Band depth is
+    ``1 - R_center / R_continuum``: 0 where the feature is absent, larger where
+    the absorption is deeper. Pixels with a non-positive continuum are ``NaN``.
 
     Parameters
     ----------
     cube : xr.DataArray
-        Masked surface-reflectance cube with dims (band, y, x).
-    wavelengths_nm : np.ndarray
-        Band centres (nm) aligned to the band dimension.
+        Masked surface-reflectance cube, dims ``("band", "y", "x")``, with
+        ``band`` aligned to ``wavelengths``.
+    wavelengths : np.ndarray
+        Band-center wavelengths (nm).
+    feature : FeatureDef
+        The absorption to map.
 
     Returns
     -------
     xr.DataArray
-        Continuum-removed cube, same shape as ``cube``.
+        Band depth, dims ``("y", "x")``, named ``feature.name``.
     """
-    # TODO (spec step 3): upper-convex-hull continuum per pixel spectrum,
-    # divide reflectance by the hull. Operate over valid (unmasked) bands only.
-    raise NotImplementedError
+    wl = np.asarray(wavelengths, dtype=float)
+    lo_i = _nearest_band(wl, feature.lo_shoulder_nm)
+    hi_i = _nearest_band(wl, feature.hi_shoulder_nm)
+    c_i = _nearest_band(wl, feature.center_nm)
 
+    r_lo = cube.isel(band=lo_i)
+    r_hi = cube.isel(band=hi_i)
+    r_c = cube.isel(band=c_i)
 
-def absorption_depth(
-    cr_cube: xr.DataArray,
-    wavelengths_nm: np.ndarray,
-    center_nm: float,
-    window_nm: float = 30.0,
-) -> xr.DataArray:
-    """Band-depth of a single diagnostic absorption.
+    # Linear continuum evaluated at the center band's actual wavelength.
+    frac = (wl[c_i] - wl[lo_i]) / (wl[hi_i] - wl[lo_i])
+    continuum = r_lo + (r_hi - r_lo) * frac
 
-    Parameters
-    ----------
-    cr_cube : xr.DataArray
-        Continuum-removed cube from :func:`continuum_removed`.
-    wavelengths_nm : np.ndarray
-        Band centres (nm).
-    center_nm : float
-        Diagnostic absorption centre (see :data:`tanager_rocks.config.DIAGNOSTIC_NM`).
-    window_nm : float
-        Half-width of the search window around ``center_nm`` for the minimum.
-
-    Returns
-    -------
-    xr.DataArray
-        Per-pixel band depth (1 - min continuum-removed reflectance), dims (y, x).
-    """
-    # TODO (spec step 3): locate the continuum-removed minimum within the
-    # window, return 1 - that value as band depth.
-    raise NotImplementedError
+    depth = 1.0 - r_c / continuum.where(continuum > 0)
+    return depth.rename(feature.name).drop_vars("band", errors="ignore")
 
 
 def diagnostic_feature_maps(
     cube: xr.DataArray,
-    wavelengths_nm: np.ndarray,
-    diagnostics: dict[str, float] = DIAGNOSTIC_NM,
+    wavelengths: np.ndarray,
+    features: list[FeatureDef],
 ) -> xr.Dataset:
-    """Compute band-depth maps for every diagnostic absorption.
+    """Band-depth map for every diagnostic feature, assembled into a Dataset.
 
     Parameters
     ----------
     cube : xr.DataArray
-        Masked surface-reflectance cube (band, y, x).
-    wavelengths_nm : np.ndarray
-        Band centres (nm).
-    diagnostics : dict
-        Feature name -> centre wavelength (nm).
+        Masked surface-reflectance cube, dims ``("band", "y", "x")``.
+    wavelengths : np.ndarray
+        Band-center wavelengths (nm).
+    features : list of FeatureDef
+        Diagnostic absorptions to map (shoulders sourced from the library).
 
     Returns
     -------
     xr.Dataset
-        One band-depth variable per diagnostic feature.
+        One band-depth variable per feature.
     """
-    # TODO (spec step 3): continuum_removed once, then absorption_depth per
-    # diagnostic; assemble into a Dataset for the hero/Goldfield figures.
-    raise NotImplementedError
+    return xr.Dataset({f.name: band_depth(cube, wavelengths, f) for f in features})
