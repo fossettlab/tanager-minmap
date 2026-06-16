@@ -42,8 +42,11 @@ Scene IDs are recorded in `config.SITES`.
 
 1. **Site + product confirmation** — confirm footprints, the `ortho_sr_hdf5`
    asset, and EMIT overlap (`tanager_spec.stac`).
-2. **Ingest + masking** — load the SR cube; mask O2/H2O absorption bands
-   (`tanager_spec.io`, `tanager_spec.mask`).
+2. **Ingest + masking** — load the SR cube (`tanager_spec.io.load_tanager_sr_hdf5`,
+   downloaded by `scripts/download_scenes.py`); mask O2/H2O absorption bands
+   (`tanager_spec.mask`). Verified on the Bingham 2025-09-11 scene: 426 bands
+   over 376–2499 nm, EPSG:32612 (UTM 12N) at 30 m, reflectance in fraction
+   units (scene median 0.185); the absorption windows drop 53 of 426 bands.
 3. **Diagnostic-feature mapping** *(pending)* — continuum removal, then band
    depth at the 2200 nm Al-OH doublet, 2265 nm jarosite, 2340 nm
    gypsum/carbonate, and the VNIR Fe-oxide features (`features.py`).
@@ -82,3 +85,8 @@ direct dependencies are declared in `pyproject.toml`. The shared data layer is
   well-characterised alteration assemblage.
 - No field validation; validation is against published USGS maps.
 - The AMD layer is a spectral indicator, not a measured pH or flux.
+- The L2A reflectance carries physically out-of-range values (the Bingham
+  scene spans −1.9 to 14.6 about a 0.185 median) from cloud/shadow and
+  atmospheric-correction overshoot, and ~33 % of pixels are off-nadir
+  nodata fill. A valid-range clamp and the invalid-pixel mask
+  (`tanager_spec.mask.invalid_pixel_mask`) are applied before analysis.
