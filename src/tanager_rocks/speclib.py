@@ -1,17 +1,23 @@
-"""Reference spectral-library loader (USGS / ECOSTRESS).
+"""USGS Spectral Library Version 7 (splib07a) loader.
 
-Loads the target alteration assemblage (see :data:`tanager_rocks.config.TARGET_MINERALS`)
-from a published spectral library and resamples each endmember onto the
-Tanager wavelength axis so it can be used directly by the diagnostic-feature
-(:mod:`tanager_rocks.features`) and unmixing (:mod:`tanager_rocks.unmix`)
-modules.
+Reads the base ASCII spectra (Kokaly et al. 2017, USGS Data Series 1035;
+fetched by ``scripts/download_speclib.py``) for the target alteration
+assemblage and resamples each onto the Tanager wavelength axis. Library
+spectra are the only source of mineral identity in this project; nothing here
+is synthesised.
 
-Library spectra are the *only* source of mineral identity in this project;
-no synthetic or hand-edited endmembers are introduced.
+The target minerals are measured on two lab spectrometers — ASD (2151 ch,
+0.35-2.5 um; alunite, hematite, goethite, gypsum, muscovite) and Beckman
+("BECK", 0.2-3.0 um; kaolinite, dickite, jarosite). Each spectrum's grid is
+read from the matching per-spectrometer wavelength file, detected from the
+spectrometer token in the filename. Each mineral has several samples; all are
+loaded (selecting a single endmember per mineral is deferred to the unmixing
+step).
 """
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -19,39 +25,132 @@ import numpy as np
 
 from .config import TARGET_MINERALS
 
+logger = logging.getLogger(__name__)
+
+# splib07 flags deleted channels with a large negative sentinel.
+_DELETED_SENTINEL = -1e30
+
+# Per-spectrometer wavelength files (in the splib07a root). The token before
+# "_AREF" in a spectrum filename selects the grid: "ASDFR*" -> ASD, "BECK*" -> BECK.
+_WAVELENGTH_FILE = {
+    "ASD": "splib07a_Wavelengths_ASD_0.35-2.5_microns_2151_ch.txt",
+    "BECK": "splib07a_Wavelengths_BECK_Beckman_0.2-3.0_microns.txt",
+}
+
 
 @dataclass(frozen=True)
 class Endmember:
-    """A single reference spectrum resampled to the Tanager wavelength axis."""
+    """A reference spectrum resampled to the Tanager wavelength axis."""
 
     mineral: str
-    source: str  # provenance string, e.g. "USGS splib07a: Alunite GDS84"
+    sample: str  # splib07 filename (provenance)
+    spectrometer: str  # "ASD" or "BECK"
     wavelengths_nm: np.ndarray
     reflectance: np.ndarray
+
+
+def _read_splib_values(path: Path) -> np.ndarray:
+    """Read a splib07 ASCII file (header line + one value per line) to an array.
+
+    The deleted-channel sentinel is converted to ``NaN``.
+    """
+    with path.open() as fh:
+        lines = fh.read().splitlines()
+    values = [float(ln) for ln in lines[1:] if ln.strip()]
+    arr = np.asarray(values, dtype=float)
+    arr[arr <= _DELETED_SENTINEL] = np.nan
+    return arr
+
+
+def _read_wavelengths(path: Path) -> np.ndarray:
+    """Read a splib07 wavelength file (micrometres) and return nanometres."""
+    return _read_splib_values(path) * 1000.0
+
+
+def spectrometer_of(filename: str) -> str | None:
+    """Return ``"ASD"`` / ``"BECK"`` from a spectrum filename, or ``None``."""
+    if "ASDFR" in filename:
+        return "ASD"
+    if "BECK" in filename:
+        return "BECK"
+    return None
+
+
+def _resample(src_wl_nm: np.ndarray, src_refl: np.ndarray, target_nm: np.ndarray) -> np.ndarray:
+    """Linearly resample a (possibly NaN-gapped) spectrum onto ``target_nm``.
+
+    Interpolation uses only finite source channels; target wavelengths outside
+    the source range become ``NaN`` rather than being extrapolated.
+    """
+    finite = np.isfinite(src_refl)
+    return np.interp(target_nm, src_wl_nm[finite], src_refl[finite], left=np.nan, right=np.nan)
 
 
 def load_library(
     library_dir: str | Path,
     wavelengths_nm: np.ndarray,
     minerals: tuple[str, ...] = TARGET_MINERALS,
-) -> dict[str, Endmember]:
-    """Load and resample reference endmembers for the target assemblage.
+) -> list[Endmember]:
+    """Load and resample all target-mineral endmembers from splib07a.
 
     Parameters
     ----------
     library_dir : str or Path
-        Directory holding the USGS/ECOSTRESS library files.
+        The extracted ``ASCIIdata_splib07a`` directory.
     wavelengths_nm : np.ndarray
         Tanager band centres to resample each endmember onto.
     minerals : tuple of str
-        Minerals to load. Defaults to the full target assemblage.
+        Minerals to load (matched against the ``ChapterM_Minerals`` filenames).
+        Defaults to the full target assemblage.
 
     Returns
     -------
-    dict
-        Mineral name -> :class:`Endmember`.
+    list of Endmember
+        Every matching sample, resampled to ``wavelengths_nm``.
     """
-    # TODO (spec pipeline step 4): read ENVI/ASCII library spectra (spectral
-    # or numpy), record provenance per spectrum, resample to wavelengths_nm,
-    # and validate band coverage over the SWIR diagnostic windows.
-    raise NotImplementedError
+    library_dir = Path(library_dir)
+    minerals_dir = library_dir / "ChapterM_Minerals"
+    target_nm = np.asarray(wavelengths_nm, dtype=float)
+
+    grids: dict[str, np.ndarray] = {}
+
+    def grid(spectrometer: str) -> np.ndarray:
+        if spectrometer not in grids:
+            grids[spectrometer] = _read_wavelengths(library_dir / _WAVELENGTH_FILE[spectrometer])
+        return grids[spectrometer]
+
+    out: list[Endmember] = []
+    for mineral in minerals:
+        prefix = f"splib07a_{mineral}_".lower()
+        for path in sorted(minerals_dir.glob("splib07a_*_AREF.txt")):
+            if not path.name.lower().startswith(prefix):
+                continue
+            spec = spectrometer_of(path.name)
+            if spec is None:
+                continue
+            refl = _read_splib_values(path)
+            wl = grid(spec)
+            if wl.size != refl.size:
+                logger.warning(
+                    "size mismatch for %s (%d vs %d); skipping", path.name, refl.size, wl.size
+                )
+                continue
+            out.append(
+                Endmember(
+                    mineral=mineral,
+                    sample=path.name,
+                    spectrometer=spec,
+                    wavelengths_nm=target_nm,
+                    reflectance=_resample(wl, refl, target_nm),
+                )
+            )
+    logger.info("loaded %d endmembers across %d minerals", len(out), len(minerals))
+    return out
+
+
+def by_mineral(endmembers: list[Endmember]) -> dict[str, list[Endmember]]:
+    """Group endmembers by mineral name."""
+    grouped: dict[str, list[Endmember]] = {}
+    for e in endmembers:
+        grouped.setdefault(e.mineral, []).append(e)
+    return grouped

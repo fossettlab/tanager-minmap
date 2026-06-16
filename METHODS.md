@@ -14,9 +14,14 @@ yet fixed; they will be completed as the corresponding modules are built.
   L2A surface reflectance; no radiance product is used and no atmospheric
   correction is run in this pipeline. `tanager-isofit` is cited as the bundled
   open-source correction tool but is not executed here.
-- **Reference spectra.** USGS and ECOSTRESS spectral libraries, restricted to
-  the target alteration assemblage (alunite, kaolinite, dickite, jarosite,
-  hematite, goethite, gypsum, muscovite).
+- **Reference spectra.** USGS Spectral Library Version 7 base spectra
+  (splib07a; Kokaly et al. 2017, USGS Data Series 1035), acquired by
+  `scripts/download_speclib.py` and loaded by `tanager_rocks.speclib`,
+  restricted to the target alteration assemblage (alunite, kaolinite, dickite,
+  jarosite, hematite, goethite, gypsum, muscovite). The minerals are measured
+  on two lab spectrometers — ASD (2151 ch, 0.35–2.5 µm) and Beckman (0.2–3.0 µm)
+  — and each spectrum is resampled from its own grid onto the Tanager
+  wavelength axis. The ECOSTRESS library remains a possible cross-check.
 - **EMIT L2A.** Queried from the LP DAAC STAC at whichever study site EMIT
   overlaps (confirmed in Week 1).
 - **Validation reference.** Published USGS mineral/alteration maps; Cuprite is
