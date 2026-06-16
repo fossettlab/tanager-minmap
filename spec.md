@@ -154,6 +154,11 @@ submission/
   (counts match this spec), all carrying the `ortho_sr_hdf5` asset. Scene IDs
   recorded in `tanager_rocks.config.SITES`.
 - ✅ **EMIT overlap confirmed (2026-06-15)** at both sites (88 / 80 granules).
-- ⬜ Confirm exact site *identity*/footprints against USGS USMIN/MRDS on a
-  basemap before asserting site names in the submission (`confirmed` stays
-  `False` in `config.SITES` until then).
+- ✅ **Site identity confirmed (2026-06-15)** against the USGS MRDS
+  (`scripts/confirm_site_identity.py`): the search box around each site
+  contains a developed deposit of the expected name and commodity — Bingham
+  Open Pit Mine (Producer, Cu-Mo) and Goldfield District Gold Deposits
+  (Producer, Au). `config.SITES` now records `confirmed=True`.
+
+**Week-1 gate fully met.** Next: reference spectral library + first
+diagnostic-feature map (Weeks 2-3).

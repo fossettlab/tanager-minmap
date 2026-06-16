@@ -18,10 +18,10 @@ def test_package_imports():
         assert hasattr(tanager_rocks, name)
 
 
-def test_sites_present_and_unconfirmed():
+def test_sites_present_and_confirmed():
     assert set(config.SITES) == {"bingham", "goldfield"}
-    # Data-integrity rule: site identity is unconfirmed until the USMIN overlay.
-    assert all(not s.confirmed for s in config.SITES.values())
+    # Identity verified against USGS MRDS (scripts/confirm_site_identity.py).
+    assert all(s.confirmed for s in config.SITES.values())
 
 
 def test_scene_ids_match_declared_count():

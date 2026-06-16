@@ -31,10 +31,12 @@ alteration showcase). `scripts/confirm_sites.py` walked the open STAC catalog
 Bingham returns 2 scenes (2025-09-11, cloud 3–13 %) and Goldfield 5 scenes
 (2024-09-25 and 2025-02-22, cloud 0–2 %), matching the spec's scene counts.
 All carry the `ortho_sr_hdf5` asset, and EMIT L2A overlaps both sites (88 and
-80 granules), so the product and EMIT-overlap portions of the Week-1 gate are
-met. Scene IDs are recorded in `config.SITES`. Site *identity* remains
-`confirmed=False` until cross-checked against USGS USMIN/MRDS footprints on a
-basemap (data-integrity rule).
+80 granules). Site identity was then verified against the USGS Mineral
+Resources Data System (`scripts/confirm_site_identity.py`, MRDS WFS): the
+search box around each site contains a developed deposit of the expected name
+and commodity — Bingham Open Pit Mine (Producer, Cu-Mo) and Goldfield District
+Gold Deposits (Producer, Au) — so `config.SITES` records `confirmed=True`.
+Scene IDs are recorded in `config.SITES`.
 
 ## Pipeline overview
 

@@ -17,7 +17,21 @@ from tanager_spec.config import TANAGER_SR_ASSET
 
 SEED = 42
 
-__all__ = ["TANAGER_SR_ASSET", "SEED", "SITES", "SiteSpec", "TARGET_MINERALS", "DIAGNOSTIC_NM"]
+# Half-width (degrees) of the search box drawn around a site's scene centroids
+# for STAC/MRDS queries. The spec records centroids, not footprints, so a
+# modest buffer catches the overlapping scenes; ~0.15 deg ~= 12-17 km here.
+SEARCH_BUFFER_DEG = 0.15
+
+__all__ = [
+    "TANAGER_SR_ASSET",
+    "SEED",
+    "SEARCH_BUFFER_DEG",
+    "SITES",
+    "SiteSpec",
+    "site_search_bbox",
+    "TARGET_MINERALS",
+    "DIAGNOSTIC_NM",
+]
 
 
 @dataclass(frozen=True)
@@ -29,10 +43,12 @@ class SiteSpec:
     ``scene_ids`` are the Tanager scenes whose footprints intersect the site,
     confirmed 2026-06-15 by ``scripts/confirm_sites.py`` walking the open STAC
     catalog (all carry the ``ortho_sr_hdf5`` asset; EMIT L2A overlaps both
-    sites). ``confirmed`` stays ``False`` per the data-integrity rule until the
-    site *identity* is checked against USGS USMIN/MRDS footprints on a basemap
-    (the scene/product/EMIT side of the Week-1 gate is done; the USMIN overlay
-    is not). Downstream code that asserts a named site must check ``confirmed``.
+    sites). ``confirmed=True`` means the site *identity* was verified the same
+    day against the USGS MRDS by ``scripts/confirm_site_identity.py``: a
+    developed deposit of the expected commodity and name is present in the box
+    (Bingham Open Pit Mine, Producer, Cu-Mo; Goldfield District Gold Deposits,
+    Producer, Au). Downstream code that asserts a named site must check
+    ``confirmed``.
     """
 
     site_id: str
@@ -58,6 +74,7 @@ SITES: dict[str, SiteSpec] = {
             "20250911_191523_58_4001",
             "20250911_191547_88_4001",
         ),
+        confirmed=True,
     ),
     "goldfield": SiteSpec(
         site_id="goldfield",
@@ -72,8 +89,26 @@ SITES: dict[str, SiteSpec] = {
             "20250222_190237_16_4001",
             "20250222_190241_32_4001",
         ),
+        confirmed=True,
     ),
 }
+
+
+def site_search_bbox(site: SiteSpec, buffer_deg: float = SEARCH_BUFFER_DEG) -> list[float]:
+    """WGS84 ``[lon_min, lat_min, lon_max, lat_max]`` search box around a site.
+
+    The box bounds the site's scene centroids, expanded by ``buffer_deg`` on
+    each side, for STAC and MRDS queries.
+    """
+    lats = [lat for lat, _ in site.centroids]
+    lons = [lon for _, lon in site.centroids]
+    return [
+        min(lons) - buffer_deg,
+        min(lats) - buffer_deg,
+        max(lons) + buffer_deg,
+        max(lats) + buffer_deg,
+    ]
+
 
 # Target hydrothermal-alteration / mine-waste assemblage (spec.md "one sharp
 # question" + pipeline step 3). These drive both diagnostic-feature mapping

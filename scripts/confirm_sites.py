@@ -36,35 +36,17 @@ from tanager_spec.stac import (
     save_inventory,
 )
 
-from tanager_rocks.config import SITES, SiteSpec
+from tanager_rocks.config import SITES, SiteSpec, site_search_bbox
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("confirm_sites")
 
-# Search-box half-width (degrees) around the site centroids. The spec records
-# these as *scene centroids*, so the footprints extend well beyond them; a
-# modest buffer catches the overlapping scenes without pulling in unrelated
-# districts. ~0.15 deg ~= 12-17 km at these latitudes.
-BUFFER_DEG = 0.15
-
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "data" / "intermediate"
-
-
-def site_bbox(site: SiteSpec, buffer_deg: float = BUFFER_DEG) -> list[float]:
-    """Build a WGS84 ``[xmin, ymin, xmax, ymax]`` search box around a site."""
-    lats = [lat for lat, _ in site.centroids]
-    lons = [lon for _, lon in site.centroids]
-    return [
-        min(lons) - buffer_deg,
-        min(lats) - buffer_deg,
-        max(lons) + buffer_deg,
-        max(lats) + buffer_deg,
-    ]
 
 
 def report_site(site: SiteSpec, inventory: gpd.GeoDataFrame) -> None:
     """Match one site against the full inventory + EMIT, then print/save."""
-    bbox = site_bbox(site)
+    bbox = site_search_bbox(site)
     search_geom = box(*bbox)
     matched = inventory[inventory.geometry.intersects(search_geom)]
 
