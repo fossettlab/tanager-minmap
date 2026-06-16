@@ -57,10 +57,12 @@ Scene IDs are recorded in `config.SITES`.
    (`features.py`, run by `scripts/map_site.py`). Each feature's two continuum
    shoulders are derived data-driven from the median splib07 endmember of the
    diagnostic mineral (kaolinite for Al-OH, jarosite, gypsum), not hand-picked.
-   First Bingham map produced; the maps are spatially coherent but not yet
-   validated, and the Al-OH low shoulder currently pins to the search-window
-   edge (~2102 nm) because kaolinite reflectance rises shortward — a shoulder
-   refinement to revisit. VNIR Fe-oxide features are still to be added.
+   The VNIR Fe-oxide band is also mapped: its center is not fixed by the spec,
+   so it is located within a 700–1000 nm window from the hematite endmember
+   (841 nm on the Bingham scene). First Bingham map produced (4 features);
+   the maps are spatially coherent but not yet validated, and the Al-OH low
+   shoulder currently pins to the search-window edge (~2102 nm) because
+   kaolinite reflectance rises shortward — a shoulder refinement to revisit.
 4. **Unmixing** *(pending)* — SAM and MTMF against the reference library, with
    MTMF as the primary method (`unmix.py`).
 5. **Band ablation** *(pending)* — SRF-degrade Tanager to Sentinel-2 bands

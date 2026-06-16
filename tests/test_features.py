@@ -10,6 +10,7 @@ from tanager_rocks.features import (
     FeatureDef,
     band_depth,
     diagnostic_feature_maps,
+    locate_feature,
     shoulders_from_endmember,
 )
 
@@ -56,3 +57,11 @@ def test_shoulders_from_endmember_picks_bracketing_maxima():
     refl = np.array([0.50, 0.60, 0.55, 0.40, 0.55, 0.62, 0.50])  # min at 2200
     lo, hi = shoulders_from_endmember(wl, refl, center_nm=2200.0, half_window_nm=100.0)
     assert (lo, hi) == (2130.0, 2270.0)
+
+
+def test_locate_feature_finds_center_and_shoulders():
+    wl = np.array([700.0, 760.0, 820.0, 880.0, 940.0, 1000.0])
+    refl = np.array([0.30, 0.55, 0.45, 0.25, 0.50, 0.60])  # min at 880
+    center, lo, hi = locate_feature(wl, refl, search_lo_nm=700.0, search_hi_nm=1000.0)
+    assert center == 880.0
+    assert (lo, hi) == (760.0, 1000.0)

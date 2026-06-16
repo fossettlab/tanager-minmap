@@ -32,6 +32,7 @@ __all__ = [
     "TARGET_MINERALS",
     "DIAGNOSTIC_NM",
     "FEATURE_DIAGNOSTIC_MINERAL",
+    "FE_OXIDE_SEARCH_NM",
 ]
 
 
@@ -142,4 +143,10 @@ FEATURE_DIAGNOSTIC_MINERAL: dict[str, str] = {
     "al_oh_doublet": "kaolinite",
     "jarosite": "jarosite",
     "gypsum_carbonate": "gypsum",
+    "fe_oxide": "hematite",
 }
+
+# VNIR Fe3+ crystal-field band: the spec names the Fe-oxide feature but not a
+# wavelength, so its center is located within this search window from the
+# hematite endmember rather than fixed here.
+FE_OXIDE_SEARCH_NM: tuple[float, float] = (700.0, 1000.0)

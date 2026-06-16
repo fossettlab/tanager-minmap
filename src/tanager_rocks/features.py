@@ -164,3 +164,40 @@ def shoulders_from_endmember(
             "widen the window or check the endmember"
         )
     return lo, hi
+
+
+def locate_feature(
+    wavelengths: np.ndarray,
+    reflectance: np.ndarray,
+    search_lo_nm: float,
+    search_hi_nm: float,
+) -> tuple[float, float, float]:
+    """Locate an absorption (center + both shoulders) within a search window.
+
+    Like :func:`shoulders_from_endmember` but for a feature whose center is not
+    fixed in advance (e.g. the VNIR Fe-oxide band, whose position the spec does
+    not pin): the center is the minimum-reflectance band in ``[search_lo_nm,
+    search_hi_nm]`` and each shoulder is the maximum on its side.
+
+    Returns
+    -------
+    tuple of float
+        ``(center_nm, lo_shoulder_nm, hi_shoulder_nm)``.
+    """
+    wl = np.asarray(wavelengths, dtype=float)
+    refl = np.asarray(reflectance, dtype=float)
+    win = (wl >= search_lo_nm) & (wl <= search_hi_nm) & np.isfinite(refl)
+    wl_w, refl_w = wl[win], refl[win]
+    if wl_w.size < 3:
+        raise ValueError(f"too few finite bands in [{search_lo_nm}, {search_hi_nm}] nm")
+
+    center = float(wl_w[int(np.argmin(refl_w))])
+    lo_side = wl_w <= center
+    hi_side = wl_w >= center
+    lo = float(wl_w[lo_side][int(np.argmax(refl_w[lo_side]))])
+    hi = float(wl_w[hi_side][int(np.argmax(refl_w[hi_side]))])
+    if not lo < center < hi:
+        raise ValueError(
+            f"located feature does not bracket its center (lo={lo}, center={center}, hi={hi})"
+        )
+    return center, lo, hi
