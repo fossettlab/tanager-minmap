@@ -52,9 +52,15 @@ Scene IDs are recorded in `config.SITES`.
    (`tanager_spec.mask`). Verified on the Bingham 2025-09-11 scene: 426 bands
    over 376–2499 nm, EPSG:32612 (UTM 12N) at 30 m, reflectance in fraction
    units (scene median 0.185); the absorption windows drop 53 of 426 bands.
-3. **Diagnostic-feature mapping** *(pending)* — continuum removal, then band
-   depth at the 2200 nm Al-OH doublet, 2265 nm jarosite, 2340 nm
-   gypsum/carbonate, and the VNIR Fe-oxide features (`features.py`).
+3. **Diagnostic-feature mapping** — continuum-removed band depth (Clark & Roush)
+   at the 2200 nm Al-OH doublet, 2265 nm jarosite, and 2340 nm gypsum/carbonate
+   (`features.py`, run by `scripts/map_site.py`). Each feature's two continuum
+   shoulders are derived data-driven from the median splib07 endmember of the
+   diagnostic mineral (kaolinite for Al-OH, jarosite, gypsum), not hand-picked.
+   First Bingham map produced; the maps are spatially coherent but not yet
+   validated, and the Al-OH low shoulder currently pins to the search-window
+   edge (~2102 nm) because kaolinite reflectance rises shortward — a shoulder
+   refinement to revisit. VNIR Fe-oxide features are still to be added.
 4. **Unmixing** *(pending)* — SAM and MTMF against the reference library, with
    MTMF as the primary method (`unmix.py`).
 5. **Band ablation** *(pending)* — SRF-degrade Tanager to Sentinel-2 bands

@@ -31,6 +31,7 @@ __all__ = [
     "site_search_bbox",
     "TARGET_MINERALS",
     "DIAGNOSTIC_NM",
+    "FEATURE_DIAGNOSTIC_MINERAL",
 ]
 
 
@@ -132,4 +133,13 @@ DIAGNOSTIC_NM: dict[str, float] = {
     "al_oh_doublet": 2200.0,  # alunite vs kaolinite/dickite
     "jarosite": 2265.0,
     "gypsum_carbonate": 2340.0,
+}
+
+# Which target mineral's library spectrum defines each feature's continuum
+# (and from which the band-depth shoulders are derived). The Al-OH continuum is
+# taken from kaolinite, the canonical 2200 nm Al-OH mineral.
+FEATURE_DIAGNOSTIC_MINERAL: dict[str, str] = {
+    "al_oh_doublet": "kaolinite",
+    "jarosite": "jarosite",
+    "gypsum_carbonate": "gypsum",
 }

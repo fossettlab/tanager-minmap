@@ -31,6 +31,44 @@ def setup_style() -> None:
     )
 
 
+def band_depth_panel(
+    depths: xr.Dataset,
+    title: str = "Continuum-removed band depth",
+    vmax_quantile: float = 0.98,
+) -> matplotlib.figure.Figure:
+    """Plot each diagnostic band-depth map as a panel with a shared style.
+
+    Parameters
+    ----------
+    depths : xr.Dataset
+        One band-depth variable per diagnostic feature (from
+        :func:`tanager_rocks.features.diagnostic_feature_maps`).
+    title : str
+        Figure suptitle.
+    vmax_quantile : float
+        Upper quantile used to set each panel's color stretch, so a few
+        high-depth outliers do not flatten the map.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
+    names = list(depths.data_vars)
+    fig, axes = plt.subplots(1, len(names), figsize=(5 * len(names), 5), squeeze=False)
+    for ax, name in zip(axes[0], names, strict=True):
+        da = depths[name]
+        vmax = float(da.quantile(vmax_quantile).item())
+        im = da.plot.imshow(  # type: ignore[attr-defined]
+            ax=ax, cmap="cividis", vmin=0.0, vmax=max(vmax, 1e-3), add_colorbar=False
+        )
+        ax.set_title(name)
+        ax.set_aspect("equal")
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label="band depth")
+    fig.suptitle(title)
+    fig.tight_layout()
+    return fig
+
+
 def mineral_map(
     abundance: xr.Dataset,
     title: str = "Mineral map",

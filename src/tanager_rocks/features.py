@@ -114,3 +114,53 @@ def diagnostic_feature_maps(
         One band-depth variable per feature.
     """
     return xr.Dataset({f.name: band_depth(cube, wavelengths, f) for f in features})
+
+
+def shoulders_from_endmember(
+    wavelengths: np.ndarray,
+    reflectance: np.ndarray,
+    center_nm: float,
+    half_window_nm: float = 100.0,
+) -> tuple[float, float]:
+    """Derive continuum shoulders for an absorption from a reference spectrum.
+
+    Within ``center_nm +/- half_window_nm`` the absorption is taken as the band
+    of minimum reflectance, and each shoulder is the band of maximum reflectance
+    on its side of that minimum. This makes the band-depth continuum data-driven
+    (read off a library endmember) rather than a hand-picked pair of numbers.
+
+    Parameters
+    ----------
+    wavelengths : np.ndarray
+        Band centres (nm).
+    reflectance : np.ndarray
+        Reference reflectance aligned to ``wavelengths`` (may contain NaN).
+    center_nm : float
+        Nominal absorption center.
+    half_window_nm : float
+        Half-width of the search window.
+
+    Returns
+    -------
+    tuple of float
+        ``(lo_shoulder_nm, hi_shoulder_nm)``.
+    """
+    wl = np.asarray(wavelengths, dtype=float)
+    refl = np.asarray(reflectance, dtype=float)
+    in_window = (wl >= center_nm - half_window_nm) & (wl <= center_nm + half_window_nm)
+    win = in_window & np.isfinite(refl)
+    wl_w, refl_w = wl[win], refl[win]
+    if wl_w.size < 3:
+        raise ValueError(f"too few finite bands within +/-{half_window_nm} nm of {center_nm}")
+
+    c_wl = wl_w[int(np.argmin(refl_w))]
+    lo_side = wl_w <= c_wl
+    hi_side = wl_w >= c_wl
+    lo = float(wl_w[lo_side][int(np.argmax(refl_w[lo_side]))])
+    hi = float(wl_w[hi_side][int(np.argmax(refl_w[hi_side]))])
+    if not lo < center_nm < hi:
+        raise ValueError(
+            f"derived shoulders do not bracket {center_nm} (lo={lo}, hi={hi}); "
+            "widen the window or check the endmember"
+        )
+    return lo, hi

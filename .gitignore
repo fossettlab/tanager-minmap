@@ -36,6 +36,10 @@ data/speclib/
 models/
 !models/.gitkeep
 
+# Generated figures (regenerated from scripts, not committed until finalized)
+figures/*.png
+!figures/.gitkeep
+
 # HDF5 / ENVI / raster intermediates
 *.hdf5
 *.h5
