@@ -154,3 +154,49 @@ def by_mineral(endmembers: list[Endmember]) -> dict[str, list[Endmember]]:
     for e in endmembers:
         grouped.setdefault(e.mineral, []).append(e)
     return grouped
+
+
+def _spectral_angle(a: np.ndarray, b: np.ndarray) -> float:
+    """Spectral angle (radians) between two spectra over their finite overlap."""
+    m = np.isfinite(a) & np.isfinite(b)
+    av, bv = a[m], b[m]
+    cos = float(np.dot(av, bv) / (np.linalg.norm(av) * np.linalg.norm(bv)))
+    return float(np.arccos(np.clip(cos, -1.0, 1.0)))
+
+
+def select_endmembers(
+    endmembers: list[Endmember],
+    minerals: tuple[str, ...] = TARGET_MINERALS,
+) -> dict[str, Endmember]:
+    """Pick one representative (medoid) endmember per mineral.
+
+    For each mineral the medoid is the real sample whose spectrum has the
+    smallest spectral angle to the mineral's median across samples — a genuine
+    measured spectrum (good for SAM/MTMF), reproducible, and outlier-resistant.
+
+    Parameters
+    ----------
+    endmembers : list of Endmember
+        All loaded samples (from :func:`load_library`).
+    minerals : tuple of str
+        Minerals to select for. Defaults to the full target assemblage.
+
+    Returns
+    -------
+    dict
+        Mineral name -> the chosen :class:`Endmember`. Minerals with no loaded
+        sample are omitted.
+    """
+    grouped = by_mineral(endmembers)
+    chosen: dict[str, Endmember] = {}
+    for mineral in minerals:
+        samples = grouped.get(mineral, [])
+        if not samples:
+            logger.warning("no samples for %s; skipping", mineral)
+            continue
+        median = np.nanmedian(np.vstack([e.reflectance for e in samples]), axis=0)
+        angles = [_spectral_angle(e.reflectance, median) for e in samples]
+        pick = samples[int(np.argmin(angles))]
+        chosen[mineral] = pick
+        logger.info("%s endmember: %s (medoid of %d)", mineral, pick.sample, len(samples))
+    return chosen

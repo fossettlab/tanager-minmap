@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import numpy as np
 
-from tanager_rocks.speclib import by_mineral, load_library, spectrometer_of
+from tanager_rocks.speclib import (
+    Endmember,
+    by_mineral,
+    load_library,
+    select_endmembers,
+    spectrometer_of,
+)
 
 # A 5-channel ASD-format grid (micrometres) and a spectrum with one deleted channel.
 _WAVELENGTHS_UM = [0.50, 1.00, 1.50, 2.00, 2.50]
@@ -50,3 +56,13 @@ def test_by_mineral_groups(tmp_path):
     grouped = by_mineral(ems)
     assert set(grouped) == {"testmin"}
     assert len(grouped["testmin"]) == 1
+
+
+def test_select_endmembers_picks_medoid():
+    wl = np.array([1000.0, 1100.0, 1200.0])
+    # Two near-identical samples and one outlier; the medoid must be a typical one.
+    typical_a = Endmember("m", "a", "ASD", wl, np.array([0.5, 0.4, 0.5]))
+    typical_b = Endmember("m", "b", "ASD", wl, np.array([0.5, 0.42, 0.5]))
+    outlier = Endmember("m", "c", "ASD", wl, np.array([0.1, 0.9, 0.1]))
+    chosen = select_endmembers([typical_a, typical_b, outlier], minerals=("m",))
+    assert chosen["m"].sample in {"a", "b"}  # not the outlier

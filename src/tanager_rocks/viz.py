@@ -9,7 +9,10 @@ from __future__ import annotations
 
 import matplotlib.figure
 import matplotlib.pyplot as plt
+import numpy as np
 import xarray as xr
+from matplotlib.colors import BoundaryNorm, ListedColormap
+from matplotlib.patches import Patch
 
 # Publication figure defaults (PNG @ 300 DPI per project convention).
 FIGURE_DPI = 300
@@ -65,6 +68,44 @@ def band_depth_panel(
         ax.set_aspect("equal")
         fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label="band depth")
     fig.suptitle(title)
+    fig.tight_layout()
+    return fig
+
+
+def classification_map(
+    classes: xr.DataArray,
+    labels: list[str],
+    title: str = "SAM mineral classification",
+) -> matplotlib.figure.Figure:
+    """Render an integer class map (-1 = unclassified) with a categorical legend.
+
+    Parameters
+    ----------
+    classes : xr.DataArray
+        Integer class codes, dims ``("y", "x")``; -1 is unclassified.
+    labels : list of str
+        Class labels in code order (index 0..n-1).
+    title : str
+        Figure title.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
+    n = len(labels)
+    # tab20 is categorical and reasonably colorblind-tolerant for ~8 classes.
+    colors = plt.get_cmap("tab20")(np.linspace(0, 1, max(n, 1)))
+    cmap = ListedColormap([(0.85, 0.85, 0.85, 1.0), *colors])  # grey = unclassified
+    norm = BoundaryNorm(np.arange(-1.5, n + 0.5), cmap.N)
+
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.imshow(classes.values, cmap=cmap, norm=norm, interpolation="nearest")
+    ax.set_title(title)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    handles = [Patch(facecolor=colors[i], label=labels[i]) for i in range(n)]
+    handles.append(Patch(facecolor=(0.85, 0.85, 0.85), label="unclassified"))
+    ax.legend(handles=handles, loc="center left", bbox_to_anchor=(1.0, 0.5), frameon=False)
     fig.tight_layout()
     return fig
 

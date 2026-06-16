@@ -63,8 +63,17 @@ Scene IDs are recorded in `config.SITES`.
    the maps are spatially coherent but not yet validated, and the Al-OH low
    shoulder currently pins to the search-window edge (~2102 nm) because
    kaolinite reflectance rises shortward — a shoulder refinement to revisit.
-4. **Unmixing** *(pending)* — SAM and MTMF against the reference library, with
-   MTMF as the primary method (`unmix.py`).
+4. **Unmixing** — against one medoid endmember per mineral (the real splib07
+   sample with the smallest spectral angle to the mineral's median across
+   samples; `speclib.select_endmembers`). The SAM baseline is implemented
+   (`unmix.spectral_angle` / `sam_classify`, run by `scripts/unmix_site.py`).
+   On Bingham, full-spectrum SAM against pure endmembers is weak: best-match
+   angles center near 0.21 rad (p5 ≈ 0.14), so the angles are dominated by
+   overall spectral shape and mixing rather than diagnostic absorptions — at a
+   0.15 rad acceptance threshold only ~6 % of pixels classify (mostly muscovite,
+   gypsum, alunite, kaolinite, in coherent clusters over the pit/tailings). This
+   is an honest baseline and motivates MTMF, the covariance-aware primary method
+   *(pending — next increment)*.
 5. **Band ablation** *(pending)* — SRF-degrade Tanager to Sentinel-2 bands
    (`tanager_spec.srf.simulate`), repeat steps 3–4, and quantify the loss.
 6. **EMIT comparison** *(pending)* — the same mapping at the overlapping site;
@@ -80,9 +89,14 @@ Scene IDs are recorded in `config.SITES`.
   VNIR centres are resolved from the reference library, not hard-coded.
 - **Primary method.** MTMF (covariance-aware matched filter), chosen over a
   band-independent classifier because the methodology suite found Tanager's
-  information lives in covariance-aware statistics.
-- **Detection gating, library provenance, MNF component count** *(pending)* —
-  to be recorded here when fixed.
+  information lives in covariance-aware statistics. SAM is the band-independent
+  baseline; its weakness on mixed pixels (above) is consistent with this.
+- **Endmember selection.** One medoid per mineral (real splib07 sample nearest
+  the mineral's median; recorded per run by `select_endmembers`).
+- **SAM acceptance threshold.** 0.15 rad default — a distribution-informed
+  coarse cutoff, not ground-truth-calibrated.
+- **MNF component count, MTMF infeasibility gating** *(pending)* — to be
+  recorded here when MTMF lands.
 
 ## Software versions
 
