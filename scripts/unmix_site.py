@@ -23,8 +23,8 @@ from tanager_spec.mask import mask_absorption_bands
 
 from tanager_rocks.config import SITES, TANAGER_SR_ASSET
 from tanager_rocks.speclib import load_library, select_endmembers
-from tanager_rocks.unmix import sam_classify, spectral_angle
-from tanager_rocks.viz import classification_map, setup_style
+from tanager_rocks.unmix import matched_filter_maps, sam_classify, spectral_angle
+from tanager_rocks.viz import classification_map, score_panel, setup_style
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("unmix_site")
@@ -55,24 +55,33 @@ def main(argv: Sequence[str] | None = None) -> None:
     cube = mask_absorption_bands(cube, wl)
 
     endmembers = select_endmembers(load_library(SPECLIB_DIR, wl))
-    angles = spectral_angle(cube, endmembers)
-    classes, labels = sam_classify(angles, max_angle_rad=args.max_angle)
-
-    counts = {labels[i]: int((classes.values == i).sum()) for i in range(len(labels))}
-    counts["unclassified"] = int((classes.values == -1).sum())
-    logger.info("class pixel counts (max_angle=%.3f rad): %s", args.max_angle, counts)
-
     MAPS_DIR.mkdir(parents=True, exist_ok=True)
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
-    geo = classes.rio.write_crs(cube.rio.crs).rio.write_transform(cube.rio.transform())
-    geo.astype("int16").rio.to_raster(MAPS_DIR / f"{args.site}_{scene_id}_sam_class.tif")
-
     setup_style()
-    fig = classification_map(
-        classes, labels, title=f"{site.name} ({scene_id}) — SAM classification"
+    crs, transform = cube.rio.crs, cube.rio.transform()
+
+    # --- SAM baseline ---
+    angles = spectral_angle(cube, endmembers)
+    classes, labels = sam_classify(angles, max_angle_rad=args.max_angle)
+    counts = {labels[i]: int((classes.values == i).sum()) for i in range(len(labels))}
+    counts["unclassified"] = int((classes.values == -1).sum())
+    logger.info("SAM class counts (max_angle=%.3f rad): %s", args.max_angle, counts)
+    classes.rio.write_crs(crs).rio.write_transform(transform).astype("int16").rio.to_raster(
+        MAPS_DIR / f"{args.site}_{scene_id}_sam_class.tif"
     )
-    out_png = FIGURES_DIR / f"{args.site}_{scene_id}_sam_class.png"
-    fig.savefig(out_png)
+    classification_map(
+        classes, labels, title=f"{site.name} ({scene_id}) — SAM classification"
+    ).savefig(FIGURES_DIR / f"{args.site}_{scene_id}_sam_class.png")
+
+    # --- covariance-aware matched filter (MTMF abundance half) ---
+    mf = matched_filter_maps(cube, endmembers)
+    for mineral in mf.data_vars:
+        da = mf[mineral].rio.write_crs(crs).rio.write_transform(transform)
+        da.rio.to_raster(MAPS_DIR / f"{args.site}_{scene_id}_mf_{mineral}.tif")
+    out_png = FIGURES_DIR / f"{args.site}_{scene_id}_mf.png"
+    score_panel(
+        mf, f"{site.name} ({scene_id}) — matched-filter abundance", cbar_label="MF score"
+    ).savefig(out_png)
     logger.info("wrote %s", out_png)
 
 

@@ -34,42 +34,62 @@ def setup_style() -> None:
     )
 
 
-def band_depth_panel(
-    depths: xr.Dataset,
-    title: str = "Continuum-removed band depth",
+def score_panel(
+    scores: xr.Dataset,
+    title: str,
+    cbar_label: str = "value",
     vmax_quantile: float = 0.98,
+    ncols: int = 4,
 ) -> matplotlib.figure.Figure:
-    """Plot each diagnostic band-depth map as a panel with a shared style.
+    """Plot each variable in a Dataset as a panel in a shared grid.
 
     Parameters
     ----------
-    depths : xr.Dataset
-        One band-depth variable per diagnostic feature (from
-        :func:`tanager_rocks.features.diagnostic_feature_maps`).
+    scores : xr.Dataset
+        One 2-D ``(y, x)`` variable per panel (band depths, matched-filter
+        scores, etc.).
     title : str
         Figure suptitle.
+    cbar_label : str
+        Colorbar label.
     vmax_quantile : float
-        Upper quantile used to set each panel's color stretch, so a few
-        high-depth outliers do not flatten the map.
+        Upper quantile for each panel's color stretch, so a few outliers do
+        not flatten the map. Lower bound is fixed at 0.
+    ncols : int
+        Panels per row.
 
     Returns
     -------
     matplotlib.figure.Figure
     """
-    names = list(depths.data_vars)
-    fig, axes = plt.subplots(1, len(names), figsize=(5 * len(names), 5), squeeze=False)
-    for ax, name in zip(axes[0], names, strict=True):
-        da = depths[name]
+    names = list(scores.data_vars)
+    ncols = min(ncols, len(names))
+    nrows = int(np.ceil(len(names) / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(4.5 * ncols, 4.5 * nrows), squeeze=False)
+    flat_axes = axes.ravel()
+    for ax, name in zip(flat_axes, names, strict=False):
+        da = scores[name]
         vmax = float(da.quantile(vmax_quantile).item())
         im = da.plot.imshow(  # type: ignore[attr-defined]
             ax=ax, cmap="cividis", vmin=0.0, vmax=max(vmax, 1e-3), add_colorbar=False
         )
         ax.set_title(name)
         ax.set_aspect("equal")
-        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label="band depth")
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label=cbar_label)
+    for ax in flat_axes[len(names) :]:
+        ax.axis("off")
     fig.suptitle(title)
     fig.tight_layout()
     return fig
+
+
+def band_depth_panel(
+    depths: xr.Dataset,
+    title: str = "Continuum-removed band depth",
+    vmax_quantile: float = 0.98,
+) -> matplotlib.figure.Figure:
+    """Plot diagnostic band-depth maps (thin wrapper over :func:`score_panel`)."""
+    return score_panel(depths, title, cbar_label="band depth", vmax_quantile=vmax_quantile)
 
 
 def classification_map(

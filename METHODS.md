@@ -72,8 +72,18 @@ Scene IDs are recorded in `config.SITES`.
    overall spectral shape and mixing rather than diagnostic absorptions — at a
    0.15 rad acceptance threshold only ~6 % of pixels classify (mostly muscovite,
    gypsum, alunite, kaolinite, in coherent clusters over the pit/tailings). This
-   is an honest baseline and motivates MTMF, the covariance-aware primary method
-   *(pending — next increment)*.
+   is an honest baseline and motivates the covariance-aware matched filter.
+   **Matched filter** (`unmix.matched_filter_maps`) is the covariance-aware
+   abundance half of MTMF: per endmember,
+   `(t-mu)^T C^-1 (x-mu) / (t-mu)^T C^-1 (t-mu)` against the scene mean and band
+   covariance (1 at target, 0 at background). Adjacent VSWIR bands are nearly
+   collinear so the full-band covariance is singular; it is stabilised by
+   diagonal loading (`ridge` fraction, default 1e-2). On Bingham the per-mineral
+   MF maps are continuous and spatially coherent — a clear improvement over SAM;
+   absolute scores are small (≤~0.02) because 30 m pixels are mixtures of the
+   pure endmember. The mixture-tuned **infeasibility** gate (MNF-space, Boardman
+   1998) is *(pending — next increment)* and will be grounded against a
+   reference rather than hand-rolled.
 5. **Band ablation** *(pending)* — SRF-degrade Tanager to Sentinel-2 bands
    (`tanager_spec.srf.simulate`), repeat steps 3–4, and quantify the loss.
 6. **EMIT comparison** *(pending)* — the same mapping at the overlapping site;
@@ -95,8 +105,10 @@ Scene IDs are recorded in `config.SITES`.
   the mineral's median; recorded per run by `select_endmembers`).
 - **SAM acceptance threshold.** 0.15 rad default — a distribution-informed
   coarse cutoff, not ground-truth-calibrated.
+- **Matched-filter diagonal loading.** `ridge` = 1e-2 default — regularises the
+  singular full-band covariance; a numerical parameter, not physical.
 - **MNF component count, MTMF infeasibility gating** *(pending)* — to be
-  recorded here when MTMF lands.
+  recorded here when the infeasibility step lands.
 
 ## Software versions
 
