@@ -131,8 +131,22 @@ Scene IDs are recorded in `config.SITES`.
    class does not speciate hematite vs goethite. Goldfield leads (its acid-
    sulfate alteration is the case the Rockwell method was validated on, and its
    lead scene contains Cuprite); Bingham follows.
-5. **Band ablation** *(pending)* — SRF-degrade Tanager to Sentinel-2 bands
-   (`tanager_spec.srf.simulate`), repeat steps 3–4, and quantify the loss.
+5. **Band ablation** — the novelty lever (`degrade.py`, run by
+   `scripts/ablate_site.py`). The splib07 alteration endmembers, resampled to a
+   scene's Tanager wavelength grid, are convolved to Sentinel-2's 13 bands with
+   ESA's published spectral response functions (`tanager_spec.srf.load_s2_srf` /
+   `simulate`), and pairwise separability is measured as the spectral angle
+   between minerals in each sensor's band space. Sentinel-2's entire SWIR is two
+   bands — B11 (~1610 nm) and B12 (~2200 nm) — so one broad band spans the whole
+   2100–2280 nm Al-OH region. The result (Bingham scene, splib07 medoids):
+   the alunite–kaolinite angle falls from 5.1° (Tanager) to 2.6° (S2), a 50 %
+   loss of separability; alunite–muscovite −36 %, kaolinite–muscovite −22 %.
+   The loss is specific to the SWIR Al-OH region, not universal — the
+   VNIR-driven jarosite–goethite contrast (8.6° → 12.5°) is not lost, which is
+   the honest control showing the effect is the doublet collapse, not a generic
+   degradation. So Sentinel-2 cannot separate advanced argillic (alunite) from
+   argillic (kaolinite) alteration, which Tanager resolves; this is quantified
+   per pair and shown in the band-ablation figure (`viz.band_ablation_panel`).
 6. **EMIT comparison** *(pending)* — the same mapping at the overlapping site;
    report spectral correlation, detection agreement, and spatial detail.
 7. **AMD-hazard proxy** *(pending)* — jarosite + Fe-oxide + gypsum assemblage

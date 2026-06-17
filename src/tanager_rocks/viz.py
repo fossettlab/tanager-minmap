@@ -210,24 +210,85 @@ def mineral_map(
 
 
 def band_ablation_panel(
-    tanager_feature: xr.DataArray,
-    s2_feature: xr.DataArray,
-    title: str = "Tanager vs. Sentinel-2: Al-OH doublet",
+    wavelengths: np.ndarray,
+    endmembers: dict[str, np.ndarray],
+    degraded: dict[str, np.ndarray],
+    s2_centers: np.ndarray,
+    s2_fwhm: np.ndarray,
+    full_angle_deg: float,
+    s2_angle_deg: float,
+    minerals: tuple[str, str] = ("alunite", "kaolinite"),
+    title: str = "Tanager vs. Sentinel-2: the Al-OH doublet",
 ) -> matplotlib.figure.Figure:
-    """Side-by-side panel quantifying what Sentinel-2 loses (novelty lever).
+    """Show what Sentinel-2 loses by collapsing the 2200 nm Al-OH doublet.
+
+    Left: the two minerals' full Tanager VSWIR spectra with the SRF-degraded S2
+    band values overplotted. Right: a zoom on the 2000-2350 nm Al-OH region with
+    the S2 SWIR bands' FWHM shaded, making explicit that one broad S2 band (B12)
+    spans the whole doublet. The annotation carries the spectral-angle
+    separability in each sensor's band space (novelty lever, spec step 5).
 
     Parameters
     ----------
-    tanager_feature, s2_feature : xr.DataArray
-        The same diagnostic feature from full Tanager vs. SRF-degraded S2 bands
-        (see spec step 5 / :func:`tanager_spec.srf.simulate`).
+    wavelengths : np.ndarray
+        Tanager wavelength axis (nm).
+    endmembers, degraded : dict
+        ``mineral -> reflectance`` at full Tanager resolution and degraded to S2.
+    s2_centers, s2_fwhm : np.ndarray
+        Sentinel-2 band centers and FWHM (nm), from :func:`degrade.srf_band_stats`.
+    full_angle_deg, s2_angle_deg : float
+        ``minerals``-pair spectral angle (degrees) in Tanager vs. S2 band space.
+    minerals : tuple of str
+        The two minerals to contrast (default alunite vs kaolinite).
     title : str
-        Figure title.
-
-    Returns
-    -------
-    matplotlib.figure.Figure
+        Figure suptitle.
     """
-    # TODO (spec step 6): paired maps + a difference panel; annotate that S2
-    # cannot resolve the Al-OH doublet, so it cannot split alunite/kaolinite.
-    raise NotImplementedError
+    colors = {minerals[0]: "#1b9e77", minerals[1]: "#d95f02"}
+    fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(13, 5))
+
+    for m in minerals:
+        ax0.plot(wavelengths, endmembers[m], color=colors[m], lw=1.2, label=f"{m} (Tanager)")
+        ax0.plot(
+            s2_centers,
+            degraded[m],
+            "o--",
+            color=colors[m],
+            ms=5,
+            lw=1.0,
+            alpha=0.8,
+            label=f"{m} (Sentinel-2)",
+        )
+    ax0.set_xlabel("wavelength (nm)")
+    ax0.set_ylabel("reflectance")
+    ax0.set_title("Full VSWIR vs. 13 S2 bands")
+    ax0.legend(fontsize=8, frameon=False)
+
+    lo, hi = 2000.0, 2350.0
+    win = (wavelengths >= lo) & (wavelengths <= hi)
+    for m in minerals:
+        ax1.plot(wavelengths[win], np.asarray(endmembers[m])[win], color=colors[m], lw=1.6, label=m)
+    in_win = (s2_centers >= lo) & (s2_centers <= hi)
+    for c, w in zip(s2_centers[in_win], s2_fwhm[in_win], strict=False):
+        ax1.axvspan(c - w / 2, c + w / 2, color="0.6", alpha=0.18)
+        ax1.axvline(c, color="0.4", lw=0.8, ls=":")
+    for m in minerals:
+        ax1.plot(s2_centers[in_win], np.asarray(degraded[m])[in_win], "o", color=colors[m], ms=7)
+    ax1.set_xlim(lo, hi)
+    ax1.set_xlabel("wavelength (nm)")
+    ax1.set_ylabel("reflectance")
+    ax1.set_title("Al-OH region — S2 band FWHM shaded")
+    ax1.legend(fontsize=8, frameon=False, loc="lower left")
+    ax1.annotate(
+        f"{minerals[0]}–{minerals[1]} spectral angle\n"
+        f"Tanager {full_angle_deg:.1f}°  →  S2 {s2_angle_deg:.1f}°  "
+        f"({100 * (1 - s2_angle_deg / full_angle_deg):.0f}% loss)",
+        xy=(0.5, 0.97),
+        xycoords="axes fraction",
+        ha="center",
+        va="top",
+        fontsize=9,
+        bbox={"boxstyle": "round", "fc": "white", "ec": "0.5"},
+    )
+    fig.suptitle(title)
+    fig.tight_layout()
+    return fig
