@@ -81,9 +81,21 @@ Scene IDs are recorded in `config.SITES`.
    diagonal loading (`ridge` fraction, default 1e-2). On Bingham the per-mineral
    MF maps are continuous and spatially coherent — a clear improvement over SAM;
    absolute scores are small (≤~0.02) because 30 m pixels are mixtures of the
-   pure endmember. The mixture-tuned **infeasibility** gate (MNF-space, Boardman
-   1998) is *(pending — next increment)* and will be grounded against a
-   reference rather than hand-rolled.
+   pure endmember. The mixture-tuned **infeasibility** (`unmix.mtmf`) completes
+   MTMF: in the background-whitened metric the matched filter explains the
+   target-direction component (abundance `alpha`) and the infeasibility is the
+   magnitude of the residual orthogonal to it,
+   `infeas^2 = (x-mu)^T C^-1 (x-mu) - alpha^2 (t-mu)^T C^-1 (t-mu)` (RX anomaly
+   minus the explained part). The exact ENVI infeasibility normalisation is
+   proprietary/unpublished (Boardman 1998 is only conceptual), so this is the
+   operational feasibility check from the whitened residual, not ENVI-identical;
+   its absolute scale is not unit-variance (diagonal loading), so detections are
+   gated by the infeasibility distribution. On Bingham the MF-vs-infeasibility
+   scatter shows the expected feasibility "nose" — a low-infeasibility tongue to
+   higher abundance (true sub-pixel detections) plus a high-infeasibility tail
+   (false positives the gate removes); gating at infeasibility < 1.0 yields
+   coherent per-mineral abundance maps. Thresholds are coarse, not
+   ground-truth-calibrated (that comes with USGS-map validation).
 5. **Band ablation** *(pending)* — SRF-degrade Tanager to Sentinel-2 bands
    (`tanager_spec.srf.simulate`), repeat steps 3–4, and quantify the loss.
 6. **EMIT comparison** *(pending)* — the same mapping at the overlapping site;
@@ -107,8 +119,8 @@ Scene IDs are recorded in `config.SITES`.
   coarse cutoff, not ground-truth-calibrated.
 - **Matched-filter diagonal loading.** `ridge` = 1e-2 default — regularises the
   singular full-band covariance; a numerical parameter, not physical.
-- **MNF component count, MTMF infeasibility gating** *(pending)* — to be
-  recorded here when the infeasibility step lands.
+- **MTMF infeasibility gate.** `max_infeas` = 1.0 default — distribution-informed
+  (background ~0.2, anomalous tail >2), not ground-truth-calibrated.
 
 ## Software versions
 

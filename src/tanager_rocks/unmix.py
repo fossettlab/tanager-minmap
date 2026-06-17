@@ -9,6 +9,8 @@ masked SR cube from the :mod:`tanager_spec` data layer.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 import xarray as xr
 
@@ -80,6 +82,47 @@ def sam_classify(angles: xr.Dataset, max_angle_rad: float) -> tuple[xr.DataArray
     return classes, minerals
 
 
+@dataclass
+class _Background:
+    """Shared background statistics for matched filtering on a cube's valid data.
+
+    The full-band VSWIR covariance is ill-conditioned (collinear adjacent bands),
+    so ``cov_inv`` is the inverse of the diagonally-loaded covariance.
+    """
+
+    valid_b: np.ndarray  # (n_band,) bool — bands used
+    px_valid: np.ndarray  # (ny*nx,) bool — finite pixels
+    centered: np.ndarray  # (n_px, n_valid_band) — pixels minus background mean
+    mu: np.ndarray  # (n_valid_band,) background mean
+    cov_inv: np.ndarray  # (n_valid_band, n_valid_band) inverse loaded covariance
+    ny: int
+    nx: int
+
+
+def _background(cube: xr.DataArray, endmembers: dict[str, Endmember], ridge: float) -> _Background:
+    data = cube.transpose("band", "y", "x").values
+    n_band, ny, nx = data.shape
+    flat = data.reshape(n_band, ny * nx)
+
+    band_has_data = np.isfinite(flat).any(axis=1)
+    em_finite = np.all([np.isfinite(e.reflectance) for e in endmembers.values()], axis=0)
+    valid_b = band_has_data & em_finite
+    px_valid = np.isfinite(flat[valid_b]).all(axis=0)
+
+    samples = flat[valid_b][:, px_valid].T  # (n_px, n_valid_band)
+    mu = samples.mean(axis=0)
+    centered = samples - mu
+    cov = centered.T @ centered / (samples.shape[0] - 1)
+    cov += ridge * np.trace(cov) / cov.shape[0] * np.eye(cov.shape[0])  # diagonal loading
+    return _Background(valid_b, px_valid, centered, mu, np.linalg.inv(cov), ny, nx)
+
+
+def _to_map(values: np.ndarray, bg: _Background, coords: dict) -> xr.DataArray:
+    full = np.full(bg.ny * bg.nx, np.nan)
+    full[bg.px_valid] = values
+    return xr.DataArray(full.reshape(bg.ny, bg.nx), dims=("y", "x"), coords=coords)
+
+
 def matched_filter_maps(
     cube: xr.DataArray,
     endmembers: dict[str, Endmember],
@@ -92,16 +135,11 @@ def matched_filter_maps(
     own background mean ``mu`` and band covariance ``C``: ``1`` at the target
     spectrum, ``0`` at the background mean, so larger = more target-like. Unlike
     SAM this uses the full band covariance, which is where the spec expects
-    Tanager's signal to live; it is the abundance half of MTMF (the mixture-
-    tuned infeasibility gate is a separate, still-to-build step).
+    Tanager's signal to live; it is the abundance half of MTMF.
 
-    Adjacent VSWIR bands are nearly collinear, so the full-band covariance is
-    ill-conditioned/singular. ``C`` is therefore stabilised by diagonal loading
-    (``C + ridge * mean(diag(C)) * I``) — standard regularisation for matched
-    filtering, controlled by ``ridge`` (a numerical parameter, not physical).
-
-    Bands that are all-NaN (absorption-masked) and any band where an endmember
-    is non-finite are dropped; nodata pixels come back as ``NaN``.
+    ``C`` is stabilised by diagonal loading (``C + ridge * mean(diag(C)) * I``),
+    a numerical parameter, not physical. All-NaN (absorption-masked) bands and
+    bands where an endmember is non-finite are dropped; nodata pixels are ``NaN``.
 
     Parameters
     ----------
@@ -117,30 +155,70 @@ def matched_filter_maps(
     xr.Dataset
         One matched-filter abundance variable per mineral.
     """
-    data = cube.transpose("band", "y", "x").values
-    n_band, ny, nx = data.shape
-    flat = data.reshape(n_band, ny * nx)
+    bg = _background(cube, endmembers, ridge)
+    coords = {"y": cube.y, "x": cube.x}
+    out: dict[str, xr.DataArray] = {}
+    for mineral, em in endmembers.items():
+        d = em.reflectance[bg.valid_b] - bg.mu
+        weight = bg.cov_inv @ d
+        alpha = bg.centered @ weight / float(d @ weight)  # =1 at target, 0 at background
+        out[mineral] = _to_map(alpha, bg, coords)
+    return xr.Dataset(out)
 
-    band_has_data = np.isfinite(flat).any(axis=1)
-    em_finite = np.all([np.isfinite(e.reflectance) for e in endmembers.values()], axis=0)
-    valid_b = band_has_data & em_finite
-    px_valid = np.isfinite(flat[valid_b]).all(axis=0)
 
-    samples = flat[valid_b][:, px_valid].T  # (n_px, n_valid_band)
-    mu = samples.mean(axis=0)
-    centered = samples - mu
-    cov = centered.T @ centered / (samples.shape[0] - 1)
-    cov += ridge * np.trace(cov) / cov.shape[0] * np.eye(cov.shape[0])  # diagonal loading
-    cov_inv = np.linalg.inv(cov)
+def mtmf(
+    cube: xr.DataArray,
+    endmembers: dict[str, Endmember],
+    ridge: float = 1e-2,
+) -> xr.Dataset:
+    """Mixture-tuned matched filter: abundance + infeasibility per endmember.
+
+    Builds on :func:`matched_filter_maps`. In the background-whitened metric
+    (``C^-1``) the matched filter explains the pixel's component along the target
+    direction with abundance ``alpha``; the *infeasibility* is the magnitude of
+    everything left over — the residual orthogonal to the target mixing
+    direction — in background-sigma units:
+
+        ``infeas(x)^2 = (x-mu)^T C^-1 (x-mu) - alpha^2 (t-mu)^T C^-1 (t-mu)``
+
+    (the RX anomaly score minus the matched-filter-explained part), divided by
+    ``sqrt(n_band - 1)``. A true sub-pixel occurrence has high ``alpha`` *and* low
+    infeasibility; a false positive has a large residual the mixture model cannot
+    explain (high infeasibility). This is the operational MTMF feasibility check
+    (Boardman 1998) implemented from the whitened residual — not ENVI's exact
+    (unpublished) normalisation. The absolute scale is not unit-variance (the
+    diagonal loading shrinks the whitening), so gate by the infeasibility
+    distribution, not a fixed sigma.
+
+    Parameters
+    ----------
+    cube : xr.DataArray
+        Masked surface-reflectance cube (band, y, x).
+    endmembers : dict
+        Mineral -> :class:`tanager_rocks.speclib.Endmember`.
+    ridge : float
+        Diagonal-loading fraction applied to the covariance before inversion.
+
+    Returns
+    -------
+    xr.Dataset
+        ``<mineral>_mf`` (abundance) and ``<mineral>_infeas`` per mineral.
+    """
+    bg = _background(cube, endmembers, ridge)
+    coords = {"y": cube.y, "x": cube.x}
+    n_dim = int(bg.valid_b.sum())
+    # RX anomaly score (x-mu)^T C^-1 (x-mu), computed once for all endmembers.
+    whitened = bg.centered @ bg.cov_inv  # (n_px, n_band)
+    rx = np.einsum("ij,ij->i", whitened, bg.centered)
+    norm = np.sqrt(max(n_dim - 1, 1))
 
     out: dict[str, xr.DataArray] = {}
     for mineral, em in endmembers.items():
-        d = em.reflectance[valid_b] - mu
-        weight = cov_inv @ d
-        score = centered @ weight / float(d @ weight)  # =1 at target, 0 at background
-        full = np.full(ny * nx, np.nan)
-        full[px_valid] = score
-        out[mineral] = xr.DataArray(
-            full.reshape(ny, nx), dims=("y", "x"), coords={"y": cube.y, "x": cube.x}
-        )
+        d = em.reflectance[bg.valid_b] - bg.mu
+        weight = bg.cov_inv @ d
+        eta = float(d @ weight)
+        alpha = bg.centered @ weight / eta
+        infeas = np.sqrt(np.clip(rx - alpha**2 * eta, 0.0, None)) / norm
+        out[f"{mineral}_mf"] = _to_map(alpha, bg, coords)
+        out[f"{mineral}_infeas"] = _to_map(infeas, bg, coords)
     return xr.Dataset(out)

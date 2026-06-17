@@ -1,10 +1,11 @@
-"""SAM mineral classification for a site's scene (spec.md step 4, SAM half).
+"""Unmixing for a site's scene (spec.md step 4): SAM baseline + MTMF.
 
-Loads the SR cube, masks absorption bands, selects one medoid endmember per
-target mineral from splib07, computes the per-mineral spectral angle, and
-assigns each pixel to its best match within an acceptance threshold. Writes a
-class GeoTIFF and a PNG. MTMF (the covariance-aware primary method) is the next
-increment; this establishes the SAM baseline.
+Loads the SR cube, masks absorption bands, and selects one medoid endmember per
+target mineral from splib07. Runs (1) the SAM baseline — best-match
+classification within an angle threshold — and (2) MTMF — covariance-aware
+matched-filter abundance plus the mixture-tuned infeasibility, gated to keep
+abundance only where the pixel is spectrally feasible. Writes class/abundance/
+infeasibility GeoTIFFs and PNG panels.
 
 Run::
 
@@ -18,12 +19,13 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
+import xarray as xr
 from tanager_spec.io import load_tanager_sr_hdf5
 from tanager_spec.mask import mask_absorption_bands
 
 from tanager_rocks.config import SITES, TANAGER_SR_ASSET
 from tanager_rocks.speclib import load_library, select_endmembers
-from tanager_rocks.unmix import matched_filter_maps, sam_classify, spectral_angle
+from tanager_rocks.unmix import mtmf, sam_classify, spectral_angle
 from tanager_rocks.viz import classification_map, score_panel, setup_style
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -47,6 +49,11 @@ def main(argv: Sequence[str] | None = None) -> None:
     parser.add_argument(
         "--max-angle", type=float, default=0.15, help="SAM acceptance threshold (radians)"
     )
+    # Infeasibility gate for MTMF detections. Background sits near ~0.2 and the
+    # anomalous false-positive tail runs well above ~2 on Bingham; 1.0 keeps the
+    # feasible high-abundance "nose" while dropping the worst anomalies. Coarse
+    # and not ground-truth-calibrated (that comes with USGS-map validation).
+    parser.add_argument("--max-infeas", type=float, default=1.0, help="MTMF infeasibility gate")
     args = parser.parse_args(argv)
     site = SITES[args.site]
 
@@ -73,14 +80,31 @@ def main(argv: Sequence[str] | None = None) -> None:
         classes, labels, title=f"{site.name} ({scene_id}) — SAM classification"
     ).savefig(FIGURES_DIR / f"{args.site}_{scene_id}_sam_class.png")
 
-    # --- covariance-aware matched filter (MTMF abundance half) ---
-    mf = matched_filter_maps(cube, endmembers)
-    for mineral in mf.data_vars:
-        da = mf[mineral].rio.write_crs(crs).rio.write_transform(transform)
-        da.rio.to_raster(MAPS_DIR / f"{args.site}_{scene_id}_mf_{mineral}.tif")
-    out_png = FIGURES_DIR / f"{args.site}_{scene_id}_mf.png"
+    # --- MTMF: matched-filter abundance + mixture-tuned infeasibility ---
+    ds = mtmf(cube, endmembers)
+    minerals = [v[:-3] for v in ds.data_vars if v.endswith("_mf")]
+    mf = xr.Dataset({m: ds[f"{m}_mf"] for m in minerals})
+    infeas = xr.Dataset({m: ds[f"{m}_infeas"] for m in minerals})
+    # Mixture-tuned: keep abundance only where the pixel is spectrally feasible.
+    gated = xr.Dataset(
+        {m: ds[f"{m}_mf"].where(ds[f"{m}_infeas"] < args.max_infeas) for m in minerals}
+    )
+
+    for mineral in minerals:
+        for kind, da in (("mf", ds[f"{mineral}_mf"]), ("infeas", ds[f"{mineral}_infeas"])):
+            geo = da.rio.write_crs(crs).rio.write_transform(transform)
+            geo.rio.to_raster(MAPS_DIR / f"{args.site}_{scene_id}_{kind}_{mineral}.tif")
+
+    base = f"{site.name} ({scene_id})"
+    score_panel(mf, f"{base} — matched-filter abundance", cbar_label="MF score").savefig(
+        FIGURES_DIR / f"{args.site}_{scene_id}_mf.png"
+    )
+    score_panel(infeas, f"{base} — MTMF infeasibility", cbar_label="infeasibility").savefig(
+        FIGURES_DIR / f"{args.site}_{scene_id}_infeas.png"
+    )
+    out_png = FIGURES_DIR / f"{args.site}_{scene_id}_mtmf_gated.png"
     score_panel(
-        mf, f"{site.name} ({scene_id}) — matched-filter abundance", cbar_label="MF score"
+        gated, f"{base} — MTMF abundance (infeas < {args.max_infeas})", cbar_label="MF score"
     ).savefig(out_png)
     logger.info("wrote %s", out_png)
 
