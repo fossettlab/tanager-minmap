@@ -15,10 +15,17 @@ cubes come from :func:`tanager_spec.io.load_tanager_sr_hdf5` after masking.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import xarray as xr
+
+from .config import DIAGNOSTIC_NM, FE_OXIDE_SEARCH_NM, FEATURE_DIAGNOSTIC_MINERAL
+from .speclib import by_mineral, load_library
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -201,3 +208,37 @@ def locate_feature(
             f"located feature does not bracket its center (lo={lo}, center={center}, hi={hi})"
         )
     return center, lo, hi
+
+
+def build_feature_defs(wavelengths: np.ndarray, library_dir: str | Path) -> list[FeatureDef]:
+    """Derive the diagnostic :class:`FeatureDef` set from the splib07 library.
+
+    Shoulders are taken from each feature's diagnostic-mineral median spectrum
+    (``config.FEATURE_DIAGNOSTIC_MINERAL``), so they are data-driven rather than
+    hand-picked. The fixed-center SWIR features use the spec wavelengths
+    (``config.DIAGNOSTIC_NM``); the VNIR Fe-oxide center is located within
+    ``config.FE_OXIDE_SEARCH_NM`` because the spec does not pin it. Shared by
+    ``scripts/map_site.py`` and ``scripts/validate_site.py`` so both build the
+    identical features.
+    """
+    grouped = by_mineral(load_library(library_dir, wavelengths))
+
+    def median_spectrum(mineral: str) -> np.ndarray:
+        return np.nanmedian(np.vstack([e.reflectance for e in grouped[mineral]]), axis=0)
+
+    defs: list[FeatureDef] = []
+    for name, center in DIAGNOSTIC_NM.items():
+        mineral = FEATURE_DIAGNOSTIC_MINERAL[name]
+        lo, hi = shoulders_from_endmember(wavelengths, median_spectrum(mineral), center)
+        n = len(grouped[mineral])
+        defs.append(FeatureDef(name, center, lo, hi, source=f"splib07a {mineral} median (n={n})"))
+        logger.info("%s: center %.0f, shoulders %.0f / %.0f nm (%s)", name, center, lo, hi, mineral)
+
+    fe_mineral = FEATURE_DIAGNOSTIC_MINERAL["fe_oxide"]
+    center, lo, hi = locate_feature(wavelengths, median_spectrum(fe_mineral), *FE_OXIDE_SEARCH_NM)
+    n = len(grouped[fe_mineral])
+    defs.append(
+        FeatureDef("fe_oxide", center, lo, hi, source=f"splib07a {fe_mineral} median (n={n})")
+    )
+    logger.info("fe_oxide: center %.0f, shoulders %.0f / %.0f nm (%s)", center, lo, hi, fe_mineral)
+    return defs

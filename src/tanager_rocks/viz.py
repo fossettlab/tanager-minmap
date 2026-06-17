@@ -130,6 +130,63 @@ def classification_map(
     return fig
 
 
+def zone_discrimination_panel(
+    scores: xr.Dataset,
+    reference: xr.DataArray,
+    mapping: dict[str, frozenset[int]],
+    discriminations: dict,
+    title: str = "Score by reference alteration zone",
+    ncols: int = 4,
+) -> matplotlib.figure.Figure:
+    """Box plots of each score inside vs. outside its reference alteration zone.
+
+    For every validated layer, the score distribution in the published positive
+    zone is drawn beside the distribution over the other classified ground; the
+    panel title carries the rank AUC. This is the visual companion to
+    :func:`tanager_rocks.validate.validate_scores`.
+
+    Parameters
+    ----------
+    scores : xr.Dataset
+        Score maps (one ``(y, x)`` variable per layer).
+    reference : xr.DataArray
+        Aligned categorical Rockwell reference.
+    mapping : dict
+        Layer -> positive Rockwell class set.
+    discriminations : dict
+        Layer -> ``Discrimination`` from :func:`validate_scores` (for the AUC).
+    title : str
+        Figure suptitle.
+    ncols : int
+        Panels per row.
+    """
+    from .validate import analysis_domain
+
+    layers = [m for m in mapping if m in discriminations]
+    ncols = min(ncols, max(len(layers), 1))
+    nrows = int(np.ceil(max(len(layers), 1) / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(3.6 * ncols, 4.0 * nrows), squeeze=False)
+    flat_axes = axes.ravel()
+    domain = analysis_domain(reference)
+    for ax, layer in zip(flat_axes, layers, strict=False):
+        sc = scores[layer].values
+        ref = reference.values
+        use = domain & np.isfinite(sc)
+        is_pos = np.isin(ref, list(mapping[layer])) & use
+        is_neg = use & ~np.isin(ref, list(mapping[layer]))
+        ax.boxplot(
+            [sc[is_pos], sc[is_neg]], labels=["in zone", "out"], showfliers=False, widths=0.6
+        )
+        d = discriminations[layer]
+        ax.set_title(f"{layer}\nAUC={d.auc:.2f}")
+        ax.set_ylabel("score")
+    for ax in flat_axes[len(layers) :]:
+        ax.axis("off")
+    fig.suptitle(title)
+    fig.tight_layout()
+    return fig
+
+
 def mineral_map(
     abundance: xr.Dataset,
     title: str = "Mineral map",

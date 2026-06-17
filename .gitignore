@@ -30,6 +30,7 @@ data/georoc/
 data/petdb/
 data/intermediate/
 data/speclib/
+data/reference/
 !data/*/.gitkeep
 
 # Models

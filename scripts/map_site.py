@@ -20,24 +20,11 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
-import numpy as np
 from tanager_spec.io import load_tanager_sr_hdf5
 from tanager_spec.mask import mask_absorption_bands
 
-from tanager_rocks.config import (
-    DIAGNOSTIC_NM,
-    FE_OXIDE_SEARCH_NM,
-    FEATURE_DIAGNOSTIC_MINERAL,
-    SITES,
-    TANAGER_SR_ASSET,
-)
-from tanager_rocks.features import (
-    FeatureDef,
-    diagnostic_feature_maps,
-    locate_feature,
-    shoulders_from_endmember,
-)
-from tanager_rocks.speclib import by_mineral, load_library
+from tanager_rocks.config import SITES, TANAGER_SR_ASSET
+from tanager_rocks.features import build_feature_defs, diagnostic_feature_maps
 from tanager_rocks.viz import band_depth_panel, setup_style
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -48,33 +35,6 @@ RAW_DIR = ROOT / "data" / "raw"
 SPECLIB_DIR = ROOT / "data" / "speclib" / "ASCIIdata_splib07a"
 MAPS_DIR = ROOT / "data" / "intermediate" / "maps"
 FIGURES_DIR = ROOT / "figures"
-
-
-def build_feature_defs(wavelengths: np.ndarray) -> list[FeatureDef]:
-    """Derive FeatureDefs whose shoulders come from the splib07 endmembers."""
-    grouped = by_mineral(load_library(SPECLIB_DIR, wavelengths))
-
-    def median_spectrum(mineral: str) -> np.ndarray:
-        return np.nanmedian(np.vstack([e.reflectance for e in grouped[mineral]]), axis=0)
-
-    defs: list[FeatureDef] = []
-    # Fixed-center SWIR features: shoulders derived around the spec wavelength.
-    for name, center in DIAGNOSTIC_NM.items():
-        mineral = FEATURE_DIAGNOSTIC_MINERAL[name]
-        lo, hi = shoulders_from_endmember(wavelengths, median_spectrum(mineral), center)
-        n = len(grouped[mineral])
-        defs.append(FeatureDef(name, center, lo, hi, source=f"splib07a {mineral} median (n={n})"))
-        logger.info("%s: center %.0f, shoulders %.0f / %.0f nm (%s)", name, center, lo, hi, mineral)
-
-    # VNIR Fe-oxide: center located in the search window (not fixed by the spec).
-    fe_mineral = FEATURE_DIAGNOSTIC_MINERAL["fe_oxide"]
-    center, lo, hi = locate_feature(wavelengths, median_spectrum(fe_mineral), *FE_OXIDE_SEARCH_NM)
-    n = len(grouped[fe_mineral])
-    defs.append(
-        FeatureDef("fe_oxide", center, lo, hi, source=f"splib07a {fe_mineral} median (n={n})")
-    )
-    logger.info("fe_oxide: center %.0f, shoulders %.0f / %.0f nm (%s)", center, lo, hi, fe_mineral)
-    return defs
 
 
 def main(argv: Sequence[str] | None = None) -> None:
@@ -89,7 +49,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     cube, wl = load_tanager_sr_hdf5(scene_path)
     cube = mask_absorption_bands(cube, wl)
 
-    depths = diagnostic_feature_maps(cube, wl, build_feature_defs(wl))
+    depths = diagnostic_feature_maps(cube, wl, build_feature_defs(wl, SPECLIB_DIR))
 
     MAPS_DIR.mkdir(parents=True, exist_ok=True)
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
