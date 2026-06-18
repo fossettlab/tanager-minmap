@@ -208,6 +208,85 @@ def mineral_map(
     raise NotImplementedError
 
 
+def emit_comparison_panel(
+    common_nm: np.ndarray,
+    tan_mean: np.ndarray,
+    emit_mean: np.ndarray,
+    pearson_r: float,
+    spectral_angle_deg: float,
+    tan_score: xr.DataArray,
+    emit_score: xr.DataArray,
+    mineral: str,
+    detection_r: float,
+    title: str = "Tanager vs EMIT cross-sensor comparison",
+    vmax_quantile: float = 0.98,
+) -> matplotlib.figure.Figure:
+    """Three-panel cross-sensor comparison (spec step 6).
+
+    Left: the two scene-mean reflectance spectra on EMIT's wavelength axis with
+    the spectral-agreement metrics. Middle/right: one mineral's MTMF map from
+    each sensor at its native resolution (Tanager 30 m vs EMIT 60 m), sharing a
+    color stretch, with the spatial-detection correlation annotated.
+
+    Parameters
+    ----------
+    common_nm, tan_mean, emit_mean : np.ndarray
+        Common wavelength axis and the two scene-mean spectra (from
+        :func:`tanager_rocks.compare.spectral_agreement`).
+    pearson_r, spectral_angle_deg : float
+        Scene-mean spectral agreement.
+    tan_score, emit_score : xr.DataArray
+        The chosen mineral's MTMF map from each sensor (native grids).
+    mineral : str
+        Mineral name for titling.
+    detection_r : float
+        Spatial correlation of the two maps on the common grid.
+    """
+    fig, (ax0, ax1, ax2) = plt.subplots(1, 3, figsize=(16, 5))
+
+    ax0.plot(common_nm, tan_mean, color="#1b9e77", lw=1.2, label="Tanager (resampled)")
+    ax0.plot(common_nm, emit_mean, color="#7570b3", lw=1.2, label="EMIT")
+    ax0.set_xlabel("wavelength (nm)")
+    ax0.set_ylabel("scene-mean reflectance")
+    ax0.set_title("Scene-mean spectra")
+    ax0.legend(fontsize=8, frameon=False)
+    ax0.annotate(
+        f"Pearson r = {pearson_r:.3f}\nspectral angle = {spectral_angle_deg:.2f}°",
+        xy=(0.97, 0.05),
+        xycoords="axes fraction",
+        ha="right",
+        va="bottom",
+        fontsize=9,
+        bbox={"boxstyle": "round", "fc": "white", "ec": "0.5"},
+    )
+
+    # Per-map stretch: MTMF abundance is not absolutely comparable across sensors
+    # (different band sets and covariance), so each map is scaled to its own
+    # distribution; the detection correlation carries the quantitative agreement.
+    for ax, da, label in ((ax1, tan_score, "Tanager 30 m"), (ax2, emit_score, "EMIT 60 m")):
+        vmax = max(float(np.nanquantile(da.values, vmax_quantile)), 1e-3)
+        im = da.plot.imshow(  # type: ignore[attr-defined]
+            ax=ax, cmap="cividis", vmin=0.0, vmax=vmax, add_colorbar=False
+        )
+        ax.set_title(f"{mineral} MTMF — {label}")
+        ax.set_aspect("equal")
+        ax.set_xlabel("")
+        ax.set_ylabel("")
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label="abundance")
+    ax2.annotate(
+        f"detection r = {detection_r:.3f}",
+        xy=(0.5, 0.97),
+        xycoords="axes fraction",
+        ha="center",
+        va="top",
+        fontsize=9,
+        bbox={"boxstyle": "round", "fc": "white", "ec": "0.5"},
+    )
+    fig.suptitle(title)
+    fig.tight_layout()
+    return fig
+
+
 def band_ablation_panel(
     wavelengths: np.ndarray,
     endmembers: dict[str, np.ndarray],

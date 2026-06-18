@@ -219,10 +219,46 @@ scores validate cleanly against an independent map where a distinct mineral
 assemblage is well represented (Goldfield/Cuprite acid-sulfate), and degrade
 predictably where the published categorical splits subdivide a single pervasive
 spectral family (Bingham porphyry sericite/argillic).
-6. **EMIT comparison** *(pending)* — the same mapping at the overlapping site;
-   report spectral correlation, detection agreement, and spatial detail.
+6. **EMIT comparison** — the identical alteration-mapping pipeline (diagnostic
+   band depths + MTMF) is run on an overlapping NASA EMIT L2A reflectance scene,
+   and the two sensors' products are compared on the Goldfield lead scene.
 7. **AMD-hazard proxy** *(pending)* — jarosite + Fe-oxide + gypsum assemblage
    as a qualitative acid-generating-potential layer.
+
+### EMIT cross-sensor comparison (Goldfield lead scene, contains Cuprite)
+
+EMIT is the only other spaceborne imaging spectrometer with comparable VSWIR
+coverage (285 bands, 381-2493 nm, ~60 m), so re-running the *same* pipeline on
+an EMIT scene over the shared site is an external check on Tanager's maps with
+no shared code, calibration, or acquisition. The clearest fully-overlapping
+EMIT L2A granule was selected programmatically (`EMIT_L2A_RFL_001_20230804T1916`,
+2023-08-04, 4 % cloud, 100 % footprint coverage; queried via the NASA Earthdata
+STAC, downloaded with `earthaccess`), orthorectified from its raw
+`(downtrack, crosstrack)` array with the granule's geometry lookup table
+(`emit.load_emit_reflectance`), and masked identically. The endmember library
+and diagnostic features are resampled to EMIT's wavelength axis, so the
+mineralogy is computed the same way on both sensors. Acquisition dates differ
+(EMIT 2023-08, Tanager 2024-09), which is acceptable because the target is
+static surface mineralogy; this is stated as a caveat, not hidden.
+
+- **Spectral agreement** (scene-mean reflectance, resampled to EMIT's 240
+  shared finite bands): Pearson r = 0.91, spectral angle 5.7° — the two
+  spectrometers see the same reflectance shape over the shared ground.
+- **Mineral-detection agreement** (per-mineral MTMF map, Tanager reprojected
+  onto the EMIT grid, Pearson r over ~198k common pixels): **all six minerals
+  are positively correlated** — jarosite +0.59, goethite +0.55, alunite +0.55,
+  kaolinite +0.47, hematite +0.43, muscovite +0.34. Two independent sensors
+  light up the same ground for each mineral. Correlations are moderate rather
+  than near-unity, as expected from the date offset, the 2× resolution
+  difference (resampling), and the fact that MTMF abundance is not absolutely
+  calibrated across differing band sets — the figure therefore uses a per-map
+  color stretch and lets the correlation carry the quantitative claim.
+- **Spatial detail.** Tanager's 30 m GSD is 2× finer than EMIT's ~60 m (4× the
+  pixel density), so Tanager resolves a smaller minimum mappable feature; the
+  comparison figure shows the same alunite distribution at both resolutions.
+
+Numbers in `data/intermediate/emit/emit_comparison_goldfield_*.csv`; figure
+`figures/goldfield_*_emit_comparison.png`.
 
 ## Key parameters
 
