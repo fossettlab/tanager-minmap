@@ -178,6 +178,47 @@ discriminating its published zone:
 The per-layer Youden-J thresholds (e.g. alunite MTMF 0.0010, Al-OH band depth
 0.0289) calibrate detection for the layers that discriminate; full numbers in
 `data/intermediate/validation/validation_goldfield_*.csv`.
+
+### Validation results (Bingham lead scene)
+
+Bingham is the weaker validation site, by design and by geology. It is a
+porphyry-Cu(-Mo) system, not an acid-sulfate epithermal one: the Rockwell map
+labels its near-surface alteration as pervasive sericite (classes 5/10/12/16,
+~45 % of the classified domain) and ferrous/coarse-ferric iron (class 21,
+~39 %), with only small argillic and advanced-argillic patches (classes 3/4,
+~5 % combined). The acid-sulfate mineral suite (alunite, kaolinite, jarosite)
+that drove the Goldfield agreement is sparse here, so most of the discriminating
+power that validated at Cuprite has little signal to act on.
+
+- **Strongest interpretable agreement:** gypsum/carbonate band depth AUC 0.66,
+  consistent with detectable propylitic carbonate. Al-OH band depth is only
+  weakly discriminating (0.54) because the Al-OH feature is shared across the
+  whole pervasive clay–mica halo rather than concentrated in one zone.
+- **MTMF scores do not separate Rockwell's sericite-vs-argillic-vs-ferrous
+  splits** (alunite 0.52, kaolinite/dickite 0.56, muscovite 0.44). A
+  score-by-class cross-tab grounds the muscovite result, which falls below 0.5:
+  the muscovite matched filter actually peaks in the *small argillic and
+  advanced-argillic* classes (class 4 median +0.00089, class 3 +0.00042) rather
+  than the large sericite classes it is mapped to (class 5 −0.00011, class 12
+  −0.00041), and the dominant ferrous class 21 carries a higher muscovite score
+  (+0.00022) than the sericite positives. The 2200 nm Al-OH absorption is shared
+  across the muscovite/sericite/illite/kaolinite family, so the filter responds
+  to the entire pervasive Al-OH halo, not the specific sericite zones — a
+  class-taxonomy-granularity mismatch, the same family of explanation as the
+  Goldfield Fe-oxide and kaolinite results. The a-priori mappings were not
+  adjusted.
+- **Same Fe-oxide anti-pattern as Goldfield:** Fe-oxide band depth 0.37,
+  goethite/hematite MTMF 0.37/0.48 — the Fe signal sits in the ferric-iron-
+  *bearing alteration* classes, not Rockwell's standalone clay-free ferric
+  classes (1, 2) used as positives.
+- **Not interpretable:** jarosite (n+=5; the class is essentially absent).
+
+Full numbers in `data/intermediate/validation/validation_bingham_*.csv`. The
+contrast between sites is itself informative: Tanager's continuous alteration
+scores validate cleanly against an independent map where a distinct mineral
+assemblage is well represented (Goldfield/Cuprite acid-sulfate), and degrade
+predictably where the published categorical splits subdivide a single pervasive
+spectral family (Bingham porphyry sericite/argillic).
 6. **EMIT comparison** *(pending)* — the same mapping at the overlapping site;
    report spectral correlation, detection agreement, and spatial detail.
 7. **AMD-hazard proxy** *(pending)* — jarosite + Fe-oxide + gypsum assemblage
