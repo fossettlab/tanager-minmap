@@ -106,7 +106,7 @@ submission (data-integrity rule).
 | Scientific Integrity & Innovation (30) | Library-anchored mineral ID; band-ablation proving VSWIR necessity; validation vs USGS maps; honest limits |
 | Application / Use Case (30) | Named sites + end-user (state surveys / EPA / mining operators); AMD-hazard + residual-value framing; "open more mining-district scenes" |
 | Workflow & Tool (20) | `tanager-minmap` CLI; STAC-driven; `uv.lock`; one-command run; Zenodo DOI |
-| Visualization & Storytelling (20) | Hero mineral map (Bingham) + band-ablation panel + stand-alone impact statement |
+| Visualization & Storytelling (20) | Hero mineral map (Goldfield/Cuprite — the validated site; recovers the sericite/alunite zoning) + band-ablation panel + stand-alone impact statement |
 | +5 strategic vertical | Material identification |
 | +5 EMIT comparison | Quantitative cross-sensor comparison at one site |
 | +5 open source | `tanager-minmap` + `tanager-isofit` + the methodology suite |
@@ -141,7 +141,7 @@ submission (data-integrity rule).
 submission/
   README.md          # 1-page summary + impact statement + reproduce command
   memo.pdf           # 2-3 pages
-  hero_figure.png    # Bingham mineral map + band-ablation panel
+  hero_figure.png    # Goldfield/Cuprite mineral map + band-ablation panel
   figures/           # Goldfield maps, EMIT comparison, AMD layer
   video.mp4          # <3 min walkthrough
   links.md           # GitHub, Zenodo DOI, STAC

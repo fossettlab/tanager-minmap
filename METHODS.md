@@ -260,6 +260,24 @@ static surface mineralogy; this is stated as a caveat, not hidden.
 Numbers in `data/intermediate/emit/emit_comparison_goldfield_*.csv`; figure
 `figures/goldfield_*_emit_comparison.png`.
 
+### Hero figure (dominant-mineral map)
+
+The submission hero is the **Goldfield/Cuprite** dominant-alteration-mineral map
+(`scripts/hero_map.py` → `viz.mineral_map`). Goldfield is used rather than
+Bingham because it is the site whose maps validate cleanly against the Rockwell
+ASTER reference (step 4b): its acid-sulfate system gives a distinct, mappable
+assemblage, whereas Bingham's pervasive porphyry sericite does not separate into
+the published categorical zones. The map composites the infeasibility-gated MTMF
+abundance layers into a single dominant-mineral image: each mineral is gated to
+its own upper-decile abundance (so the pervasive low-level soil signal does not
+wash the map) and normalised by that threshold so the layers are comparable
+despite differing matched-filter scales; the per-pixel dominant mineral is the
+one most strongly expressed relative to its own detection floor, with opacity
+scaled by that strength. The result recovers the expected zoning — a
+sericite/phyllic core, an alunite advanced-argillic centre and NE lineament at
+Cuprite, with kaolinite, jarosite, and Fe-oxides distributed around them.
+Figure `figures/goldfield_*_hero_mineral_map.png`.
+
 ## Key parameters
 
 - **Atmospheric masks.** O2 and H2O absorption windows, owned by

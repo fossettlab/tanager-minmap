@@ -186,26 +186,140 @@ def zone_discrimination_panel(
     return fig
 
 
+# Accessible categorical palette (Brewer "Dark2" / "Set2" hues) for the named
+# alteration minerals — chosen to stay distinguishable for common colorblindness
+# and ordered so the alteration story (clays, micas, Fe-oxides, sulfates) reads.
+MINERAL_COLORS: dict[str, str] = {
+    "alunite": "#d95f02",  # advanced argillic
+    "kaolinite": "#e7298a",  # argillic
+    "dickite": "#a6761d",  # argillic (high-T)
+    "muscovite": "#1b9e77",  # sericite / phyllic
+    "jarosite": "#e6ab02",  # acid-sulfate / AMD
+    "hematite": "#7570b3",  # ferric oxide
+    "goethite": "#66a61e",  # ferric oxyhydroxide
+    "gypsum": "#666666",  # sulfate
+}
+
+
+def _scale_bar(ax, x_coords: np.ndarray, length_m: float = 5000.0) -> None:
+    """Draw a simple scale bar (projected metres) in the lower-left of an axis.
+
+    ``x_coords`` are the map's projected x coordinates (UTM metres); the bar is
+    drawn ``length_m`` wide in pixel space using the coordinate spacing.
+    """
+    px = float(abs(x_coords[1] - x_coords[0]))  # metres per pixel
+    n_px = length_m / px
+    span = abs(ax.get_xlim()[1] - ax.get_xlim()[0])  # axis width in pixels
+    frac = n_px / span
+    x_lo, y_lo = 0.06, 0.06  # axes-fraction anchor
+    ax.plot(
+        [x_lo, x_lo + frac],
+        [y_lo, y_lo],
+        transform=ax.transAxes,
+        color="black",
+        lw=3,
+        solid_capstyle="butt",
+    )
+    ax.text(
+        x_lo + frac / 2,
+        y_lo + 0.02,
+        f"{length_m / 1000:.0f} km",
+        transform=ax.transAxes,
+        ha="center",
+        va="bottom",
+        fontsize=9,
+    )
+
+
 def mineral_map(
     abundance: xr.Dataset,
     title: str = "Mineral map",
+    per_mineral_quantile: float = 0.90,
+    vmax_quantile: float = 0.98,
+    scale_bar_m: float | None = 5000.0,
 ) -> matplotlib.figure.Figure:
-    """Render a multi-mineral abundance map (hero figure).
+    """Composite per-mineral MTMF abundance into a dominant-mineral hero map.
+
+    Each mineral is gated to its own upper tail: only pixels whose abundance
+    exceeds that mineral's ``per_mineral_quantile`` are kept, and those are
+    normalised by the mineral's own threshold so the layers are comparable
+    despite differing absolute matched-filter scales. At each pixel the dominant
+    mineral is then the one most strongly expressed *relative to its own
+    detection floor*, colored from :data:`MINERAL_COLORS` with opacity scaled by
+    that strength. Pixels where no mineral clears its threshold (or off-scene /
+    infeasibility-gated NaN) are left light grey. The per-mineral gate keeps the
+    pervasive low-level soil signal (e.g. background Fe-oxide) from washing the
+    map and lets the alteration centres read.
 
     Parameters
     ----------
     abundance : xr.Dataset
-        Per-mineral abundance/detection layers from :mod:`tanager_rocks.unmix`.
+        Per-mineral abundance layers (one ``(y, x)`` var each) from
+        :mod:`tanager_rocks.unmix`, typically infeasibility-gated.
     title : str
         Figure title.
+    per_mineral_quantile : float
+        Upper quantile of each mineral's positive abundance used as its
+        detection threshold (0.90 keeps the top 10 % per mineral).
+    vmax_quantile : float
+        Upper quantile of the normalised strength used for the opacity stretch.
+    scale_bar_m : float, optional
+        Scale-bar length in metres (projected CRS); ``None`` to omit.
 
     Returns
     -------
     matplotlib.figure.Figure
     """
-    # TODO (spec step 9): composite per-mineral layers with an accessible
-    # categorical palette; overlay the site footprint and a scale bar.
-    raise NotImplementedError
+    minerals = list(abundance.data_vars)
+    stack = np.stack([abundance[m].values for m in minerals], axis=0)  # (M, y, x)
+    # Per-mineral threshold + normalise by that threshold so layers are comparable.
+    strength = np.full_like(stack, np.nan, dtype=float)
+    for i in range(len(minerals)):
+        v = stack[i]
+        pos = v[np.isfinite(v) & (v > 0)]
+        if pos.size == 0:
+            continue
+        thr = float(np.quantile(pos, per_mineral_quantile))
+        if thr <= 0:
+            continue
+        keep = np.isfinite(v) & (v >= thr)
+        strength[i][keep] = v[keep] / thr  # >= 1 where kept
+
+    finite = np.isfinite(strength)
+    filled = np.where(finite, strength, -np.inf)
+    dominant = np.argmax(filled, axis=0)
+    peak = np.max(filled, axis=0)  # -inf where no mineral clears its threshold
+    classified = np.isfinite(peak)
+    max_val = np.where(classified, peak, np.nan)
+
+    vmax = float(np.nanquantile(max_val[classified], vmax_quantile)) if classified.any() else 2.0
+    # Opacity floor 0.4 so every kept detection is visible; saturates at vmax.
+    alpha = 0.4 + 0.6 * np.clip((max_val - 1.0) / max(vmax - 1.0, 1e-9), 0.0, 1.0)
+
+    ny, nx = dominant.shape
+    rgba = np.zeros((ny, nx, 4), dtype=float)
+    fallback = plt.get_cmap("tab10")(np.linspace(0, 1, max(len(minerals), 1)))
+    for i, m in enumerate(minerals):
+        color = MINERAL_COLORS.get(m)
+        rgb = matplotlib.colors.to_rgb(color) if color else tuple(fallback[i][:3])
+        sel = classified & (dominant == i)
+        rgba[sel, :3] = rgb
+        rgba[sel, 3] = alpha[sel]
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.imshow(np.full((ny, nx), 0.92), cmap="gray", vmin=0, vmax=1, interpolation="nearest")
+    ax.imshow(rgba, interpolation="nearest")
+    ax.set_title(title)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    present = [m for i, m in enumerate(minerals) if (classified & (dominant == i)).any()]
+    handles = [Patch(facecolor=MINERAL_COLORS.get(m, "0.5"), label=m) for m in present]
+    handles.append(Patch(facecolor=(0.92, 0.92, 0.92), label="no detection"))
+    ax.legend(handles=handles, loc="center left", bbox_to_anchor=(1.0, 0.5), frameon=False)
+    if scale_bar_m is not None and "x" in abundance.coords:
+        _scale_bar(ax, np.asarray(abundance["x"].values), scale_bar_m)
+    fig.tight_layout()
+    return fig
 
 
 def emit_comparison_panel(
