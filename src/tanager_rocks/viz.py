@@ -174,9 +174,8 @@ def zone_discrimination_panel(
         use = domain & np.isfinite(sc)
         is_pos = np.isin(ref, list(mapping[layer])) & use
         is_neg = use & ~np.isin(ref, list(mapping[layer]))
-        ax.boxplot(
-            [sc[is_pos], sc[is_neg]], labels=["in zone", "out"], showfliers=False, widths=0.6
-        )
+        ax.boxplot([sc[is_pos], sc[is_neg]], showfliers=False, widths=0.6)
+        ax.set_xticks([1, 2], ["in zone", "out"])  # version-independent labels
         d = discriminations[layer]
         ax.set_title(f"{layer}\nAUC={d.auc:.2f}")
         ax.set_ylabel("score")

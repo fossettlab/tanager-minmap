@@ -147,6 +147,37 @@ Scene IDs are recorded in `config.SITES`.
    degradation. So Sentinel-2 cannot separate advanced argillic (alunite) from
    argillic (kaolinite) alteration, which Tanager resolves; this is quantified
    per pair and shown in the band-ablation figure (`viz.band_ablation_panel`).
+
+### Validation results (Goldfield lead scene, contains Cuprite)
+
+Run on the Goldfield lead scene against the aligned Rockwell reference, after
+excluding nodata, vegetation, and ~175k semi-corrupted-SWIR pixels (Rockwell
+classes 49/50, an unusually large fraction over this area); the scene's
+classified ground is dominated by sericite (class 5). Rank AUC of each score
+discriminating its published zone:
+
+- **Agree with the published map (AUC 0.69–0.78):** Al-OH band depth 0.78,
+  gypsum/carbonate band depth 0.78, alunite MTMF 0.71, muscovite (sericite)
+  MTMF 0.69. Alunite abundance peaks in the advanced-argillic class (3) and
+  muscovite in the dominant sericite class (5) — Tanager's alteration mapping
+  matches the independent USGS product where the assemblage is well represented.
+- **Do not discriminate (AUC 0.46–0.56):** kaolinite/dickite MTMF (0.47),
+  hematite MTMF (0.46), goethite (0.56), Fe-oxide band depth (0.37). These are
+  reported, not suppressed. A score-by-class cross-tab grounds the cause: the
+  Fe-oxide signal concentrates in the ferric-iron-*bearing alteration* classes
+  (3, 4, 11, 12) rather than Rockwell's standalone, clay-free "ferric iron"
+  classes (1, 2) used as the positives — a class-taxonomy mismatch, not a
+  detection failure. Kaolinite/dickite abundances are near zero everywhere and
+  not concentrated in the argillic class, consistent with kaolinite's spectral
+  entanglement with alunite (the very Al-OH proximity the band-ablation result
+  exploits). The a-priori positive-class mappings were not adjusted to raise
+  these AUCs.
+- **Not interpretable:** jarosite (n+=6; the jarosite class is essentially
+  absent at Goldfield).
+
+The per-layer Youden-J thresholds (e.g. alunite MTMF 0.0010, Al-OH band depth
+0.0289) calibrate detection for the layers that discriminate; full numbers in
+`data/intermediate/validation/validation_goldfield_*.csv`.
 6. **EMIT comparison** *(pending)* — the same mapping at the overlapping site;
    report spectral correlation, detection agreement, and spatial detail.
 7. **AMD-hazard proxy** *(pending)* — jarosite + Fe-oxide + gypsum assemblage
@@ -195,9 +226,10 @@ direct dependencies are declared in `pyproject.toml`. The shared data layer is
   Bonham 2017), itself an automated ASTER product — an independent remote-sensing
   reference, not ground truth. It is ~30 m categorical alteration-*type* zones,
   so it bounds agreement at the alteration-group level, not per-mineral
-  abundance. Validation numbers are produced by `scripts/validate_site.py` once
-  the reference clip exists; the reference download (doi:10.5066/F7CR5RK7) was
-  unavailable from ScienceBase at build time, so the run is pending acquisition.
+  abundance, and only where the published assemblage is well represented (it
+  validates the alunite/sericite/Al-OH/carbonate signal at Goldfield but not the
+  Fe-oxide or kaolinite/dickite layers; see Validation results above). Numbers
+  come from `scripts/validate_site.py`; Bingham validation is still to run.
 - The AMD layer is a spectral indicator, not a measured pH or flux.
 - The L2A reflectance carries physically out-of-range values (the Bingham
   scene spans −1.9 to 14.6 about a 0.185 median) from cloud/shadow and
