@@ -76,7 +76,9 @@ layout (`data/` in, `figures/` + `data/intermediate/` out) for development.
 ## Reproducibility
 
 `uv` with a committed lockfile; STAC queries live in code; methods are tracked
-in [`METHODS.md`](METHODS.md). Derivatives are deposited on Zenodo with a DOI.
+in [`METHODS.md`](METHODS.md). The full clone → sync → download → run recipe and
+the verified headline numbers are in [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md).
+Derivatives are deposited on Zenodo with a DOI.
 
 ## Citation
 
