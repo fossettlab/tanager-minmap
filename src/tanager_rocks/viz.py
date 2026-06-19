@@ -322,6 +322,77 @@ def mineral_map(
     return fig
 
 
+# Sequential acid-generating-potential palette (ColorBrewer YlOrRd hues),
+# keyed by the ordinal tier codes in :mod:`tanager_rocks.hazard`. Background is
+# the same light grey as the hero map; low/moderate/high escalate in luminance
+# so the ramp reads for common colorblindness. Off-domain pixels are white.
+AGP_TIER_COLORS: dict[int, tuple[float, float, float] | str] = {
+    0: (0.92, 0.92, 0.92),  # background (in-scene, no indicator)
+    1: "#fecc5c",  # low / neutralised
+    2: "#fd8d3c",  # moderate
+    3: "#e31a1c",  # high
+}
+
+
+def amd_map(
+    tiers: xr.DataArray,
+    title: str = "Acid-generating-potential proxy",
+    labels: dict[int, str] | None = None,
+    scale_bar_m: float | None = 5000.0,
+) -> matplotlib.figure.Figure:
+    """Render the ordinal AMD acid-generating-potential map (spec step 7).
+
+    ``tiers`` is the ordinal AGP code per pixel from
+    :func:`tanager_rocks.hazard.acid_generating_potential` (``NaN`` off the
+    in-scene domain). Each tier is drawn in its :data:`AGP_TIER_COLORS` hue over
+    a white base; off-domain pixels stay transparent (white). Only tiers present
+    in the map appear in the legend.
+
+    Parameters
+    ----------
+    tiers : xr.DataArray
+        Ordinal AGP map, dims ``("y", "x")``.
+    title : str
+        Figure title.
+    labels : dict, optional
+        Tier-code -> legend label. Defaults to a generic ramp; callers pass
+        :data:`tanager_rocks.hazard.AGP_LABELS` for the science-grounded text.
+    scale_bar_m : float, optional
+        Scale-bar length in metres (projected CRS); ``None`` to omit.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
+    labels = labels or {0: "background", 1: "low", 2: "moderate", 3: "high"}
+    vals = tiers.values
+    ny, nx = vals.shape
+
+    rgba = np.zeros((ny, nx, 4), dtype=float)
+    rgba[..., :3] = 1.0  # white base; off-domain stays transparent over it
+    present: list[int] = []
+    for code, color in AGP_TIER_COLORS.items():
+        sel = np.isfinite(vals) & (vals == code)
+        if not sel.any():
+            continue
+        rgba[sel, :3] = matplotlib.colors.to_rgb(color)
+        rgba[sel, 3] = 1.0
+        present.append(code)
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.imshow(np.ones((ny, nx)), cmap="gray", vmin=0, vmax=1, interpolation="nearest")
+    ax.imshow(rgba, interpolation="nearest")
+    ax.set_title(title)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    handles = [Patch(facecolor=AGP_TIER_COLORS[c], label=labels[c]) for c in sorted(present)]
+    ax.legend(handles=handles, loc="center left", bbox_to_anchor=(1.0, 0.5), frameon=False)
+    if scale_bar_m is not None and "x" in tiers.coords:
+        _scale_bar(ax, np.asarray(tiers["x"].values), scale_bar_m)
+    fig.tight_layout()
+    return fig
+
+
 def emit_comparison_panel(
     common_nm: np.ndarray,
     tan_mean: np.ndarray,

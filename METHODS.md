@@ -222,8 +222,9 @@ spectral family (Bingham porphyry sericite/argillic).
 6. **EMIT comparison** — the identical alteration-mapping pipeline (diagnostic
    band depths + MTMF) is run on an overlapping NASA EMIT L2A reflectance scene,
    and the two sensors' products are compared on the Goldfield lead scene.
-7. **AMD-hazard proxy** *(pending)* — jarosite + Fe-oxide + gypsum assemblage
-   as a qualitative acid-generating-potential layer.
+7. **AMD-hazard proxy** — the secondary AMD-indicator assemblage (jarosite,
+   Fe-oxyhydroxides, gypsum) is reduced to a qualitative ordinal
+   acid-generating-potential layer (`hazard.acid_generating_potential`).
 
 ### EMIT cross-sensor comparison (Goldfield lead scene, contains Cuprite)
 
@@ -278,6 +279,36 @@ sericite/phyllic core, an alunite advanced-argillic centre and NE lineament at
 Cuprite, with kaolinite, jarosite, and Fe-oxides distributed around them.
 Figure `figures/goldfield_*_hero_mineral_map.png`.
 
+### AMD-hazard proxy (acid-generating-potential)
+
+The acid-mine-drainage layer (`scripts/amd_site.py` → `hazard.acid_generating_potential`)
+is a qualitative, ordinal **acid-generating-potential (AGP)** map built from the
+secondary AMD-indicator assemblage — jarosite, the Fe-oxyhydroxides
+(hematite/goethite), and gypsum. The tiers follow the iron-mineral pH zonation
+of supergene weathering over sulfide-bearing ground (Swayze et al. 2000, USGS
+OFR 2000-0205; Williams & Hauff 2007): jarosite `KFe₃(SO₄)₂(OH)₆` is stable only
+in acidic (pH ≈ 2–4), oxidising, sulfate-rich conditions and is the diagnostic
+active-acid indicator; the Fe-oxyhydroxides are the higher-pH, partly-neutralised
+oxidation products; gypsum, absent the acidic iron phases, points to a buffered
+setting. Matched-filter abundances are **not** summed across minerals (their
+scores are not on a common scale — see the EMIT per-map stretch); instead each
+mineral is reduced to a per-pixel presence call using the *same* per-mineral
+upper-tail detection floor as the hero map, and each pixel is assigned the tier
+of the most acidic indicator present: jarosite → high, else Fe-oxide → moderate,
+else gypsum → low, else background. Off-scene/nodata pixels are left unclassified.
+
+The proxy is **relative within a scene, not an absolute acidity**: because
+presence is the per-mineral upper decile, "high" means *among the most
+jarosite-like pixels in this scene*, not a measured pH. It is run on both sites;
+the headline figure is **Bingham/Kennecott**, the mine-waste narrative site
+(`figures/bingham_*_amd_agp.png`), where the high-AGP pixels cluster around the
+pit/tailings ground rather than spreading uniformly. Tier rasters are written to
+`data/intermediate/maps/<site>_*_amd_agp.tif`. Honest caveat: at Bingham
+jarosite was absent from the Rockwell *regional alteration* reference (step 4b),
+so the AGP layer there is an unvalidated spectral indicator over the waste, not a
+map checked against an independent acidity product; at Goldfield jarosite has the
+strongest cross-sensor support (EMIT detection r +0.59).
+
 ## Key parameters
 
 - **Atmospheric masks.** O2 and H2O absorption windows, owned by
@@ -304,6 +335,11 @@ Figure `figures/goldfield_*_hero_mineral_map.png`.
   {0, 14, 45, 46, 47, 48, 49, 50} (nodata, vegetation, semi-corrupted SWIR).
 - **Validation statistic.** Rank ROC AUC (= Mann-Whitney U / n+·n−, one-sided);
   detection threshold = Youden-J optimum per layer.
+- **AMD presence floor.** `quantile` = 0.90 default — a mineral is "present"
+  where its infeasibility-gated abundance is in its own top decile (the hero
+  map's detection floor reused, so detection means one thing project-wide). AGP
+  tiers are assigned by the most acidic indicator present, never by summing
+  matched-filter scores across minerals.
 
 ## Software versions
 
@@ -324,8 +360,10 @@ direct dependencies are declared in `pyproject.toml`. The shared data layer is
   abundance, and only where the published assemblage is well represented (it
   validates the alunite/sericite/Al-OH/carbonate signal at Goldfield but not the
   Fe-oxide or kaolinite/dickite layers; see Validation results above). Numbers
-  come from `scripts/validate_site.py`; Bingham validation is still to run.
-- The AMD layer is a spectral indicator, not a measured pH or flux.
+  come from `scripts/validate_site.py`; both sites have been validated.
+- The AMD layer is a spectral indicator, not a measured pH or flux, and its
+  tiers are relative within a scene (per-mineral upper-tail presence), not an
+  absolute acidity scale.
 - The L2A reflectance carries physically out-of-range values (the Bingham
   scene spans −1.9 to 14.6 about a 0.185 median) from cloud/shadow and
   atmospheric-correction overshoot, and ~33 % of pixels are off-nadir
