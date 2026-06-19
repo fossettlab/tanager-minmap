@@ -9,10 +9,13 @@ feature / unmix / hazard / degrade / viz modules; this module only sequences
 those calls and handles I/O, so the pipeline ships in the wheel rather than in
 ``scripts/`` (which is not packaged).
 
-This module covers the offline stages (a local Tanager scene + the splib07
-library, no network): ``map``, ``unmix``, ``ablate``, ``amd``, ``hero``. The
-EMIT cross-sensor comparison and the USGS-map validation live in their own
-drivers because they need network access / a reference-map download.
+It covers every pipeline stage: the offline ones (a local Tanager scene + the
+splib07 library) — ``map``, ``unmix``, ``ablate``, ``amd``, ``hero`` — plus the
+two that reach outside the repo: ``emit`` (downloads an overlapping EMIT L2A
+granule via Earthdata) and ``validate`` (reads a pre-downloaded Rockwell ASTER
+reference clip). The latter two need network / a reference download, so the
+caller is responsible for credentials (Earthdata) and for fetching the
+reference (``scripts/download_reference.py``) first.
 """
 
 from __future__ import annotations
@@ -23,25 +26,40 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+import rioxarray
 import xarray as xr
 from tanager_spec.io import load_tanager_sr_hdf5
 from tanager_spec.mask import mask_absorption_bands
 from tanager_spec.srf import load_s2_srf
 
+from .compare import detection_agreement, reproject_crs, spectral_agreement
 from .config import TANAGER_SR_ASSET, SiteSpec
 from .degrade import degrade_endmembers, separability, srf_band_stats
+from .emit import (
+    EMIT_L2A_SHORT_NAME,
+    box,
+    footprint_bbox,
+    load_emit_reflectance,
+    rank_granules,
+    rfl_path,
+    select_granule,
+)
 from .features import build_feature_defs, diagnostic_feature_maps
 from .hazard import AGP_LABELS, acid_generating_potential
+from .reference import FEATURE_TO_ROCKWELL, MINERAL_TO_ROCKWELL, align_reference
 from .speclib import load_library, select_endmembers
 from .unmix import mtmf, sam_classify, spectral_angle
+from .validate import Discrimination, validate_scores
 from .viz import (
     amd_map,
     band_ablation_panel,
     band_depth_panel,
     classification_map,
+    emit_comparison_panel,
     mineral_map,
     score_panel,
     setup_style,
+    zone_discrimination_panel,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,6 +80,14 @@ ABLATION_PAIRS: list[tuple[str, str]] = [
 ]
 ABLATION_HEADLINE = ("alunite", "kaolinite")
 
+# Minerals correlated across sensors in the EMIT comparison; alunite is the
+# panel headline (it validated at Goldfield/Cuprite as the advanced-argillic
+# signature). The headline Tanager map is reprojected to EMIT's geographic CRS
+# at ~30 m (0.00027 deg) so both maps share an extent while Tanager keeps grain.
+COMPARE_MINERALS = ("alunite", "kaolinite", "muscovite", "jarosite", "hematite", "goethite")
+COMPARE_HEADLINE = "alunite"
+COMPARE_TANAGER_DEG = 0.00027
+
 
 @dataclass(frozen=True)
 class PipelinePaths:
@@ -73,9 +99,11 @@ class PipelinePaths:
 
     raw_dir: Path  # Tanager SR scenes (<scene>_<asset>.h5)
     speclib_dir: Path  # extracted splib07a ASCIIdata directory
+    reference_dir: Path  # Rockwell ASTER reference clips (validate)
+    emit_dir: Path  # downloaded EMIT L2A reflectance (.nc)
     maps_dir: Path  # GeoTIFF outputs
     figures_dir: Path  # PNG outputs
-    tables_dir: Path  # CSV outputs (band-ablation angles)
+    intermediate_dir: Path  # base for CSV outputs; per-stage subdirs underneath
 
     @classmethod
     def repo_default(cls, root: Path) -> PipelinePaths:
@@ -84,9 +112,11 @@ class PipelinePaths:
         return cls(
             raw_dir=data / "raw",
             speclib_dir=data / "speclib" / "ASCIIdata_splib07a",
+            reference_dir=data / "reference",
+            emit_dir=data / "raw" / "emit",
             maps_dir=data / "intermediate" / "maps",
             figures_dir=root / "figures",
-            tables_dir=data / "intermediate" / "ablation",
+            intermediate_dir=data / "intermediate",
         )
 
     @classmethod
@@ -95,14 +125,22 @@ class PipelinePaths:
         return cls(
             raw_dir=data_root / "raw",
             speclib_dir=data_root / "speclib" / "ASCIIdata_splib07a",
+            reference_dir=data_root / "reference",
+            emit_dir=data_root / "raw" / "emit",
             maps_dir=output / "maps",
             figures_dir=output / "figures",
-            tables_dir=output / "tables",
+            intermediate_dir=output / "intermediate",
         )
 
     def ensure_outputs(self) -> None:
-        for directory in (self.maps_dir, self.figures_dir, self.tables_dir):
+        for directory in (self.maps_dir, self.figures_dir, self.intermediate_dir):
             directory.mkdir(parents=True, exist_ok=True)
+
+    def stage_tables(self, stage: str) -> Path:
+        """Per-stage CSV output dir (``intermediate_dir/<stage>``), created."""
+        out = self.intermediate_dir / stage
+        out.mkdir(parents=True, exist_ok=True)
+        return out
 
 
 def _scene_path(site: SiteSpec, paths: PipelinePaths) -> Path:
@@ -228,7 +266,8 @@ def run_ablate(site: SiteSpec, paths: PipelinePaths) -> Path:
             loss,
         )
 
-    with open(paths.tables_dir / f"ablation_{site.site_id}_{scene_id}.csv", "w", newline="") as fh:
+    csv_path = paths.stage_tables("ablation") / f"ablation_{site.site_id}_{scene_id}.csv"
+    with open(csv_path, "w", newline="") as fh:
         writer = csv.writer(fh)
         writer.writerow(["pair", "tanager_angle_deg", "s2_angle_deg", "loss_pct"])
         for (a, b), (full, coarse) in sep.items():
@@ -323,4 +362,232 @@ def run_hero(
     out = paths.figures_dir / f"{site.site_id}_{scene_id}_hero_mineral_map.png"
     fig.savefig(out)
     logger.info("wrote %s", out)
+    return out
+
+
+def _ensure_emit_granule(bbox: list[float], emit_dir: Path) -> Path:
+    """Return a local EMIT RFL path for ``bbox``, downloading the best scene once.
+
+    Needs NASA Earthdata credentials in the environment
+    (``EARTHDATA_USERNAME`` / ``EARTHDATA_PASSWORD``); earthaccess is imported
+    lazily so the rest of the pipeline does not depend on network access.
+    """
+    import earthaccess
+
+    earthaccess.login(strategy="environment")
+    results = earthaccess.search_data(
+        short_name=EMIT_L2A_SHORT_NAME, bounding_box=tuple(bbox), count=100
+    )
+    chosen = select_granule(rank_granules(results, box(*bbox)))
+    dest = rfl_path(emit_dir, chosen.granule_ur)
+    if dest.exists() and dest.stat().st_size > 0:
+        logger.info("EMIT reflectance already present: %s", dest.name)
+        return dest
+    emit_dir.mkdir(parents=True, exist_ok=True)
+    rfl_links = [u for u in chosen.data_links if u.endswith(".nc") and "_RFLUNCERT_" not in u]
+    rfl_only = [u for u in rfl_links if "_RFL_" in u and "_MASK_" not in u]
+    logger.info("downloading EMIT reflectance for %s", chosen.granule_ur)
+    earthaccess.download(rfl_only, str(emit_dir))
+    return dest
+
+
+def _map_for_compare(cube, wl, speclib_dir: Path):
+    """Diagnostic band depths + MTMF for one sensor (the shared compare pipeline).
+
+    Masking/MTMF build fresh objects that drop the rio CRS, so it is written back
+    from the input cube — the maps must stay georeferenced for the cross-sensor
+    reprojection.
+    """
+    crs = cube.rio.crs
+    cube = mask_absorption_bands(cube, wl)
+    ds = mtmf(cube, select_endmembers(load_library(speclib_dir, wl)))
+    minerals = [v[:-3] for v in ds.data_vars if str(v).endswith("_mf")]
+    mf = xr.Dataset({m: ds[f"{m}_mf"] for m in minerals}).rio.write_crs(crs).rio.write_transform()
+    return cube.rio.write_crs(crs), mf
+
+
+def run_emit(site: SiteSpec, paths: PipelinePaths) -> Path:
+    """Tanager vs EMIT cross-sensor comparison (spec step 6).
+
+    Runs the identical band-depth + MTMF pipeline on the site's Tanager lead
+    scene and the clearest fully-overlapping EMIT L2A granule, and reports
+    scene-mean spectral agreement + per-mineral detection agreement. Needs
+    Earthdata credentials (see :func:`_ensure_emit_granule`); the granule is
+    reused if already downloaded.
+    """
+    paths.ensure_outputs()
+    setup_style()
+    scene_id = site.scene_ids[0]
+    tan_cube, tan_wl = load_tanager_sr_hdf5(_scene_path(site, paths))
+    bbox = footprint_bbox(tan_cube)
+
+    emit_path = _ensure_emit_granule(bbox, paths.emit_dir)
+    emit_cube_raw, emit_wl = load_emit_reflectance(emit_path, bbox=bbox)
+    tan_masked, tan_mf = _map_for_compare(tan_cube, tan_wl, paths.speclib_dir)
+    emit_masked, emit_mf = _map_for_compare(emit_cube_raw, emit_wl, paths.speclib_dir)
+
+    spec, common_nm, tan_mean, emit_mean = spectral_agreement(
+        tan_masked, tan_wl, emit_masked, emit_wl
+    )
+    logger.info(
+        "spectral agreement (scene-mean): Pearson r=%.3f, angle=%.2f deg, n_bands=%d",
+        spec.pearson_r,
+        spec.spectral_angle_deg,
+        spec.n_bands,
+    )
+    detect = detection_agreement(tan_mf, emit_mf, list(COMPARE_MINERALS))
+    logger.info("--- per-mineral MTMF detection agreement (Tanager reprojected to EMIT) ---")
+    for mineral, d in detect.items():
+        logger.info("%-10s detection r=%+.3f  n=%d", mineral, d.pearson_r, d.n_pixels)
+
+    csv_path = paths.stage_tables("emit") / f"emit_comparison_{site.site_id}_{scene_id}.csv"
+    with open(csv_path, "w", newline="") as fh:
+        writer = csv.writer(fh)
+        writer.writerow(["metric", "mineral", "value", "n"])
+        writer.writerow(["spectral_pearson_r", "", f"{spec.pearson_r:.4f}", spec.n_bands])
+        writer.writerow(["spectral_angle_deg", "", f"{spec.spectral_angle_deg:.4f}", spec.n_bands])
+        for mineral, d in detect.items():
+            writer.writerow(["detection_pearson_r", mineral, f"{d.pearson_r:.4f}", d.n_pixels])
+
+    head = detect.get(COMPARE_HEADLINE)
+    emit_head = emit_mf[COMPARE_HEADLINE]
+    tan_head = reproject_crs(
+        tan_mf[COMPARE_HEADLINE], emit_head.rio.crs, resolution=COMPARE_TANAGER_DEG
+    ).rio.clip_box(*emit_head.rio.bounds())
+    fig = emit_comparison_panel(
+        common_nm,
+        tan_mean,
+        emit_mean,
+        spec.pearson_r,
+        spec.spectral_angle_deg,
+        tan_head,
+        emit_head,
+        COMPARE_HEADLINE,
+        head.pearson_r if head else float("nan"),
+        title=f"Tanager (30 m) vs EMIT (60 m) — {site.name}",
+    )
+    out = paths.figures_dir / f"{site.site_id}_{scene_id}_emit_comparison.png"
+    fig.savefig(out)
+    logger.info("wrote %s and %s", csv_path.name, out.name)
+    return out
+
+
+def _write_validation_csv(
+    path: Path,
+    feature_results: dict[str, Discrimination],
+    mineral_results: dict[str, Discrimination],
+) -> None:
+    """Write the band-depth-feature and MTMF discriminations to one CSV."""
+    header = [
+        "kind",
+        "layer",
+        "positive_classes",
+        "n_pos",
+        "n_neg",
+        "auc",
+        "p_value",
+        "median_in",
+        "median_out",
+        "threshold",
+        "tpr",
+        "fpr",
+        "youden_j",
+    ]
+
+    def _row(kind: str, layer: str, d: Discrimination) -> list:
+        return [
+            kind,
+            layer,
+            " ".join(map(str, d.positive_classes)),
+            d.n_pos,
+            d.n_neg,
+            f"{d.auc:.4f}",
+            f"{d.p_value:.3e}",
+            f"{d.median_pos:.5f}",
+            f"{d.median_neg:.5f}",
+            f"{d.threshold:.5f}",
+            f"{d.tpr:.4f}",
+            f"{d.fpr:.4f}",
+            f"{d.youden_j:.4f}",
+        ]
+
+    with open(path, "w", newline="") as fh:
+        writer = csv.writer(fh)
+        writer.writerow(header)
+        for layer, d in feature_results.items():
+            writer.writerow(_row("feature", layer, d))
+        for layer, d in mineral_results.items():
+            writer.writerow(_row("mtmf", layer, d))
+
+
+def _log_validation(results: dict[str, Discrimination], kind: str) -> None:
+    logger.info("--- %s discrimination vs Rockwell zones ---", kind)
+    for layer, d in results.items():
+        logger.info(
+            "%-16s AUC=%.3f p=%.1e n+=%d n-=%d thr=%.4f (TPR=%.2f FPR=%.2f)",
+            layer,
+            d.auc,
+            d.p_value,
+            d.n_pos,
+            d.n_neg,
+            d.threshold,
+            d.tpr,
+            d.fpr,
+        )
+
+
+def run_validate(site: SiteSpec, paths: PipelinePaths) -> Path:
+    """Validate band-depth + MTMF maps against the Rockwell ASTER reference (step 4b).
+
+    Reads a pre-downloaded reference clip (``scripts/download_reference.py``),
+    aligns it to the scene grid, and reports per-layer rank-AUC discrimination of
+    each score against its published alteration zone(s). Raises if the clip is
+    missing.
+    """
+    paths.ensure_outputs()
+    scene_id = site.scene_ids[0]
+    ref_path = paths.reference_dir / f"rockwell_{site.site_id}_{scene_id}.tif"
+    if not ref_path.exists():
+        raise FileNotFoundError(
+            f"reference clip {ref_path} missing — run "
+            f"`python scripts/download_reference.py --site {site.site_id}` first"
+        )
+
+    cube, wl = _load_masked_cube(site, paths)
+    reference = align_reference(
+        rioxarray.open_rasterio(ref_path, masked=False).squeeze("band", drop=True),
+        cube.isel(band=0),
+    )
+
+    depths = diagnostic_feature_maps(cube, wl, build_feature_defs(wl, paths.speclib_dir))
+    ds = mtmf(cube, _endmembers(wl, paths))
+    minerals = [v[:-3] for v in ds.data_vars if str(v).endswith("_mf")]
+    mf = xr.Dataset({m: ds[f"{m}_mf"] for m in minerals})
+
+    feature_results = validate_scores(depths, reference, FEATURE_TO_ROCKWELL)
+    mineral_results = validate_scores(mf, reference, MINERAL_TO_ROCKWELL)
+    _log_validation(feature_results, "band-depth feature")
+    _log_validation(mineral_results, "MTMF abundance")
+
+    csv_path = paths.stage_tables("validation") / f"validation_{site.site_id}_{scene_id}.csv"
+    _write_validation_csv(csv_path, feature_results, mineral_results)
+
+    setup_style()
+    base = f"{site.name} ({scene_id})"
+    zone_discrimination_panel(
+        depths,
+        reference,
+        FEATURE_TO_ROCKWELL,
+        feature_results,
+        title=f"{base} — band depth by Rockwell zone",
+    ).savefig(paths.figures_dir / f"{site.site_id}_{scene_id}_validation_features.png")
+    out = paths.figures_dir / f"{site.site_id}_{scene_id}_validation_mtmf.png"
+    zone_discrimination_panel(
+        mf,
+        reference,
+        MINERAL_TO_ROCKWELL,
+        mineral_results,
+        title=f"{base} — MTMF abundance by Rockwell zone",
+    ).savefig(out)
+    logger.info("wrote %s and %s", csv_path.name, out.name)
     return out

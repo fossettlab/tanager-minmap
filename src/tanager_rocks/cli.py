@@ -9,10 +9,14 @@ Subcommands map onto the pipeline stages:
 - ``ablate`` : SRF-degrade to Sentinel-2 and quantify the separability loss (step 5)
 - ``amd``    : ordinal acid-generating-potential proxy (step 7)
 - ``hero``   : dominant-mineral hero map (step 9)
+- ``emit``   : Tanager vs EMIT cross-sensor comparison (step 6)
+- ``validate``: discrimination vs the Rockwell ASTER reference (step 4b)
 
 Inputs are read from ``--data-root`` (``<root>/raw`` scenes, ``<root>/speclib``
-library); all products are written under ``--output``. The EMIT comparison and
-the USGS-map validation are separate drivers (network / reference download).
+library, ``<root>/reference`` Rockwell clips); all products are written under
+``--output``. ``emit`` needs NASA Earthdata credentials in the environment (run
+under ``doppler``); ``validate`` needs the reference clip fetched first
+(``scripts/download_reference.py``).
 """
 
 from __future__ import annotations
@@ -23,7 +27,16 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from .config import SITES
-from .pipeline import PipelinePaths, run_ablate, run_amd, run_hero, run_map, run_unmix
+from .pipeline import (
+    PipelinePaths,
+    run_ablate,
+    run_amd,
+    run_emit,
+    run_hero,
+    run_map,
+    run_unmix,
+    run_validate,
+)
 
 _SITE_CHOICES = tuple(SITES)
 
@@ -61,6 +74,9 @@ def _build_parser() -> argparse.ArgumentParser:
     p_hero.add_argument("--max-infeas", type=float, default=1.0, help="MTMF infeasibility gate")
     p_hero.add_argument("--quantile", type=float, default=0.90, help="per-mineral detection floor")
 
+    sub.add_parser("emit", parents=[common], help="Tanager vs EMIT comparison (needs Earthdata)")
+    sub.add_parser("validate", parents=[common], help="discrimination vs Rockwell reference")
+
     return parser
 
 
@@ -81,6 +97,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         run_amd(site, paths, max_infeas=args.max_infeas, quantile=args.quantile)
     elif args.command == "hero":
         run_hero(site, paths, max_infeas=args.max_infeas, quantile=args.quantile)
+    elif args.command == "emit":
+        run_emit(site, paths)
+    elif args.command == "validate":
+        run_validate(site, paths)
     return 0
 
 

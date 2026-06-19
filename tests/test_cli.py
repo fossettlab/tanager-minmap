@@ -33,16 +33,20 @@ def test_paths_from_cli_layout():
     paths = PipelinePaths.from_cli(Path("d"), Path("o"))
     assert paths.raw_dir == Path("d/raw")
     assert paths.speclib_dir == Path("d/speclib/ASCIIdata_splib07a")
+    assert paths.reference_dir == Path("d/reference")
+    assert paths.emit_dir == Path("d/raw/emit")
     assert paths.maps_dir == Path("o/maps")
     assert paths.figures_dir == Path("o/figures")
-    assert paths.tables_dir == Path("o/tables")
+    assert paths.intermediate_dir == Path("o/intermediate")
 
 
 def test_paths_repo_default_layout():
     paths = PipelinePaths.repo_default(Path("/repo"))
     assert paths.maps_dir == Path("/repo/data/intermediate/maps")
     assert paths.figures_dir == Path("/repo/figures")
-    assert paths.tables_dir == Path("/repo/data/intermediate/ablation")
+    assert paths.reference_dir == Path("/repo/data/reference")
+    assert paths.emit_dir == Path("/repo/data/raw/emit")
+    assert paths.intermediate_dir == Path("/repo/data/intermediate")
 
 
 def test_map_dispatches_with_site_and_paths(monkeypatch):
@@ -77,6 +81,21 @@ def test_hero_defaults(monkeypatch):
 def test_ablate_takes_no_extra_kwargs(monkeypatch):
     captured = _patch(monkeypatch, "run_ablate")
     cli.main(["ablate", "--site", "bingham"])
+    assert captured["kwargs"] == {}
+
+
+def test_emit_dispatches(monkeypatch):
+    captured = _patch(monkeypatch, "run_emit")
+    cli.main(["emit", "--site", "goldfield", "--data-root", "d", "--output", "o"])
+    assert captured["site"].site_id == "goldfield"
+    assert captured["paths"].emit_dir == Path("d/raw/emit")
+    assert captured["kwargs"] == {}
+
+
+def test_validate_dispatches(monkeypatch):
+    captured = _patch(monkeypatch, "run_validate")
+    cli.main(["validate", "--site", "goldfield", "--data-root", "d"])
+    assert captured["paths"].reference_dir == Path("d/reference")
     assert captured["kwargs"] == {}
 
 
