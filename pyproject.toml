@@ -20,6 +20,7 @@ dependencies = [
     "pystac-client>=0.7",    # EMIT (LP DAAC) cross-sensor query
     "earthaccess>=0.9",      # NASA Earthdata auth + EMIT L2A granule download
     "matplotlib>=3.8",
+    "folium>=0.16",          # interactive slippy-map overlays for the story page
 ]
 
 [project.optional-dependencies]

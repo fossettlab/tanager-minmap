@@ -231,6 +231,50 @@ def _scale_bar(ax, x_coords: np.ndarray, length_m: float = 5000.0) -> None:
     )
 
 
+def _mineral_strength(
+    abundance: xr.Dataset, per_mineral_quantile: float
+) -> tuple[np.ndarray, list[str]]:
+    """Per-mineral threshold-normalised strength stack (shared by the maps).
+
+    Each mineral is gated to its own upper-``per_mineral_quantile`` tail and
+    divided by that threshold, so the layers are comparable despite differing
+    matched-filter scales. Returns ``(strength, minerals)`` where ``strength`` is
+    ``(M, y, x)`` with ``NaN`` below the per-mineral floor.
+    """
+    minerals = list(abundance.data_vars)
+    stack = np.stack([abundance[m].values for m in minerals], axis=0)
+    strength = np.full_like(stack, np.nan, dtype=float)
+    for i in range(len(minerals)):
+        v = stack[i]
+        pos = v[np.isfinite(v) & (v > 0)]
+        if pos.size == 0:
+            continue
+        thr = float(np.quantile(pos, per_mineral_quantile))
+        if thr <= 0:
+            continue
+        keep = np.isfinite(v) & (v >= thr)
+        strength[i][keep] = v[keep] / thr  # >= 1 where kept
+    return strength, minerals
+
+
+def dominant_mineral_class(
+    abundance: xr.Dataset, per_mineral_quantile: float = 0.90
+) -> tuple[xr.DataArray, list[str]]:
+    """Per-pixel dominant-mineral class code (index into ``minerals``; -1 = none).
+
+    The same per-mineral-floor logic as :func:`mineral_map`, returned as an
+    integer class raster for reuse (e.g. the interactive overlay) rather than a
+    figure. ``-1`` marks pixels where no mineral clears its detection floor.
+    """
+    strength, minerals = _mineral_strength(abundance, per_mineral_quantile)
+    filled = np.where(np.isfinite(strength), strength, -np.inf)
+    dominant = np.argmax(filled, axis=0)
+    classified = np.isfinite(np.max(filled, axis=0))
+    code = np.where(classified, dominant, -1).astype(int)
+    template = abundance[minerals[0]]
+    return xr.DataArray(code, dims=template.dims, coords=template.coords, name="dominant"), minerals
+
+
 def mineral_map(
     abundance: xr.Dataset,
     title: str = "Mineral map",
@@ -270,23 +314,8 @@ def mineral_map(
     -------
     matplotlib.figure.Figure
     """
-    minerals = list(abundance.data_vars)
-    stack = np.stack([abundance[m].values for m in minerals], axis=0)  # (M, y, x)
-    # Per-mineral threshold + normalise by that threshold so layers are comparable.
-    strength = np.full_like(stack, np.nan, dtype=float)
-    for i in range(len(minerals)):
-        v = stack[i]
-        pos = v[np.isfinite(v) & (v > 0)]
-        if pos.size == 0:
-            continue
-        thr = float(np.quantile(pos, per_mineral_quantile))
-        if thr <= 0:
-            continue
-        keep = np.isfinite(v) & (v >= thr)
-        strength[i][keep] = v[keep] / thr  # >= 1 where kept
-
-    finite = np.isfinite(strength)
-    filled = np.where(finite, strength, -np.inf)
+    strength, minerals = _mineral_strength(abundance, per_mineral_quantile)
+    filled = np.where(np.isfinite(strength), strength, -np.inf)
     dominant = np.argmax(filled, axis=0)
     peak = np.max(filled, axis=0)  # -inf where no mineral clears its threshold
     classified = np.isfinite(peak)

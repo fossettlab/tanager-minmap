@@ -10,7 +10,7 @@ import numpy as np  # noqa: E402
 import xarray as xr  # noqa: E402
 
 from tanager_rocks.hazard import AGP_LABELS  # noqa: E402
-from tanager_rocks.viz import amd_map, mineral_map  # noqa: E402
+from tanager_rocks.viz import amd_map, dominant_mineral_class, mineral_map  # noqa: E402
 
 
 def _layer(values):
@@ -41,6 +41,17 @@ def test_mineral_map_all_zero_is_blank():
     fig = mineral_map(xr.Dataset({"alunite": z, "muscovite": z}))
     labels = {t.get_text() for t in fig.axes[0].get_legend().get_texts()}
     assert labels == {"no detection"}
+
+
+def test_dominant_mineral_class_codes():
+    a = _layer(np.array([[1.0, 0.0], [0.0, 0.0]]))
+    m = _layer(np.array([[0.0, 0.0], [1.0, 0.0]]))
+    code, minerals = dominant_mineral_class(xr.Dataset({"alunite": a, "muscovite": m}), 0.5)
+    assert minerals == ["alunite", "muscovite"]
+    vals = code.values
+    assert vals[0, 0] == 0  # alunite dominant
+    assert vals[1, 0] == 1  # muscovite dominant
+    assert vals[0, 1] == -1 and vals[1, 1] == -1  # no detection
 
 
 def test_amd_map_legend_reflects_present_tiers():
