@@ -63,3 +63,9 @@ Thumbs.db
 
 # Plan artifacts
 tanager_rock_plan*.txt
+
+# Internal planning / AI-orientation docs — kept local, out of the public archive
+HANDOFF.md
+CLAUDE.md
+spec.md
+archive_pre_competition/

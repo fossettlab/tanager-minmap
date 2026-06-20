@@ -5,9 +5,9 @@ surface reflectance at two named US mine sites — **Bingham Canyon / Kennecott
 (UT)** and the **Goldfield district (NV)** — with a Sentinel-2 band-ablation
 comparison and an EMIT cross-sensor benchmark.
 
-Track I of the [Planet Tanager Open Data Competition](../Planet-TermsConditions-TanagerCompetition.pdf)
-(deadline: 31 August 2026). See [`spec.md`](spec.md) for the full pipeline,
-rubric mapping, and timeline.
+Track I of the Planet Tanager Open Data Competition (deadline: 31 August
+2026). See [`METHODS.md`](METHODS.md) for the full pipeline and
+[`REPRODUCIBILITY.md`](REPRODUCIBILITY.md) for the clone-to-run recipe.
 
 ## The question
 

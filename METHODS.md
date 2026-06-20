@@ -313,7 +313,7 @@ strongest cross-sensor support (EMIT detection r +0.59).
 
 - **Atmospheric masks.** O2 and H2O absorption windows, owned by
   `tanager_spec.mask`.
-- **Diagnostic absorptions.** `config.DIAGNOSTIC_NM`, from spec.md step 3. Fe-oxide
+- **Diagnostic absorptions.** `config.DIAGNOSTIC_NM`. Fe-oxide
   VNIR centres are resolved from the reference library, not hard-coded.
 - **Primary method.** MTMF (covariance-aware matched filter), chosen over a
   band-independent classifier because the methodology suite found Tanager's

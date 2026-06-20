@@ -157,7 +157,9 @@ def main() -> None:
     if os.environ.get("EARTHDATA_USERNAME"):
         run_emit(SITES["goldfield"], panels)  # EMIT cross-sensor panel (needs creds)
     else:
-        logger.warning("EMIT panel skipped (no EARTHDATA_USERNAME); run under doppler to include it")
+        logger.warning(
+            "EMIT panel skipped (no EARTHDATA_USERNAME); run under doppler to include it"
+        )
 
 
 if __name__ == "__main__":
