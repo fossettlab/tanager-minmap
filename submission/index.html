@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tanager-rocks — mineral &amp; mine-waste mapping from Tanager VSWIR</title>
+<style>
+  :root { --ink:#1a1a1a; --muted:#5a5a5a; --accent:#0b8a8f; --line:#e3e3e3; --bg:#fafafa; }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  .wrap { max-width:900px; margin:0 auto; padding:0 22px 80px; }
+  header { padding:56px 0 12px; border-bottom:3px solid var(--accent); }
+  .kicker { color:var(--accent); font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:13px; }
+  h1 { font-size:33px; line-height:1.18; margin:.35em 0 .25em; }
+  .byline { color:var(--muted); font-size:15px; margin:0; }
+  .question { font-size:20px; line-height:1.5; margin:30px 0 8px; }
+  .question b { color:var(--accent); }
+  h2 { font-size:23px; margin:52px 0 6px; }
+  h2 .n { color:var(--accent); font-variant-numeric:tabular-nums; margin-right:.4em; }
+  p { margin:.7em 0; }
+  .muted { color:var(--muted); }
+  .impact {
+    background:#fff; border:1px solid var(--line); border-left:5px solid var(--accent);
+    border-radius:6px; padding:20px 24px; margin:30px 0; font-size:17px;
+  }
+  .impact h3 { margin:0 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:.05em; color:var(--accent); }
+  figure { margin:22px 0 8px; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:6px; background:#fff; }
+  figcaption { color:var(--muted); font-size:14px; margin-top:8px; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:680px){ .two { grid-template-columns:1fr; } }
+  .mapwrap { margin:20px 0 6px; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  .mapwrap iframe { width:100%; height:460px; border:0; display:block; }
+  .maphint { color:var(--muted); font-size:13px; margin:6px 2px 0; }
+  ul.limits { color:var(--muted); }
+  footer { margin-top:60px; padding-top:22px; border-top:1px solid var(--line); font-size:14px; color:var(--muted); }
+  footer a { color:var(--accent); }
+  code { background:#eef1f1; padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .links { display:flex; flex-wrap:wrap; gap:10px 26px; margin:10px 0 18px; font-size:15px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Planet Tanager Open Data Competition · Track I</div>
+  <h1>Tanager's shortwave infrared resolves mine-waste and alteration mineralogy that multispectral sensors cannot</h1>
+  <p class="byline">Alex Bradley · Department of Earth, Environmental, and Planetary Sciences, Washington University in St.&nbsp;Louis · <a href="mailto:abradley@wustl.edu">abradley@wustl.edu</a></p>
+</header>
+
+<p class="question">Can Tanager's contiguous 425-band VSWIR measurements resolve the alteration- and mine-waste minerals — <b>alunite, kaolinite, jarosite, iron&nbsp;oxides, gypsum, white&nbsp;micas</b> — at a specificity Sentinel-2 provably cannot, and what does that reveal about acid-mine-drainage hazard?</p>
+
+<div class="impact">
+  <h3>Impact statement</h3>
+  <p>Tanager's contiguous visible-to-shortwave-infrared imaging resolves the alteration and mine-waste minerals that broadband sensors cannot separate. At two named US sites — Bingham&nbsp;Canyon and Goldfield — library-anchored mineral maps validate against an independent USGS map, agree with NASA's EMIT spectrometer, and yield a hedged acid-generating-potential layer that flags where mine waste is spectrally consistent with acid drainage. For the state geological surveys and federal agencies (USGS, BLM, EPA) that characterize critical-mineral potential and mine-waste hazard, this is a reproducible, open-source screening tool — and it makes the case that the open Tanager archive should grow over mining districts.</p>
+</div>
+
+<h2><span class="n">1</span>Two named sites</h2>
+<p>The work targets two iconic, well-characterized US districts. <b>Goldfield, Nevada</b> is a classic acid-sulfate hydrothermal system next to the USGS Cuprite spectral benchmark — the textbook VSWIR mineral-mapping case. <b>Bingham Canyon / Kennecott, Utah</b> is the world's largest open-pit copper-porphyry mine, with a massive tailings impoundment and a real acid-mine-drainage story.</p>
+<div class="two">
+  <figure><img src="figures/goldfield_rgb.png" alt="Goldfield true-color"><figcaption>Goldfield district — Tanager true color (visible bands).</figcaption></figure>
+  <figure><img src="figures/bingham_rgb.png" alt="Bingham true-color"><figcaption>Bingham Canyon / Kennecott — Tanager true color.</figcaption></figure>
+</div>
+
+<h2><span class="n">2</span>The minerals leave a fingerprint</h2>
+<p>Mineral identity is anchored to the USGS spectral library (splib07a): every endmember is a measured library spectrum, nothing is synthesized. The diagnostic absorptions — the 2200&nbsp;nm Al-OH doublet, the 2265&nbsp;nm jarosite feature, the 2340&nbsp;nm gypsum-carbonate feature, and the visible-to-near-infrared ferric-iron bands — appear in both the library spectra and the mean spectrum of the scene pixels the model maps as each mineral.</p>
+<figure><img src="figures/goldfield_spectra.png" alt="Library vs scene spectra">
+<figcaption>USGS library spectra (solid) vs. the mean spectrum of the most-detected Tanager pixels (dashed), offset per mineral. The same diagnostic absorptions appear in both — the label traces back to the data.</figcaption></figure>
+
+<h2><span class="n">3</span>What Sentinel-2 cannot do</h2>
+<p>The case for contiguous VSWIR is sharpest at the 2200&nbsp;nm Al-OH doublet, which separates alunite (advanced-argillic) from kaolinite (argillic) — a distinction that matters for both ore characterization and acid generation. Degrading the Tanager spectra to Sentinel-2 bands collapses their separability from <b>5.1° to 2.6°, a 50% loss</b>, because one broad Sentinel-2 band (B12) spans the whole doublet. The loss is specific to the shortwave infrared: the VNIR jarosite–goethite contrast survives degradation, the control showing the effect is the doublet itself, not coarse resampling.</p>
+<figure><img src="figures/bingham_20250911_191523_58_4001_band_ablation.png" alt="Tanager vs Sentinel-2 band ablation">
+<figcaption>Tanager full-resolution spectra vs. the same spectra degraded to Sentinel-2 bands at the Al-OH region. One S2 band spans the alunite–kaolinite doublet.</figcaption></figure>
+
+<h2><span class="n">4</span>Mapping the alteration</h2>
+<p>A mixture-tuned matched filter (MTMF) estimates per-mineral abundance against each scene's own background, with an infeasibility score that suppresses spectrally implausible detections. Composited into a dominant-mineral map, Goldfield recovers the expected zoning: a sericite/phyllic core with an alunite advanced-argillic center and lineament at Cuprite, kaolinite and iron oxides around them.</p>
+<figure><img src="figures/goldfield_20240925_185504_87_4001_hero_mineral_map.png" alt="Goldfield dominant-mineral map">
+<figcaption>Goldfield/Cuprite — dominant alteration mineral, each pixel coloured by the mineral most strongly expressed relative to its own detection floor.</figcaption></figure>
+<div class="mapwrap"><iframe src="goldfield_map.html" title="Goldfield interactive mineral map" loading="lazy"></iframe></div>
+<p class="maphint">Interactive: pan and zoom the Goldfield mineral classes over satellite imagery; toggle the overlay at top-right.</p>
+
+<h2><span class="n">5</span>Validated against an independent map</h2>
+<p>At Goldfield the maps were tested against the USGS ASTER alteration map of the district (Rockwell &amp; Bonham 2017), an independent product with no shared calibration. The Tanager scores separate the published alteration zones: the Al-OH band depth and the gypsum-carbonate band depth each reach a rank-AUC of <b>0.78</b>, alunite MTMF abundance <b>0.71</b>, and muscovite (sericite) <b>0.69</b>. The Fe-oxide and kaolinite layers separate less cleanly — the published categorical classes group these phases differently than the spectral library does — and that disagreement is reported, not tuned away.</p>
+<figure><img src="figures/goldfield_validation_pair.png" alt="Tanager alunite vs Rockwell zone">
+<figcaption>Tanager alunite abundance (left) beside the Rockwell ASTER alunite zone (right) on a shared grid. High Tanager abundance coincides with the published zone.</figcaption></figure>
+
+<h2><span class="n">6</span>Cross-checked with EMIT</h2>
+<p>Running the identical pipeline on an overlapping NASA EMIT scene — the only other spaceborne imaging spectrometer with comparable coverage — gives an external check with no shared code or acquisition. Scene-mean reflectance correlates at <b>r = 0.91</b> over 240 shared bands, and all six target minerals correlate positively in MTMF detection, from jarosite (<b>r = +0.59</b>) to muscovite (+0.34). The agreement is moderate, as expected from the date offset and Tanager's finer grain: at 30&nbsp;m, Tanager resolves about four times EMIT's ~60&nbsp;m pixel density.</p>
+<figure><img src="figures/goldfield_20240925_185504_87_4001_emit_comparison.png" alt="Tanager vs EMIT comparison">
+<figcaption>Tanager vs. EMIT: scene-mean spectra (left) and the alunite MTMF map from each sensor at native resolution. The detection correlation carries the quantitative claim.</figcaption></figure>
+
+<h2><span class="n">7</span>Acid-mine-drainage hazard</h2>
+<p>The secondary minerals that record acid generation are spectrally distinct. Jarosite is stable only in acidic, oxidizing, sulfate-rich conditions and is the diagnostic active-acid indicator; the iron oxyhydroxides are the higher-pH oxidation products; gypsum, absent the acidic iron phases, points to a buffered setting (Swayze et al. 2000). Each pixel is assigned an ordinal acid-generating-potential tier from the most acidic indicator present. At Bingham the high-potential pixels cluster around the pit and tailings ground.</p>
+<figure><img src="figures/bingham_20250911_191523_58_4001_amd_agp.png" alt="Bingham acid-generating-potential">
+<figcaption>Bingham — acid-generating-potential proxy. A spectral indicator of surface mineralogy, relative within the scene; not a measured pH.</figcaption></figure>
+<div class="mapwrap"><iframe src="bingham_map.html" title="Bingham interactive AMD map" loading="lazy"></iframe></div>
+<p class="maphint">Interactive: the acid-generating-potential tiers over the Bingham pit and tailings; toggle the overlay at top-right.</p>
+
+<h2><span class="n">8</span>Limits</h2>
+<ul class="limits">
+  <li>30&nbsp;m grain resolves features larger than about one hectare.</li>
+  <li>Surface mineralogy only — not bulk chemistry, not depth.</li>
+  <li>Validation is against another remote-sensing product, bounding agreement at the alteration-group level, not per-mineral abundance; no field validation.</li>
+  <li>The acid-generating-potential layer is a relative, within-scene spectral indicator, and is unvalidated at Bingham, where jarosite is absent from the regional reference map.</li>
+</ul>
+
+<h2><span class="n">9</span>Reproduce &amp; open tooling</h2>
+<p>The whole pipeline is one installed command over Tanager's Open STAC imagery:</p>
+<p><code>uv run tanager-minmap hero --site goldfield --output out/</code></p>
+<p>A clean clone reproduces every figure and number above (see <code>REPRODUCIBILITY.md</code>); the seven-stage <code>tanager-minmap</code> CLI is released open-source, and the derivative maps are deposited with a citable DOI.</p>
+
+<footer>
+  <div class="links">
+    <a href="https://github.com/bradleylab/tanager-rocks">GitHub repository</a>
+    <a href="memo.md">Technical memo</a>
+    <span>Zenodo DOI: <em>deposit pending</em></span>
+    <span>Video walkthrough: <em>pending</em></span>
+  </div>
+  <p>Data: Planet Tanager Open STAC (CC&nbsp;BY); NASA EMIT L2A (LP&nbsp;DAAC); USGS splib07a and Rockwell &amp; Bonham (2017) ASTER alteration map (doi:10.5066/F7CR5RK7, public domain). Basemap © Esri. Code under the MIT license.</p>
+  <p>Cite: Alex Bradley (2026), <em>tanager-rocks: mineral and mine-waste mapping from Tanager VSWIR</em>. Washington University in St. Louis.</p>
+</footer>
+
+</div>
+</body>
+</html>

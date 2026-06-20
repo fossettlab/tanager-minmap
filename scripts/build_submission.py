@@ -14,6 +14,8 @@ Run::
 from __future__ import annotations
 
 import logging
+import os
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -31,6 +33,7 @@ from tanager_rocks.figures import (
 )
 from tanager_rocks.hazard import acid_generating_potential
 from tanager_rocks.interactive import class_rgba, reproject_classes_4326, story_map
+from tanager_rocks.pipeline import PipelinePaths, run_ablate, run_amd, run_emit, run_hero
 from tanager_rocks.reference import MINERAL_TO_ROCKWELL, ROCKWELL_EXCLUDED, align_reference
 from tanager_rocks.speclib import load_library, select_endmembers
 from tanager_rocks.unmix import mtmf
@@ -144,6 +147,17 @@ def main() -> None:
     cube_b = mask_absorption_bands(bingham_raw, wl_b)
     ds_b = mtmf(cube_b, select_endmembers(load_library(SPECLIB_DIR, wl_b)))
     _amd_map_html("bingham", cube_b, ds_b)
+
+    # Reused analytical panels: regenerate into submission/figures via the
+    # pipeline (the DRY home for these), so the story page is self-contained.
+    panels = replace(PipelinePaths.repo_default(ROOT), figures_dir=FIG_DIR)
+    run_ablate(SITES["bingham"], panels)  # band-ablation panel
+    run_hero(SITES["goldfield"], panels)  # dominant-mineral hero map
+    run_amd(SITES["bingham"], panels)  # AMD acid-generating-potential map
+    if os.environ.get("EARTHDATA_USERNAME"):
+        run_emit(SITES["goldfield"], panels)  # EMIT cross-sensor panel (needs creds)
+    else:
+        logger.warning("EMIT panel skipped (no EARTHDATA_USERNAME); run under doppler to include it")
 
 
 if __name__ == "__main__":
