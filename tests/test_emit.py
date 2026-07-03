@@ -115,3 +115,21 @@ def test_load_emit_orthorectifies_via_glt(tmp_path):
     assert np.isnan(cube.values[:, 1, 1]).all()  # GLT-fill pixel
     assert np.isnan(cube.values[2]).all()  # band 2 flagged not-good
     assert np.allclose(wl, [500.0, 600.0, 700.0, 800.0])
+
+
+def test_load_emit_empty_window_returns_all_nan(tmp_path):
+    # A GLT with no valid cells (bbox entirely off-swath) must yield an all-NaN
+    # cube, not raise on the empty rows_needed reduction.
+    path = tmp_path / "EMIT_L2A_RFL_empty.nc"
+    with h5py.File(path, "w") as f:
+        f.create_dataset("reflectance", data=np.zeros((3, 2, 4), dtype="float32"))
+        sbp = f.create_group("sensor_band_parameters")
+        sbp.create_dataset("wavelengths", data=np.array([500.0, 600.0, 700.0, 800.0]))
+        sbp.create_dataset("good_wavelengths", data=np.array([1, 1, 1, 1], dtype="uint8"))
+        loc = f.create_group("location")
+        loc.create_dataset("glt_x", data=np.zeros((2, 2), dtype="int32"))  # all GLT fill
+        loc.create_dataset("glt_y", data=np.zeros((2, 2), dtype="int32"))
+        f.attrs["geotransform"] = np.array([0.0, 1.0, 0.0, 10.0, 0.0, -1.0])
+    cube, _ = load_emit_reflectance(path)
+    assert cube.shape == (4, 2, 2)
+    assert np.isnan(cube.values).all()

@@ -199,14 +199,18 @@ def load_emit_reflectance(
         ny, nx = glt_x.shape
         nb = wl.size
         out = np.full((ny, nx, nb), np.nan, dtype="float32")
-        # Gather only the raw pixels the window references (1-based -> 0-based).
-        dt = glt_y[valid] - 1
-        ct = glt_x[valid] - 1
-        # h5py fancy-indexing needs sorted unique rows; pull the needed downtrack
-        # rows once, then index crosstrack in-memory to keep the read bounded.
-        rows_needed = np.unique(dt)
-        sub = refl[rows_needed.min() : rows_needed.max() + 1, :, :]
-        out[valid] = sub[dt - rows_needed.min(), ct, :]
+        # A window entirely in GLT fill (e.g. a bbox off the swath) leaves the
+        # all-NaN cube as-is; without this guard rows_needed.min() below raises on
+        # the empty array (ValueError: zero-size reduction).
+        if valid.any():
+            # Gather only the raw pixels the window references (1-based -> 0-based).
+            dt = glt_y[valid] - 1
+            ct = glt_x[valid] - 1
+            # h5py fancy-indexing needs sorted unique rows; pull the needed downtrack
+            # rows once, then index crosstrack in-memory to keep the read bounded.
+            rows_needed = np.unique(dt)
+            sub = refl[rows_needed.min() : rows_needed.max() + 1, :, :]
+            out[valid] = sub[dt - rows_needed.min(), ct, :]
 
     out[out == REFL_FILL] = np.nan
     out[:, :, ~good] = np.nan
