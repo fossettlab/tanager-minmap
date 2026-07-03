@@ -69,6 +69,10 @@ HANDOFF.md
 CLAUDE.md
 spec.md
 archive_pre_competition/
+docs/repo_quality_audit.md
+docs/repo_improvement_plan.md
+docs/video_production_runbook.md
 
 # Video production artifacts — scripts, raw captures, audio, working cuts
 video/
+.gstack/
