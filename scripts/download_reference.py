@@ -78,19 +78,29 @@ def resolve_tile_files() -> dict[str, str]:
 
 
 def download_raw() -> Path:
-    """Download the .img + .ige pair if absent; return the local .img path."""
+    """Download the .img + .ige pair if absent or size-mismatched; return the .img path.
+
+    Streams to a ``.part`` file and atomically replaces it, and skips only a file
+    whose size already matches the server's ``Content-Length`` — so an interrupted
+    download never leaves a truncated file at the canonical name (the ``.ige`` is
+    ~3 GB). Same pattern as ``download_speclib.py``.
+    """
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     urls = resolve_tile_files()
     img_path = RAW_DIR / "aster_southwest_aa61_v8_1-17-17.img"
     ige_path = img_path.with_suffix(".ige")
     for ext, dest in ((".img", img_path), (".ige", ige_path)):
-        if dest.exists() and dest.stat().st_size > 0:
-            logger.info("have %s (%.1f MB)", dest.name, dest.stat().st_size / 1e6)
-            continue
-        logger.info("downloading %s", dest.name)
         req = urllib.request.Request(urls[ext], headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(req, timeout=600) as resp, open(dest, "wb") as fh:
-            shutil.copyfileobj(resp, fh)
+        with urllib.request.urlopen(req, timeout=600) as resp:
+            remote_size = int(resp.headers.get("Content-Length", -1))
+            if dest.exists() and dest.stat().st_size == remote_size:
+                logger.info("have %s (%.1f MB)", dest.name, dest.stat().st_size / 1e6)
+                continue
+            logger.info("downloading %s", dest.name)
+            tmp = dest.with_suffix(dest.suffix + ".part")
+            with tmp.open("wb") as fh:
+                shutil.copyfileobj(resp, fh)
+        tmp.replace(dest)
         logger.info("wrote %s (%.1f MB)", dest.name, dest.stat().st_size / 1e6)
     return img_path
 
