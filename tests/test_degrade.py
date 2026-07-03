@@ -9,7 +9,6 @@ from tanager_spec.srf import gaussian_srf
 from tanager_rocks.degrade import (
     degrade_cube,
     degrade_spectra,
-    pair_spectral_angle,
     separability,
     srf_band_stats,
 )
@@ -33,13 +32,6 @@ def test_degrade_spectra_preserves_flat_reflectance():
     out = degrade_spectra(flat, _SRC, _SRF)
     assert out.shape == (1, 2)
     assert np.allclose(out, 0.5, atol=1e-3)
-
-
-def test_pair_spectral_angle_parallel_and_orthogonal():
-    a = np.array([1.0, 0.0, 0.0])
-    b = np.array([0.0, 1.0, 0.0])
-    assert np.isclose(pair_spectral_angle(a, 2 * a), 0.0, atol=1e-6)
-    assert np.isclose(pair_spectral_angle(a, b), np.pi / 2, atol=1e-6)
 
 
 def test_degrade_cube_shape_coords_and_crs():

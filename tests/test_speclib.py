@@ -8,6 +8,7 @@ from tanager_rocks.speclib import (
     Endmember,
     by_mineral,
     load_library,
+    pairwise_spectral_angle,
     select_endmembers,
     spectrometer_of,
 )
@@ -66,3 +67,14 @@ def test_select_endmembers_picks_medoid():
     outlier = Endmember("m", "c", "ASD", wl, np.array([0.1, 0.9, 0.1]))
     chosen = select_endmembers([typical_a, typical_b, outlier], minerals=("m",))
     assert chosen["m"].sample in {"a", "b"}  # not the outlier
+
+
+def test_pairwise_spectral_angle_parallel_orthogonal_and_guard():
+    a = np.array([1.0, 0.0, 0.0])
+    b = np.array([0.0, 1.0, 0.0])
+    assert np.isclose(pairwise_spectral_angle(a, 2 * a), 0.0, atol=1e-6)
+    assert np.isclose(pairwise_spectral_angle(a, b), np.pi / 2, atol=1e-6)
+    assert np.isclose(pairwise_spectral_angle(a, b, degrees=True), 90.0, atol=1e-4)
+    # Fewer than two shared finite bands returns NaN instead of dividing by zero.
+    one = np.array([1.0, np.nan, np.nan])
+    assert np.isnan(pairwise_spectral_angle(one, one.copy()))

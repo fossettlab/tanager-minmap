@@ -25,6 +25,8 @@ import numpy as np
 import xarray as xr
 from rasterio.enums import Resampling
 
+from .speclib import pairwise_spectral_angle
+
 
 def resample_spectrum(spectrum: np.ndarray, src_nm: np.ndarray, dst_nm: np.ndarray) -> np.ndarray:
     """Linearly resample a spectrum from ``src_nm`` to ``dst_nm`` (NaN-aware)."""
@@ -44,16 +46,6 @@ def _pearson(a: np.ndarray, b: np.ndarray) -> tuple[float, int]:
     if n < 3 or np.std(a[m]) == 0 or np.std(b[m]) == 0:
         return float("nan"), n
     return float(np.corrcoef(a[m], b[m])[0, 1]), n
-
-
-def _spectral_angle_deg(a: np.ndarray, b: np.ndarray) -> float:
-    """Spectral angle (degrees) over the finite overlap of two spectra."""
-    m = np.isfinite(a) & np.isfinite(b)
-    av, bv = a[m], b[m]
-    if av.size < 2:
-        return float("nan")
-    cos = float(av @ bv / (np.linalg.norm(av) * np.linalg.norm(bv)))
-    return float(np.degrees(np.arccos(np.clip(cos, -1.0, 1.0))))
 
 
 @dataclass(frozen=True)
@@ -81,7 +73,7 @@ def spectral_agreement(
     emit_mean = mean_spectrum(emit_cube)
     tan_on_emit = resample_spectrum(tan_mean, np.asarray(tan_nm, float), np.asarray(emit_nm, float))
     r, _ = _pearson(tan_on_emit, emit_mean)
-    angle = _spectral_angle_deg(tan_on_emit, emit_mean)
+    angle = pairwise_spectral_angle(tan_on_emit, emit_mean, degrees=True)
     both = np.isfinite(tan_on_emit) & np.isfinite(emit_mean)
     agree = SpectralAgreement(pearson_r=r, spectral_angle_deg=angle, n_bands=int(both.sum()))
     return agree, np.asarray(emit_nm, float), tan_on_emit, emit_mean

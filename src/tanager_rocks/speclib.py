@@ -156,12 +156,24 @@ def by_mineral(endmembers: list[Endmember]) -> dict[str, list[Endmember]]:
     return grouped
 
 
-def _spectral_angle(a: np.ndarray, b: np.ndarray) -> float:
-    """Spectral angle (radians) between two spectra over their finite overlap."""
+def pairwise_spectral_angle(a: np.ndarray, b: np.ndarray, *, degrees: bool = False) -> float:
+    """Spectral angle between two spectra over their shared finite bands.
+
+    The one pairwise spectral-angle used across the package — endmember medoid
+    selection, SRF-ablation separability, and cross-sensor comparison. Larger
+    angle = more separable. Returns NaN if fewer than two shared finite bands
+    (guards the 0/0 on a degenerate overlap). Radians by default; degrees if
+    requested.
+    """
+    a = np.asarray(a, float)
+    b = np.asarray(b, float)
     m = np.isfinite(a) & np.isfinite(b)
+    if m.sum() < 2:
+        return float("nan")
     av, bv = a[m], b[m]
-    cos = float(np.dot(av, bv) / (np.linalg.norm(av) * np.linalg.norm(bv)))
-    return float(np.arccos(np.clip(cos, -1.0, 1.0)))
+    cos = float(av @ bv / (np.linalg.norm(av) * np.linalg.norm(bv)))
+    angle = float(np.arccos(np.clip(cos, -1.0, 1.0)))
+    return float(np.degrees(angle)) if degrees else angle
 
 
 def select_endmembers(
@@ -195,7 +207,7 @@ def select_endmembers(
             logger.warning("no samples for %s; skipping", mineral)
             continue
         median = np.nanmedian(np.vstack([e.reflectance for e in samples]), axis=0)
-        angles = [_spectral_angle(e.reflectance, median) for e in samples]
+        angles = [pairwise_spectral_angle(e.reflectance, median) for e in samples]
         pick = samples[int(np.argmin(angles))]
         chosen[mineral] = pick
         logger.info("%s endmember: %s (medoid of %d)", mineral, pick.sample, len(samples))

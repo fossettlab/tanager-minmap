@@ -17,7 +17,7 @@ import numpy as np
 import xarray as xr
 from tanager_spec.srf import SpectralResponse, simulate
 
-from .speclib import Endmember
+from .speclib import Endmember, pairwise_spectral_angle
 
 
 def srf_band_stats(srf: SpectralResponse) -> tuple[np.ndarray, np.ndarray]:
@@ -85,21 +85,6 @@ def degrade_endmembers(
     return {n: deg[i] for i, n in enumerate(names)}
 
 
-def pair_spectral_angle(a: np.ndarray, b: np.ndarray) -> float:
-    """Spectral angle (radians) between two spectra over their shared finite bands.
-
-    Larger angle = more separable. Returns NaN if fewer than two shared bands.
-    """
-    a = np.asarray(a, float)
-    b = np.asarray(b, float)
-    m = np.isfinite(a) & np.isfinite(b)
-    if m.sum() < 2:
-        return float("nan")
-    av, bv = a[m], b[m]
-    cos = float(av @ bv / (np.linalg.norm(av) * np.linalg.norm(bv)))
-    return float(np.arccos(np.clip(cos, -1.0, 1.0)))
-
-
 def separability(
     endmembers: dict[str, Endmember],
     wavelengths: np.ndarray,
@@ -115,7 +100,7 @@ def separability(
     deg = degrade_endmembers(endmembers, wavelengths, srf, min_coverage)
     out: dict[tuple[str, str], tuple[float, float]] = {}
     for a, b in pairs:
-        full = pair_spectral_angle(endmembers[a].reflectance, endmembers[b].reflectance)
-        coarse = pair_spectral_angle(deg[a], deg[b])
+        full = pairwise_spectral_angle(endmembers[a].reflectance, endmembers[b].reflectance)
+        coarse = pairwise_spectral_angle(deg[a], deg[b])
         out[(a, b)] = (full, coarse)
     return out
