@@ -187,8 +187,11 @@ def mtmf(
     explain (high infeasibility). This is the operational MTMF feasibility check
     (Boardman 1998) implemented from the whitened residual — not ENVI's exact
     (unpublished) normalisation. The absolute scale is not unit-variance (the
-    diagonal loading shrinks the whitening), so gate by the infeasibility
-    distribution, not a fixed sigma.
+    diagonal loading shrinks the whitening), so the fixed ``max_infeas = 1.0``
+    the pipeline applies is a distribution-informed feasibility filter, not a
+    calibrated sigma: the background sits near 0.2, so the gate passes ~99.9% of
+    pixels and removes only the extreme-misfit tail. Detection is defined by the
+    downstream per-mineral upper-decile abundance floor, not by this gate.
 
     Parameters
     ----------

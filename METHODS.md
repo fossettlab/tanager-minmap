@@ -104,8 +104,12 @@ Scene IDs are recorded in `config.SITES`.
    scatter shows the expected feasibility "nose" — a low-infeasibility tongue to
    higher abundance (true sub-pixel detections) plus a high-infeasibility tail
    (false positives the gate removes); gating at infeasibility < 1.0 yields
-   coherent per-mineral abundance maps. Thresholds are coarse, not
-   ground-truth-calibrated (that comes with USGS-map validation).
+   coherent per-mineral abundance maps. Empirically that fixed gate passes
+   ~99.8% (Bingham) / 99.9% (Goldfield) of on-domain pixels (p99 ~ 0.6-0.7), so
+   it is a light feasibility filter that removes only the extreme-misfit tail;
+   the operative detection selector is the per-mineral upper-decile abundance
+   floor (step 7 / hero map). Thresholds are coarse, not ground-truth-calibrated
+   (that comes with USGS-map validation).
 4b. **Validation** — zone agreement against the Rockwell ASTER reference
    (`reference.py`, `validate.py`, run by `scripts/validate_site.py`). The
    reference is categorical (alteration *type* / mineral-*group* classes), so
@@ -325,9 +329,12 @@ strongest cross-sensor support (EMIT detection r +0.59).
   coarse cutoff, not ground-truth-calibrated.
 - **Matched-filter diagonal loading.** `ridge` = 1e-2 default — regularises the
   singular full-band covariance; a numerical parameter, not physical.
-- **MTMF infeasibility gate.** `max_infeas` = 1.0 default — distribution-informed
-  (background ~0.2, anomalous tail >2). Calibrated against the Rockwell zones in
-  step 4b (Youden-J-optimal per-layer thresholds).
+- **MTMF infeasibility gate.** `max_infeas` = 1.0 default — a distribution-informed
+  feasibility filter (background ~0.2, anomalous tail >2). Empirically it passes
+  ~99.9% of on-domain pixels, so it removes only the extreme-misfit tail rather
+  than selecting detections; the operative selector is the upper-decile abundance
+  floor below. The Youden-J-optimal per-layer thresholds (step 4b) calibrate the
+  detection *scores* against the Rockwell zones, a separate step.
 - **Validation positive-class sets.** `reference.MINERAL_TO_ROCKWELL` /
   `FEATURE_TO_ROCKWELL`, derived from the Rockwell FGDC class definitions (a
   class is positive for a layer only when its definition names that mineral
