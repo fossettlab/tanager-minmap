@@ -31,7 +31,18 @@ data/petdb/
 data/intermediate/
 data/speclib/
 data/reference/
+data/processed/*
 !data/*/.gitkeep
+# Committed exception: the hard-pairs probe dataset's card is prose
+# documentation, not data -- it should travel with the repo even though the
+# chips/CSVs it describes (data/processed/hard_pairs_dataset/*) do not. A
+# negation pattern has no effect once a parent directory is itself excluded
+# (git won't descend into it), so the directory is re-included, its contents
+# re-excluded, and only then is the one file re-included -- the standard
+# three-step gitignore idiom for "ignore a directory except one deep file".
+!data/processed/hard_pairs_dataset/
+data/processed/hard_pairs_dataset/*
+!data/processed/hard_pairs_dataset/DATASET_CARD.md
 
 # Models
 models/
@@ -75,4 +86,13 @@ docs/video_production_runbook.md
 
 # Video production artifacts — scripts, raw captures, audio, working cuts
 video/
+docs/project_summary.md
+docs/asset_inventory.md
+docs/editorial_review.md
+docs/storyboard.md
+docs/edit_plan.md
+docs/review_round_*.md
+scripts/video/
+output/
+CHANGELOG.md
 .gstack/
