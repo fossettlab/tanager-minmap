@@ -1,7 +1,7 @@
 [project]
 name = "tanager-rocks"
 version = "0.1.0"
-description = "Mineral and hydrothermal-alteration mapping from Planet Tanager 425-band VSWIR surface reflectance at named US mine sites (Bingham Canyon, Goldfield), with a Sentinel-2 band-ablation comparison and an EMIT cross-sensor benchmark. Track I of the Planet Tanager Open Data Competition."
+description = "Mineral and hydrothermal-alteration mapping from Planet Tanager 426-band VSWIR surface reflectance at named US mine sites (Bingham Canyon, Goldfield), with a Sentinel-2 band-ablation comparison and an EMIT cross-sensor benchmark. Track I of the Planet Tanager Open Data Competition."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }

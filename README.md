@@ -1,6 +1,6 @@
 # tanager-rocks
 
-Mineral and hydrothermal-alteration mapping from Planet Tanager 425-band VSWIR
+Mineral and hydrothermal-alteration mapping from Planet Tanager 426-band VSWIR
 surface reflectance at two named US mine sites — **Bingham Canyon / Kennecott
 (UT)** and the **Goldfield district (NV)** — with a Sentinel-2 band-ablation
 comparison and an EMIT cross-sensor benchmark.
@@ -11,7 +11,7 @@ Track I of the Planet Tanager Open Data Competition (deadline: 31 August
 
 ## The question
 
-Can Tanager's contiguous 425-band VSWIR resolve the alteration- and
+Can Tanager's contiguous 426-band VSWIR resolve the alteration- and
 mine-waste mineralogy — alunite, kaolinite, jarosite, Fe-oxides, gypsum,
 muscovite — at a specificity that Sentinel-2 provably cannot, and what does
 that reveal about acid-mine-drainage hazard?

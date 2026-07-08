@@ -9,7 +9,7 @@ Washington University in St. Louis (abradley@wustl.edu).
 Hydrothermal alteration and mine waste are recorded in a small set of minerals —
 alunite, kaolinite, jarosite, the iron oxides, gypsum, and the white micas —
 whose diagnostic absorptions fall in the shortwave infrared. Can Tanager's
-contiguous 425-band visible-to-shortwave-infrared (VSWIR) measurements resolve
+contiguous 426-band visible-to-shortwave-infrared (VSWIR) measurements resolve
 that mineralogy at a specificity multispectral sensors cannot, and what does the
 answer reveal about acid-mine-drainage hazard? This entry tests the question at
 two named United States sites: the Bingham Canyon / Kennecott porphyry-copper
