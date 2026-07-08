@@ -313,6 +313,115 @@ so the AGP layer there is an unvalidated spectral indicator over the waste, not 
 map checked against an independent acidity product; at Goldfield jarosite has the
 strongest cross-sensor support (EMIT detection r +0.59).
 
+### Hard-pair probe (RGB-ambiguous, SWIR-separable patch pairs)
+
+A supplementary probe (`scripts/find_hard_pairs.py`, `scripts/plot_hard_pairs.py`)
+adapts the "Similar-but-Different" Sentinel-2 land-cover benchmark
+(Robinson, C. & Corley, I., 2026, *Similar but Different: A Benchmark for
+Measuring Whether Models Actually Use Multispectral Bands*,
+https://geospatialml.com/posts/similar-but-different/), which mines patch pairs
+that are near-identical in true-color statistics but pull apart cleanly in the
+non-visible bands, to argue that accuracy above an RGB-only ceiling has to come
+from those bands. This project applies the same recipe to Tanager's dominant-
+alteration-mineral labels (the hero map's own MTMF product,
+`viz.dominant_mineral_class`) in place of WorldCover land cover, and to a SWIR
+spectral-angle separability check in place of a NIR-mean-difference threshold.
+
+Both sites' lead scenes are tiled into non-overlapping 11×11 px patches (330 m
+footprint at Tanager's 30 m GSD — the closer integer to the blog's 320 m / 10 m
+Sentinel-2 patch: 11 px is +3.1%, 10 px is −6.25%). A patch is discarded if any
+pixel is invalid (nodata / off-nadir fill or the RGB display's valid-range
+overshoot, `figures.RGB_VALID_RANGE`; zero-tolerance, mirroring the blog's
+"discard windows with any cloud/shadow pixel" rule), if its modal dominant-
+mineral class (the mode of the hero map's per-pixel class code, gated
+identically — infeasibility < 1.0, per-mineral 90th-percentile abundance floor)
+is "no detection," or if that modal class's purity is below 70% (the blog's
+WorldCover purity rule, used unmodified: this project's population of
+confidently-labeled patches at that floor — 333 across both scenes — was ample
+and did not require relaxing it). Discard accounting: of 7,290 candidate
+patches at Bingham, 2,625 were dropped for nodata, 4,390 for no dominant
+detection, and 218 for sub-70%-purity, leaving 57 labeled; of 7,480 at
+Goldfield, 2,330 / 4,330 / 544 were dropped in the same order, leaving 276
+labeled (333 total).
+
+Each labeled patch's true-color statistics are computed in a shared
+post-stretch uint8 space: the 2nd–98th percentile per-channel reflectance
+bounds are pooled across BOTH scenes' valid pixels, rather than the per-scene
+bounds `figures.rgb_context` uses for the standalone true-color figures, so
+cross-scene DN distances sit on one absolute scale. This is the one deliberate
+divergence from the repo's existing true-color convention, needed because this
+probe compares patches across sites. Candidate cross-label pairs are those
+whose RGB-mean-vector AND RGB-std-vector Euclidean distances both fall in the
+bottom decile of the pooled cross-label distance distribution (from 46,448
+cross-label patch pairs: mean-distance threshold 14.83 DN, std-distance
+threshold 1.81 DN), yielding 743 RGB-ambiguous candidates.
+
+SWIR separability is then checked with the project's own pairwise
+spectral-angle metric (`speclib.pairwise_spectral_angle`) on each patch's mean
+raw reflectance restricted to 2000–2450 nm — a window chosen to bracket the
+three fixed SWIR diagnostic centers this project already maps
+(`config.DIAGNOSTIC_NM`: Al-OH 2200 nm, jarosite 2265 nm, gypsum/carbonate
+2340 nm) with margin, and consistent with the band-ablation finding (above)
+that Sentinel-2's entire SWIR collapses to one broad band spanning roughly this
+same range. Rather than an invented degree cutoff, the separability bar is
+calibrated from the dataset's own same-mineral patch pairs (8,830 pairs,
+spectral-angle range 0.08–8.74°): a candidate is called "separable" only if its
+cross-label angle exceeds the 95th percentile of that same-label null
+distribution (5.68°) — i.e., it differs in the SWIR more than 95% of pairs that
+legitimately share the same dominant mineral differ from each other. 29 of the
+743 RGB-ambiguous candidates clear that bar; `data/processed/hard_pairs/pairs.csv`
+lists all 29, ranked by spectral angle, and
+`data/processed/hard_pairs/summary.json` records every threshold and discard
+count above.
+
+`figures/hard_pairs.png` (`scripts/plot_hard_pairs.py`) renders the top five
+pairs by spectral angle (7.71°–6.46°): the two patches' true-color chips (same
+pooled stretch) beside their overlaid SWIR spectra, continuum-removed for
+display only (a linear two-point continuum anchored at the 2000/2450 nm window
+endpoints, `pairs.continuum_removed` — the same Clark & Roush convention as
+`features.band_depth`, generalised to the whole display window rather than one
+absorption's local shoulders; the SWIR-separability decision above uses raw
+reflectance, not this transform). All five top pairs set hematite against an
+Al-OH- or sulfate-bearing mineral (jarosite ×2, muscovite ×2, goethite ×1) —
+an honest, unforced pattern from ranking by spectral angle, not a curated
+selection: hematite's own diagnostic absorption is the VNIR Fe³⁺ band, not a
+SWIR one, so its SWIR reflectance is close to featureless, making it the
+partner most likely to LOOK like any other dark, iron-stained ground in RGB
+while showing the least SWIR structure. The figure's spectra bear this out —
+hematite's continuum-removed curve stays comparatively flat through the
+Al-OH/jarosite/gypsum region in all five panels, while its partner shows a
+visible absorption feature roughly where the corresponding diagnostic marker
+falls (the exact minimum can sit tens of nm off the marker because the display
+continuum spans the whole 2000–2450 nm window rather than each feature's own
+local shoulders).
+
+As with the blog's WorldCover labels, the mineral labels here are model
+output, not ground truth: they are the hero map's own MTMF classification, so
+a "hard pair" documents where this pipeline's SWIR-based mineral call
+disagrees with what true color alone would suggest, not an independently
+verified mineral identity. The Rockwell ASTER validation (step 4b) is the
+project's ground-truth check on the labels themselves; this probe is
+downstream of that, not a substitute for it.
+
+The 333 labeled patches (not just the 29 hard pairs) are also exported as a
+standalone, local, evaluation-only dataset
+(`scripts/build_hard_pairs_dataset.py` → `data/processed/hard_pairs_dataset/`:
+a full-band GeoTIFF chip per patch under `chips/<scene_id>/`, self-contained
+`patches.csv` / `pairs.csv` manifests, a `clusters.csv` of RGB-ambiguity-graph
+connected components spanning ≥2 labels (the `TANAGER_HARD_PAIRS`
+cluster-accuracy hook TanagerFM's band-ablation eval doc expects), and a
+`DATASET_CARD.md` with its own construction, cluster-accuracy metric
+definition, and limitations writeup) for band-reliance probing of pretrained
+hyperspectral models. The build re-derives the RGB-ambiguity graph from
+`patches.csv` alone (no cube reload, no re-running MTMF) and round-trip
+verifies one seeded-random chip's pixels against its source scene exactly on
+every run. Publishing it anywhere is a separate decision from building it,
+and is additionally blocked on an open licensing question — the competition's
+terms tie derivative rights to "the Creative Commons license applicable to"
+each Tanager STAC asset without naming the variant, so `DATASET_CARD.md`
+records a TBD license pending operator review rather than assuming one (see
+its "Licensing" section for the exact clauses).
+
 ## Key parameters
 
 - **Atmospheric masks.** O2 and H2O absorption windows, owned by
@@ -347,6 +456,25 @@ strongest cross-sensor support (EMIT detection r +0.59).
   map's detection floor reused, so detection means one thing project-wide). AGP
   tiers are assigned by the most acidic indicator present, never by summing
   matched-filter scores across minerals.
+- **Hard-pair patch size.** `pairs.PATCH_SIZE_PX` = 11 px (330 m) — the integer
+  nearest the Similar-but-Different blog's 320 m Sentinel-2 patch at Tanager's
+  30 m GSD.
+- **Hard-pair label purity floor.** `pairs.PURITY_FLOOR` = 0.70 — the blog's
+  WorldCover rule, reused unmodified (333 patches cleared it across both
+  sites, so no relaxation was needed).
+- **Hard-pair SWIR window.** `pairs.SWIR_WINDOW_NM` = (2000, 2450) nm —
+  brackets `config.DIAGNOSTIC_NM`'s three fixed SWIR centers with margin;
+  matches the band-ablation region where Sentinel-2's SWIR collapses to one
+  broad band.
+- **Hard-pair RGB-ambiguity threshold.** Bottom decile (`quantile` = 0.10) of
+  the pooled cross-label RGB mean/std distance distributions — a
+  distribution-informed cutoff computed fresh on every run, not a fixed DN
+  value.
+- **Hard-pair SWIR-separability threshold.** 95th percentile
+  (`SWIR_NULL_QUANTILE` = 0.95) of the same-dominant-mineral patch pairs'
+  spectral-angle distribution — a cross-label pair must differ more than 95%
+  of genuinely-same-mineral pairs differ from each other to count as
+  separable.
 
 ## Software versions
 
@@ -376,3 +504,11 @@ direct dependencies are declared in `pyproject.toml`. The shared data layer is
   atmospheric-correction overshoot, and ~33 % of pixels are off-nadir
   nodata fill. A valid-range clamp and the invalid-pixel mask
   (`tanager_spec.mask.invalid_pixel_mask`) are applied before analysis.
+- The hard-pair probe's mineral labels are this pipeline's own MTMF output,
+  not ground truth (the same caveat the Similar-but-Different blog states for
+  its WorldCover labels); it documents where the pipeline's SWIR call
+  disagrees with true color, not an independently verified identity. All 29
+  mined pairs (and all five plotted) came from Goldfield — Bingham
+  contributed labeled patches (57) but none of its cross-label RGB-ambiguous
+  candidates cleared the SWIR-separability bar, an outcome of the ranking,
+  not a filter applied to exclude Bingham.
