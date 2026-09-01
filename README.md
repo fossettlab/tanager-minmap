@@ -100,6 +100,27 @@ large source scenes can use the
 [`reviewer quick start`](docs/reviewer_quickstart.md). It explicitly separates
 artifact inspection and synthetic software checks from full reproduction.
 
+## Related repositories
+
+Everything from this effort lives under the
+[fossettlab](https://github.com/fossettlab) organization:
+
+- [`tanager-rocks`](https://github.com/fossettlab/tanager-rocks) — this
+  repository: the analysis, the `tanager-minmap` pipeline, and the submission
+  materials. Story page:
+  [fossettlab.github.io/tanager-rocks](https://fossettlab.github.io/tanager-rocks/).
+- [`tanager-spec`](https://github.com/fossettlab/tanager-spec) — the shared
+  data layer (STAC ingest, quality masking, band utilities, Sentinel-2
+  response-function simulation, reproducible sampling), released at `v0.1.0`.
+- [`tanager-isofit`](https://github.com/fossettlab/tanager-isofit) — a
+  standalone tool converting Tanager HDF5 radiance to surface reflectance via
+  ISOFIT atmospheric correction, validated against NASA EMIT.
+
+A companion set of methodology studies on the full open Tanager archive —
+cluster separability, intrinsic dimensionality, anomaly detection, and band
+importance, each comparing the 426-band measurement against simulated
+Sentinel-2 sampling — is being prepared for release in the same organization.
+
 ## Citation
 
 Alex Bradley, Department of Earth, Environmental, and Planetary Sciences,
