@@ -124,7 +124,8 @@ Scene IDs are recorded in `config.SITES`.
    (`reference.py`, `validate.py`, run by `scripts/validate_site.py`). The
    reference is categorical (alteration *type* / mineral-*group* classes), so
    the comparison is not a continuous regression but a discrimination test:
-   each continuous score map (a diagnostic band depth or an MTMF abundance) is
+   each continuous score map (a diagnostic band depth or an MTMF abundance
+score) is
    tested for how well it separates the published class(es) that contain its
    mineral group from the other classified ground. The positive-class sets are
    derived from the published class *definitions* — e.g. alunite ↔ advanced
