@@ -227,3 +227,6 @@ data/processed/hard_pairs/*
 !docs/basic_ortho_acquisition_manifest.json
 !data/processed/hard_pairs/patches.csv
 !data/processed/hard_pairs_dataset/clusters.csv
+!data/processed/spatial_validation/
+data/processed/spatial_validation/*
+!data/processed/spatial_validation/block_manifest.json
