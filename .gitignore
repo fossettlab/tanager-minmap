@@ -169,3 +169,14 @@ docs/*
 experiments/*
 !experiments/registry.yaml
 !experiments/m3_comparator_sources.json
+
+# Release-engineering verification tests that bind to internal frozen
+# manifests and staging artifacts — run in the internal workspace, not here
+tests/test_repeatability_resources.py
+tests/test_verify_repeatability_staging.py
+tests/test_ensemble_v5_git_provenance.py
+tests/test_ensemble_sensitivity.py
+tests/test_public_claim_copy.py
+tests/test_repro_metadata.py
+tests/test_basic_ortho.py
+tests/test_emit_l2b.py
