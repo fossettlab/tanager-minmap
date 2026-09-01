@@ -203,3 +203,5 @@ tests/test_release_artifacts.py
 tests/test_verify_*.py
 tests/test_ensemble_v*_wrapper_lock.py
 tests/test_ensemble_v6_git_descriptor.py
+tests/test_narration_claims.py
+tests/test_emit_l2b_nonresult_runner.py

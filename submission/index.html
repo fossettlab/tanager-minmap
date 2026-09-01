@@ -3,27 +3,34 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Spectral:wght@600;700&display=swap" rel="stylesheet">
 <title>tanager-rocks — mineral &amp; mine-waste mapping from Tanager VSWIR</title>
 <style>
   :root { --ink:#1a1a1a; --muted:#5a5a5a; --accent:#0b8a8f; --line:#e3e3e3; --bg:#fafafa; }
   * { box-sizing: border-box; }
   body {
     margin:0; background:var(--bg); color:var(--ink);
-    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font:16px/1.65 "Source Sans 3",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
   .wrap { max-width:900px; margin:0 auto; padding:0 22px 80px; }
   header { padding:56px 0 12px; border-bottom:3px solid var(--accent); }
   .kicker { color:var(--accent); font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:13px; }
-  h1 { font-size:33px; line-height:1.18; margin:.35em 0 .25em; }
+  h1 {
+    font-family:"Spectral",Georgia,serif; font-weight:700;
+    font-size:36px; line-height:1.16; letter-spacing:-0.01em;
+    margin:.35em 0 .25em; text-wrap:balance;
+  }
   .byline { color:var(--muted); font-size:15px; margin:0; }
   .question { font-size:20px; line-height:1.5; margin:30px 0 8px; }
   .question b { color:var(--accent); }
-  h2 { font-size:23px; margin:52px 0 6px; }
+  h2 { font-family:"Spectral",Georgia,serif; font-weight:600; font-size:24px; margin:52px 0 6px; }
   h2 .n { color:var(--accent); font-variant-numeric:tabular-nums; margin-right:.4em; }
   p { margin:.7em 0; }
   .muted { color:var(--muted); }
   .impact {
-    background:#fff; border:1px solid var(--line); border-left:5px solid var(--accent);
+    background:#f0f6f6; border:1px solid #d8e6e6;
     border-radius:6px; padding:20px 24px; margin:30px 0; font-size:17px;
   }
   .impact h2 { margin:0 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:.05em; color:var(--accent); }
@@ -36,8 +43,13 @@
     color:inherit; display:block; padding:15px 16px; text-decoration:none;
   }
   .evidence-card:hover, .evidence-card:focus { border-color:var(--accent); outline:none; }
+  .evidence-card .claim {
+    display:block; font-size:14.5px; font-weight:700; line-height:1.3;
+    margin-bottom:8px;
+  }
   .evidence-card .metric {
-    color:var(--accent); display:block; font-size:26px; font-weight:750;
+    font-family:"Spectral",Georgia,serif;
+    color:var(--accent); display:block; font-size:26px; font-weight:700;
     letter-spacing:-.02em; line-height:1.05; margin-bottom:7px;
   }
   .evidence-card .meaning { display:block; font-size:13.5px; line-height:1.4; }
@@ -81,19 +93,21 @@
 
 <section class="evidence-grid" aria-label="Three headline results">
   <a class="evidence-card" href="#spectral-ablation">
-    <span class="metric">49.8% loss</span>
-    <span class="meaning">in alunite–kaolinite separability. Degrading measured mineral spectra to Sentinel-2 bands reduces their spectral-angle separation from 5.14° to 2.58°.</span>
-    <span class="scope">Measured library endmembers: 5.138° → 2.578°.</span>
+    <span class="claim">Broad bands lose mineral information</span>
+    <span class="metric">50% less separation</span>
+    <span class="meaning">Sentinel-2 sampling cuts the spectral separation between alunite and kaolinite roughly in half: 5.1° → 2.6°.</span>
   </a>
   <a class="evidence-card" href="#independent-map">
-    <span class="metric">0.78 AUC</span>
-    <span class="meaning">against an independent alteration map. At Goldfield, Tanager Al-OH and gypsum-carbonate scores agree with independent ASTER alteration groups.</span>
-    <span class="scope">A remote-sensing comparison, not field validation.</span>
+    <span class="claim">The mineral patterns match an independent map</span>
+    <span class="metric">AUC 0.78</span>
+    <span class="meaning">At Goldfield, Tanager's Al-OH and gypsum-carbonate signals agree with independently mapped ASTER alteration zones.</span>
+    <span class="scope">Remote-sensing cross-check, not field validation.</span>
   </a>
   <a class="evidence-card" href="#emit-check">
-    <span class="metric">6 / 6 agree</span>
-    <span class="meaning">in direction across sensors. In the Tanager–EMIT comparison, all six target-mineral maps are positively correlated (r = 0.34–0.58).</span>
-    <span class="scope">Tests cross-sensor consistency, not mineral accuracy.</span>
+    <span class="claim">The mineral patterns reproduce with another sensor</span>
+    <span class="metric">6 of 6 minerals agree</span>
+    <span class="meaning">All six Tanager mineral maps correlate positively with maps independently generated from NASA EMIT data (r = 0.34–0.58).</span>
+    <span class="scope">Cross-sensor consistency, not independent validation.</span>
   </a>
 </section>
 
