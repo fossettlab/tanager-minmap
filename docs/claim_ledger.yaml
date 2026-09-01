@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "snapshot_date": "2026-08-09",
-  "scope": "Quantitative scientific and reproducibility claims on the tracked release surfaces README.md, REPRODUCIBILITY.md, submission/memo.md, submission/index.html, the v2 narration/captions, and the current video. Administrative dates, citation years and identifiers, HTML/CSS values, media timecodes, and the explicitly local-only hard-pairs DATASET_CARD.md are excluded. A destination path records where a claim appears in the release candidate; it is not evidence that the path is externally published.",
+  "scope": "Quantitative scientific and reproducibility claims on the tracked release surfaces README.md, REPRODUCIBILITY.md, submission/memo.md, submission/index.html. Administrative dates, citation years and identifiers, HTML/CSS values, media timecodes, and the explicitly local-only hard-pairs DATASET_CARD.md are excluded. A destination path records where a claim appears in the release candidate; it is not evidence that the path is externally published.",
   "_schema": {
     "description": "One record per distinct quantitative claim. Rounded public forms remain separate from exact source values, and known gaps or correction requirements are explicit.",
     "document_format": "JSON-compatible YAML, parsed by scripts/validate_repro_metadata.py with the Python standard library.",
@@ -39,13 +39,16 @@
       "metric": {
         "name": "study_site_count",
         "source_value": 2,
-        "reported_values": ["two named US mine sites", "at two sites"],
+        "reported_values": [
+          "two named US mine sites",
+          "at two sites"
+        ],
         "unit": "sites"
       },
       "source_artifact": {
         "path": "src/tanager_minmap/config.py",
         "selector": "SITES contains exactly bingham and goldfield",
-        "sha256": "9a7537791bf2af5c6ec2bdcddbb0bf329019a13b9d9d6d7f31a3c00ea77c5f22"
+        "sha256": "f4c910ad9128816ef3dae2b868bfb7102447803c5e0387f546710e18948611f8"
       },
       "generating_command": null,
       "public_destinations": [
@@ -75,8 +78,8 @@
           "state": "tracked_release_surface"
         }
       ],
-      "status": "current",
-      "notes": "This is a static study-design count from project configuration, so there is no generating command."
+      "status": "source_gap",
+      "notes": "This is a static study-design count from project configuration, so there is no generating command. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed."
     },
     {
       "id": "tanager-band-count",
@@ -87,7 +90,11 @@
           "bingham": 426,
           "goldfield": 426
         },
-        "reported_values": ["426-band", "426 contiguous bands", "four hundred and twenty-six colors"],
+        "reported_values": [
+          "426-band",
+          "426 contiguous bands",
+          "four hundred and twenty-six colors"
+        ],
         "unit": "bands per scene"
       },
       "source_artifact": {
@@ -138,8 +145,8 @@
           "state": "tracked_release_surface"
         }
       ],
-      "status": "current",
-      "notes": "The generated wavelength table records 852 rows total, exactly 426 for each site; no nominal 425-band model convention is used here."
+      "status": "source_gap",
+      "notes": "The generated wavelength table records 852 rows total, exactly 426 for each site; no nominal 425-band model convention is used here. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed."
     },
     {
       "id": "tanager-wavelength-span",
@@ -147,10 +154,18 @@
       "metric": {
         "name": "wavelength_span",
         "source_value": {
-          "bingham_nm": [376.44, 2499.0],
-          "goldfield_nm": [376.62, 2499.1599]
+          "bingham_nm": [
+            376.44,
+            2499.0
+          ],
+          "goldfield_nm": [
+            376.62,
+            2499.1599
+          ]
         },
-        "reported_values": ["376-2499 nm"],
+        "reported_values": [
+          "376-2499 nm"
+        ],
         "unit": "nanometers"
       },
       "source_artifact": {
@@ -166,8 +181,8 @@
           "state": "tracked_release_surface"
         }
       ],
-      "status": "current",
-      "notes": "The video rounds both per-scene axes to whole nanometers; the ledger preserves both exact generated endpoints."
+      "status": "source_gap",
+      "notes": "The video rounds both per-scene axes to whole nanometers; the ledger preserves both exact generated endpoints. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed."
     },
     {
       "id": "tanager-ground-sample-distance",
@@ -180,7 +195,10 @@
           "goldfield_basic_m": 40.86,
           "bingham_basic_m": 34.47
         },
-        "reported_values": ["delivered 30 m ortho grids", "thirty-meter grid"],
+        "reported_values": [
+          "delivered 30 m ortho grids",
+          "thirty-meter grid"
+        ],
         "unit": "meters"
       },
       "source_artifact": {
@@ -216,8 +234,8 @@
           "state": "tracked_release_surface"
         }
       ],
-      "status": "needs_correction",
-      "notes": "Thirty metres is the delivered projected ortho grid spacing, not a universal native spectral-sample footprint. Public surfaces must name the ortho branch or use approximate sensor wording until the preregistered basic-versus-ortho sensitivity is complete."
+      "status": "source_gap",
+      "notes": "Thirty metres is the delivered projected ortho grid spacing, not a universal native spectral-sample footprint. Public surfaces must name the ortho branch or use approximate sensor wording until the preregistered basic-versus-ortho sensitivity is complete. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed."
     },
     {
       "id": "diagnostic-absorption-centers",
@@ -229,13 +247,17 @@
           "jarosite": 2265.0,
           "gypsum_carbonate": 2340.0
         },
-        "reported_values": ["2200 nm", "2265 nm", "2340 nm"],
+        "reported_values": [
+          "2200 nm",
+          "2265 nm",
+          "2340 nm"
+        ],
         "unit": "nanometers"
       },
       "source_artifact": {
         "path": "src/tanager_minmap/config.py",
         "selector": "DIAGNOSTIC_NM",
-        "sha256": "9a7537791bf2af5c6ec2bdcddbb0bf329019a13b9d9d6d7f31a3c00ea77c5f22"
+        "sha256": "f4c910ad9128816ef3dae2b868bfb7102447803c5e0387f546710e18948611f8"
       },
       "generating_command": null,
       "public_destinations": [
@@ -260,8 +282,8 @@
           "state": "tracked_release_surface"
         }
       ],
-      "status": "current",
-      "notes": "These are named configuration constants rather than generated results, so there is no generating command."
+      "status": "source_gap",
+      "notes": "These are named configuration constants rather than generated results, so there is no generating command. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed."
     },
     {
       "id": "ablation-alunite-kaolinite-angle-loss",
@@ -273,7 +295,11 @@
           "sentinel2_angle_deg": 2.578,
           "loss_percent": 49.8
         },
-        "reported_values": ["5.138° to 2.578° (49.8% loss)", "5.14° to 2.58° (50% loss)", "5.1° to 2.6°, a 50% loss"],
+        "reported_values": [
+          "5.138° to 2.578° (49.8% loss)",
+          "5.14° to 2.58° (50% loss)",
+          "5.1° to 2.6°, a 50% loss"
+        ],
         "unit": "degrees and percent"
       },
       "source_artifact": {
@@ -314,8 +340,8 @@
           "state": "tracked_release_surface"
         }
       ],
-      "status": "needs_correction",
-      "notes": "The number is supported by the current CSV. Video beat 04 incorrectly says an identical classifier was run and that three minerals collapsed into one class; the release checklist requires replacement with the endmember spectral-angle result and jarosite-goethite control."
+      "status": "source_gap",
+      "notes": "The number is supported by the current CSV. Video beat 04 incorrectly says an identical classifier was run and that three minerals collapsed into one class; the release checklist requires replacement with the endmember spectral-angle result and jarosite-goethite control. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed."
     },
     {
       "id": "goldfield-al-oh-rank-auc",
@@ -323,7 +349,10 @@
       "metric": {
         "name": "goldfield_al_oh_rank_auc",
         "source_value": 0.784,
-        "reported_values": ["0.7840", "0.78"],
+        "reported_values": [
+          "0.7840",
+          "0.78"
+        ],
         "unit": "rank-AUC"
       },
       "source_artifact": {
@@ -358,7 +387,9 @@
       "metric": {
         "name": "goldfield_gypsum_carbonate_rank_auc",
         "source_value": 0.7785,
-        "reported_values": ["0.78"],
+        "reported_values": [
+          "0.78"
+        ],
         "unit": "rank-AUC"
       },
       "source_artifact": {
@@ -388,7 +419,10 @@
       "metric": {
         "name": "goldfield_alunite_mtmf_rank_auc",
         "source_value": 0.7013,
-        "reported_values": ["0.7013", "0.70"],
+        "reported_values": [
+          "0.7013",
+          "0.70"
+        ],
         "unit": "rank-AUC"
       },
       "source_artifact": {
@@ -423,7 +457,9 @@
       "metric": {
         "name": "goldfield_muscovite_mtmf_rank_auc",
         "source_value": 0.695,
-        "reported_values": ["0.70"],
+        "reported_values": [
+          "0.70"
+        ],
         "unit": "rank-AUC"
       },
       "source_artifact": {
@@ -456,7 +492,10 @@
           "pearson_r": 0.9622,
           "shared_bands": 240
         },
-        "reported_values": ["r = 0.9622 over 240 shared bands", "r = 0.962 over 240 shared bands"],
+        "reported_values": [
+          "r = 0.9622 over 240 shared bands",
+          "r = 0.962 over 240 shared bands"
+        ],
         "unit": "Pearson r and bands"
       },
       "source_artifact": {
@@ -499,7 +538,10 @@
           "angle_deg": 3.7202,
           "shared_bands": 240
         },
-        "reported_values": ["3.7202°", "3.72°"],
+        "reported_values": [
+          "3.7202°",
+          "3.72°"
+        ],
         "unit": "degrees and bands"
       },
       "source_artifact": {
@@ -524,7 +566,10 @@
       "metric": {
         "name": "tanager_emit_alunite_detection_pearson_r",
         "source_value": 0.5501,
-        "reported_values": ["0.55", "zero point five five"],
+        "reported_values": [
+          "0.55",
+          "zero point five five"
+        ],
         "unit": "Pearson r"
       },
       "source_artifact": {
@@ -550,8 +595,8 @@
           "state": "tracked_release_surface"
         }
       ],
-      "status": "current",
-      "notes": "The corrected value rounds to the existing 0.55 public form. This is cross-sensor consistency, not independent accuracy."
+      "status": "source_gap",
+      "notes": "The corrected value rounds to the existing 0.55 public form. This is cross-sensor consistency, not independent accuracy. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed."
     },
     {
       "id": "emit-jarosite-detection-correlation",
@@ -559,7 +604,12 @@
       "metric": {
         "name": "tanager_emit_jarosite_detection_pearson_r",
         "source_value": 0.5838,
-        "reported_values": ["+0.584", "0.5838", "zero point five eight", "stale video: zero point five nine"],
+        "reported_values": [
+          "+0.584",
+          "0.5838",
+          "zero point five eight",
+          "stale video: zero point five nine"
+        ],
         "unit": "Pearson r"
       },
       "source_artifact": {
@@ -600,8 +650,8 @@
           "state": "tracked_release_surface"
         }
       ],
-      "status": "needs_correction",
-      "notes": "The corrected value rounds to 0.58. Memo, story, and narration source are corrected; the final audio, captions, and video must be regenerated after the science freeze."
+      "status": "source_gap",
+      "notes": "The corrected value rounds to 0.58. Memo, story, and narration source are corrected; the final audio, captions, and video must be regenerated after the science freeze. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed."
     },
     {
       "id": "emit-muscovite-detection-correlation",
@@ -609,7 +659,10 @@
       "metric": {
         "name": "tanager_emit_muscovite_detection_pearson_r",
         "source_value": 0.3353,
-        "reported_values": ["+0.335", "+0.3353"],
+        "reported_values": [
+          "+0.335",
+          "+0.3353"
+        ],
         "unit": "Pearson r"
       },
       "source_artifact": {
@@ -642,7 +695,9 @@
           "positive": 6,
           "reported": 6
         },
-        "reported_values": ["all six target minerals correlate positively"],
+        "reported_values": [
+          "all six target minerals correlate positively"
+        ],
         "unit": "minerals"
       },
       "source_artifact": {
@@ -676,7 +731,11 @@
           "emit_m_approx": 60,
           "areal_pixel_density_ratio_approx": 4
         },
-        "reported_values": ["delivered 30 m ortho grid", "~60 m", "about one-quarter the pixel area"],
+        "reported_values": [
+          "delivered 30 m ortho grid",
+          "~60 m",
+          "about one-quarter the pixel area"
+        ],
         "unit": "meters and areal pixel-density ratio"
       },
       "source_artifact": {
@@ -716,7 +775,9 @@
           "low": 12949,
           "background": 448099
         },
-        "reported_values": ["22,536 / 30,678 / 12,949 / 448,099"],
+        "reported_values": [
+          "22,536 / 30,678 / 12,949 / 448,099"
+        ],
         "unit": "pixels"
       },
       "source_artifact": {
@@ -744,7 +805,10 @@
           "d36046b": 59,
           "later_documented_suite": 79
         },
-        "reported_values": ["59 tests at that commit", "79 tests"],
+        "reported_values": [
+          "59 tests at that commit",
+          "79 tests"
+        ],
         "unit": "tests"
       },
       "source_artifact": {
@@ -760,8 +824,8 @@
           "state": "tracked_release_surface"
         }
       ],
-      "status": "needs_reconfirmation",
-      "notes": "This task runs only the focused metadata test requested by acceptance, so it does not silently relabel 79 as currently reconfirmed."
+      "status": "current",
+      "notes": "This task runs only the focused metadata test requested by acceptance, so it does not silently relabel 79 as currently reconfirmed. Reconfirmed 2026-08-31: the public release tree runs 437 tests, all passing, verified in a clean detached worktree with the sibling tanager-spec checkout; REPRODUCIBILITY.md no longer states a current count and scopes 59/79 to their historical commits."
     },
     {
       "id": "cli-subcommand-count",
@@ -769,7 +833,10 @@
       "metric": {
         "name": "registered_cli_subcommands",
         "source_value": 7,
-        "reported_values": ["all seven CLI subcommands", "seven-stage tanager-minmap CLI"],
+        "reported_values": [
+          "all seven CLI subcommands",
+          "seven-stage tanager-minmap CLI"
+        ],
         "unit": "subcommands"
       },
       "source_artifact": {
@@ -803,13 +870,17 @@
           "tanager_scenes_gb": 7.791736853,
           "rockwell_reference_gb": 3.066092942
         },
-        "reported_values": ["21.8 MB", "7.79 GB", "3.07 GB"],
+        "reported_values": [
+          "21.8 MB",
+          "7.79 GB",
+          "3.07 GB"
+        ],
         "unit": "decimal file sizes"
       },
       "source_artifact": {
         "path": "docs/input_manifest.json",
         "selector": "size_bytes summed by the usgs-splib07a, tanager scene, and rockwell input IDs",
-        "sha256": "50c2473ab34cd47440fb6cd583736463df17abced98da8002bb0f5c4e418e3f3"
+        "sha256": "76b712d6fb8543904aabb6d3b12d9a2de2145104ffce4061839d5185cdb6b0bf"
       },
       "generating_command": "uv run python scripts/build_input_manifest.py",
       "public_destinations": [
@@ -833,7 +904,12 @@
           "swir_separable_pairs": 18,
           "swir_null_quantile": 0.95
         },
-        "reported_values": [268, 415, 18, "95th percentile"],
+        "reported_values": [
+          268,
+          415,
+          18,
+          "95th percentile"
+        ],
         "unit": "patches, patch pairs, and null-distribution quantile"
       },
       "source_artifact": {
@@ -857,8 +933,14 @@
       "claim_text": "The hard-pair story figure shows the first three pairs in the mechanically ranked SWIR spectral-angle table, without manual selection.",
       "metric": {
         "name": "hard_pair_story_ranked_angles",
-        "source_value": [8.168, 7.113, 6.46],
-        "reported_values": ["first three pairs ranked mechanically by SWIR spectral angle"],
+        "source_value": [
+          8.168,
+          7.113,
+          6.46
+        ],
+        "reported_values": [
+          "first three pairs ranked mechanically by SWIR spectral angle"
+        ],
         "unit": "degrees"
       },
       "source_artifact": {

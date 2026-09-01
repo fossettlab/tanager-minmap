@@ -6,8 +6,8 @@
     {
       "id": "dependency-lock",
       "logical_path": "uv.lock",
-      "size_bytes": 580091,
-      "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359"
+      "size_bytes": 580092,
+      "sha256": "832588c90a2e0ad81a32f2ca7fea15e1ff60418a16638af7b8bbf71f020c224d"
     },
     {
       "id": "emit-goldfield-rfl",

@@ -28,6 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: fossettlab/tanager-spec
+          ref: v0.1.0
           path: tanager-spec
 
       - name: Install uv

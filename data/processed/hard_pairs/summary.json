@@ -1,0 +1,42 @@
+{
+  "patch_size_px": 11,
+  "purity_floor": 0.7,
+  "max_infeas": 1.0,
+  "detection_quantile": 0.9,
+  "rgb_stretch_lo": [
+    0.04142138659954071,
+    0.04062150537967682,
+    0.024546805918216705
+  ],
+  "rgb_stretch_hi": [
+    0.27541228413581864,
+    0.23401068031787878,
+    0.18968641757965088
+  ],
+  "per_site_counts": {
+    "bingham": {
+      "total": 7290,
+      "invalid": 4781,
+      "no_detection": 2420,
+      "low_purity": 76,
+      "labeled": 13
+    },
+    "goldfield": {
+      "total": 7480,
+      "invalid": 2555,
+      "no_detection": 4201,
+      "low_purity": 469,
+      "labeled": 255
+    }
+  },
+  "total_labeled_patches": 268,
+  "rgb_ambiguous_candidates": 415,
+  "rgb_mean_threshold": 26.582415237889,
+  "rgb_std_threshold": 3.304471761012278,
+  "rgb_quantile": 0.1,
+  "n_cross_label_pairs": 30414,
+  "swir_separable_pairs": 18,
+  "swir_threshold_deg": 5.454371209314992,
+  "swir_null_quantile": 0.95,
+  "n_same_label_null_pairs": 5364
+}

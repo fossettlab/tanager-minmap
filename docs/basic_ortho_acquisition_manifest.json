@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "created_utc": "2026-08-10T02:59:24Z",
+  "purpose": "Pre-result source manifest for the native/basic versus ortho Tanager sensitivity",
+  "preregistration": {
+    "path": "docs/m1b_basic_ortho_sensitivity_preregistration.md",
+    "sha256": "d546eee8971fb0467b99775dc1f8d8c73ec18b1781116af13f192658fe95d1ba"
+  },
+  "assets": [
+    {
+      "site": "goldfield",
+      "scene_id": "20240925_185504_87_4001",
+      "asset_key": "basic_sr_hdf5",
+      "stac_proj_code": "EPSG:4326",
+      "stac_proj_shape": [587, 607],
+      "stac_raster_spatial_resolution_m": 40.86,
+      "paired_ortho_proj_code": "EPSG:32611",
+      "paired_ortho_proj_shape": [938, 973],
+      "paired_ortho_raster_spatial_resolution_m": 30,
+      "url": "https://storage.googleapis.com/open-cogs/planet-stac/tanager1-release2-core-imagery/basic_sr_hdf5/20240925_185504_87_4001_basic_sr_hdf5.h5",
+      "local_path": "data/raw/20240925_185504_87_4001_basic_sr_hdf5.h5",
+      "content_type": "application/x-hdf5",
+      "content_length": 978021782,
+      "last_modified": "Mon, 08 Dec 2025 00:18:22 GMT",
+      "etag": "8701d2c96752e55fd61adfd38db7fdc2",
+      "x_goog_generation": "1765153102733630",
+      "x_goog_hash_md5_base64": "hwHSyWdS5V/WGt/Tjbf9wg==",
+      "x_goog_hash_crc32c_base64": "+uHRTg==",
+      "sha256": "7dbf2c8206c851d2b5c0f70fe59918dc132ad39653979f148139a4e07a19c03d",
+      "hdf5_open_verified": true
+    },
+    {
+      "site": "bingham",
+      "scene_id": "20250911_191523_58_4001",
+      "asset_key": "basic_sr_hdf5",
+      "stac_proj_code": "EPSG:4326",
+      "stac_proj_shape": [732, 607],
+      "stac_raster_spatial_resolution_m": 34.47,
+      "paired_ortho_proj_code": "EPSG:32612",
+      "paired_ortho_proj_shape": [997, 892],
+      "paired_ortho_raster_spatial_resolution_m": 30,
+      "url": "https://storage.googleapis.com/open-cogs/planet-stac/tanager1-release2-core-imagery/basic_sr_hdf5/20250911_191523_58_4001_basic_sr_hdf5.h5",
+      "local_path": "data/raw/20250911_191523_58_4001_basic_sr_hdf5.h5",
+      "content_type": "application/x-hdf5",
+      "content_length": 1264928116,
+      "last_modified": "Mon, 08 Dec 2025 01:50:26 GMT",
+      "etag": "f1cc196e2b8d44814d4620910c026041",
+      "x_goog_generation": "1765158626109985",
+      "x_goog_hash_md5_base64": "8cwZbiuNRIFNRiCRDAJgQQ==",
+      "x_goog_hash_crc32c_base64": "Fjonvg==",
+      "sha256": "26f126bfa03a6ac7dbb03f0a856ef7ec57df7e41b4e1ef130e2749a46e92f847",
+      "hdf5_open_verified": true
+    }
+  ],
+  "scientific_endpoint_values_inspected": false,
+  "notes": "Each object was downloaded to a new .part path, matched to the official HTTP content length, SHA-256 hashed, verified as HDF5, and only then renamed to its final immutable source path."
+}

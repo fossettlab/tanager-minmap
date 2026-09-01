@@ -54,8 +54,8 @@ src/tanager_minmap/
 
 ## Install
 
-Until `tanager-spec` 0.1.0 is tagged and made public, its source checkout must
-sit alongside this repo (`../tanager-spec`) for the development override.
+`tanager-spec` is public and tagged `v0.1.0`; clone it alongside this repo
+(`../tanager-spec`) so the development override resolves.
 
 ```bash
 uv sync --extra dev

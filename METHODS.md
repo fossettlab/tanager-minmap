@@ -22,8 +22,9 @@ yet fixed; they will be completed as the corresponding modules are built.
   on two lab spectrometers — ASD (2151 ch, 0.35–2.5 µm) and Beckman (0.2–3.0 µm)
   — and each spectrum is resampled from its own grid onto the Tanager
   wavelength axis. The ECOSTRESS library remains a possible cross-check.
-- **EMIT L2A.** Queried from the LP DAAC STAC at whichever study site EMIT
-  overlaps (confirmed in Week 1).
+- **EMIT L2A.** The pinned Goldfield acquisition
+  `EMIT_L2A_RFL_001_20230804T191650_2321613_007`, queried from the LP DAAC
+  STAC.
 - **Validation reference.** The USGS *Digital map of hydrothermal alteration
   type, key mineral groups, and green vegetation of the western United States
   derived from automated analysis of ASTER satellite data* (Rockwell & Bonham
@@ -77,8 +78,9 @@ Scene IDs are recorded in `config.SITES`.
    diagnostic mineral (kaolinite for Al-OH, jarosite, gypsum), not hand-picked.
    The VNIR Fe-oxide band is also mapped: its center is not fixed by the spec,
    so it is located within a 700–1000 nm window from the hematite endmember
-   (841 nm on the Bingham scene). First Bingham map produced (4 features);
-   the maps are spatially coherent but not yet validated, and the Al-OH low
+   (841 nm on the Bingham scene). The Bingham maps (4 features)
+   are spatially coherent; their comparison against the independent reference
+   is reported in the validation sections below, and the Al-OH low
    shoulder currently pins to the search-window edge (~2102 nm) because
    kaolinite reflectance rises shortward — a shoulder refinement to revisit.
 4. **Unmixing** — against one medoid endmember per mineral (the real splib07
@@ -197,8 +199,8 @@ Scene IDs are recorded in `config.SITES`.
    The loss is specific to the SWIR Al-OH region, not universal — the
    VNIR-driven jarosite–goethite contrast (8.6° → 12.5°) is not lost, which is
    the honest control showing the effect is the doublet collapse, not a generic
-   degradation. So Sentinel-2 cannot separate advanced argillic (alunite) from
-   argillic (kaolinite) alteration, which Tanager resolves; this is quantified
+   degradation. So Sentinel-2 sampling reduces the alunite-kaolinite separation from 5.1°
+   to 2.6°, a distinction Tanager retains; this is quantified
    per pair and shown in the band-ablation figure (`viz.band_ablation_panel`).
 
 ### Validation results (Goldfield lead scene, contains Cuprite)

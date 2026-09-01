@@ -177,7 +177,6 @@ tests/test_verify_repeatability_staging.py
 tests/test_ensemble_v5_git_provenance.py
 tests/test_ensemble_sensitivity.py
 tests/test_public_claim_copy.py
-tests/test_repro_metadata.py
 tests/test_basic_ortho.py
 tests/test_emit_l2b.py
 
@@ -192,7 +191,6 @@ scripts/capture_*.py
 scripts/check_release_artifacts.py
 scripts/install_source_recovery_with_parent.py
 scripts/verify_*.py
-scripts/validate_repro_metadata.py
 scripts/build_input_manifest.py
 scripts/run_basic_ortho_sensitivity_launcher.py
 docs/video_reproduction.md
@@ -205,3 +203,25 @@ tests/test_ensemble_v*_wrapper_lock.py
 tests/test_ensemble_v6_git_descriptor.py
 tests/test_narration_claims.py
 tests/test_emit_l2b_nonresult_runner.py
+
+# Compact evidence artifacts referenced by docs/claim_ledger.yaml — public
+!data/intermediate/
+data/intermediate/*
+!data/intermediate/ablation/
+data/intermediate/ablation/*
+!data/intermediate/ablation/ablation_bingham_20250911_191523_58_4001.csv
+!data/intermediate/amd/
+data/intermediate/amd/*
+!data/intermediate/amd/amd_counts_bingham_20250911_191523_58_4001.csv
+!data/intermediate/emit/
+data/intermediate/emit/*
+!data/intermediate/emit/emit_comparison_goldfield_20240925_185504_87_4001.csv
+!data/intermediate/validation/
+data/intermediate/validation/*
+!data/intermediate/validation/validation_goldfield_20240925_185504_87_4001.csv
+!data/processed/hard_pairs/
+data/processed/hard_pairs/*
+!data/processed/hard_pairs/pairs.csv
+!data/processed/hard_pairs/summary.json
+!data/processed/hard_pairs_dataset/wavelengths.csv
+!docs/basic_ortho_acquisition_manifest.json

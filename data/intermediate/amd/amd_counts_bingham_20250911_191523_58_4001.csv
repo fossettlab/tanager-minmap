@@ -1,0 +1,5 @@
+tier_code,tier_label,pixel_count,in_scene_pixels,max_infeas,detection_quantile
+0,background (no indicator),448099,514262,1.0,0.9
+1,low / neutralised (gypsum),12949,514262,1.0,0.9
+2,moderate (Fe-oxide),30678,514262,1.0,0.9
+3,high (jarosite),22536,514262,1.0,0.9

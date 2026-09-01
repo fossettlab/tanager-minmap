@@ -13,15 +13,15 @@ the corrected products below.
   [`tanager-spec`](https://github.com/fossettlab/tanager-spec) checked out
   alongside this repo at `../tanager-spec`. The wheel metadata requires the
   exact `tanager-spec==0.1.0` release, while `[tool.uv.sources]` substitutes the
-  editable sibling during development. The two repos therefore must sit side
-  by side until that immutable release is publicly reachable.
+  editable sibling during development. The two repos sit side by side; `tanager-spec` is public and tagged
+  `v0.1.0`.
 - For the `emit` stage only: NASA Earthdata credentials in the environment
   (`EARTHDATA_USERNAME` / `EARTHDATA_PASSWORD`); a free Earthdata Login account.
 
 ## Setup
 
 ```bash
-git clone https://github.com/fossettlab/tanager-spec.git
+git clone --branch v0.1.0 https://github.com/fossettlab/tanager-spec.git
 git clone https://github.com/fossettlab/tanager-minmap.git
 cd tanager-minmap
 uv sync --extra dev

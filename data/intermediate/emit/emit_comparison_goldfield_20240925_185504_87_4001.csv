@@ -1,0 +1,9 @@
+metric,mineral,value,n
+spectral_pearson_r,,0.9622,240
+spectral_angle_deg,,3.7202,240
+detection_pearson_r,alunite,0.5501,192427
+detection_pearson_r,kaolinite,0.4557,192427
+detection_pearson_r,muscovite,0.3353,192427
+detection_pearson_r,jarosite,0.5838,192427
+detection_pearson_r,hematite,0.4527,192427
+detection_pearson_r,goethite,0.5422,192427

@@ -58,7 +58,7 @@
           "id": "uv-lock",
           "path": "uv.lock",
           "kind": "file",
-          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "sha256": "832588c90a2e0ad81a32f2ca7fea15e1ff60418a16638af7b8bbf71f020c224d",
           "availability": "present",
           "notes": "Current dependency lock at the metadata snapshot."
         }
@@ -155,7 +155,7 @@
           "id": "uv-lock",
           "path": "uv.lock",
           "kind": "file",
-          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "sha256": "832588c90a2e0ad81a32f2ca7fea15e1ff60418a16638af7b8bbf71f020c224d",
           "availability": "present",
           "notes": "Current dependency lock at the metadata snapshot."
         }
@@ -270,7 +270,7 @@
           "id": "uv-lock",
           "path": "uv.lock",
           "kind": "file",
-          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "sha256": "832588c90a2e0ad81a32f2ca7fea15e1ff60418a16638af7b8bbf71f020c224d",
           "availability": "present",
           "notes": "Current dependency lock at the metadata snapshot."
         }
@@ -366,7 +366,7 @@
           "id": "uv-lock",
           "path": "uv.lock",
           "kind": "file",
-          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "sha256": "832588c90a2e0ad81a32f2ca7fea15e1ff60418a16638af7b8bbf71f020c224d",
           "availability": "present",
           "notes": "Current dependency lock at the metadata snapshot."
         }
@@ -464,7 +464,7 @@
           "id": "uv-lock",
           "path": "uv.lock",
           "kind": "file",
-          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "sha256": "832588c90a2e0ad81a32f2ca7fea15e1ff60418a16638af7b8bbf71f020c224d",
           "availability": "present",
           "notes": "Current dependency lock at the metadata snapshot."
         }
@@ -583,7 +583,7 @@
           "id": "uv-lock",
           "path": "uv.lock",
           "kind": "file",
-          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "sha256": "832588c90a2e0ad81a32f2ca7fea15e1ff60418a16638af7b8bbf71f020c224d",
           "availability": "present",
           "notes": "Current dependency lock at the metadata snapshot."
         }
@@ -711,12 +711,12 @@
       "hypothesis": "Applying the unchanged spectral pipeline in native/basic sample space and projecting only scalar outputs will reveal whether ortho nearest-neighbour sample duplication materially changes score ranks, classifications, support, or descriptive reference comparisons.",
       "code": {
         "commit": null,
-        "commit_source": "Pre-result protocol is frozen in the current dirty release worktree; implementation does not yet exist.",
+        "commit_source": "Planned future work: the pre-result protocol is frozen; implementation does not yet exist.",
         "dependency_lock": {
           "id": "uv-lock",
           "path": "uv.lock",
           "kind": "file",
-          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "sha256": "832588c90a2e0ad81a32f2ca7fea15e1ff60418a16638af7b8bbf71f020c224d",
           "availability": "present",
           "notes": "Current dependency lock at protocol freeze."
         }
@@ -800,7 +800,7 @@
         "availability": "not_applicable",
         "notes": "No trained checkpoint is used."
       },
-      "command": "PENDING: implement the hash-bound driver specified by docs/m1b_basic_ortho_sensitivity_preregistration.md",
+      "command": "Planned future work: a hash-bound driver specified by the frozen pre-registration; not part of this release.",
       "outputs": [
         {
           "id": "basic-ortho-output-directory",

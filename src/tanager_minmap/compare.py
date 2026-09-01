@@ -10,8 +10,9 @@ scene, this module quantifies the three things spec step 6 asks for:
 - **Mineral-detection agreement** — do the per-mineral MTMF maps agree
   spatially? The finer Tanager map is reprojected onto the coarser EMIT grid
   (no upsampling) and correlated pixel-for-pixel.
-- **Spatial detail** — the resolution ratio, reported honestly (Tanager 30 m
-  vs EMIT 60 m → 4× the pixel density, a smaller minimum mappable feature).
+- **Spatial detail** — the delivered product grids compared honestly
+  (Tanager 30 m vs EMIT 60 m → 4× the pixel density; grid spacing alone
+  does not establish resolving power or a minimum mappable feature).
 
 The maps themselves come from the existing `features`/`unmix` pipeline run on
 each sensor; nothing here recomputes mineralogy.
