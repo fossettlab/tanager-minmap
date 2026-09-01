@@ -352,8 +352,8 @@ The acid-mine-drainage layer (`scripts/amd_site.py` → `hazard.acid_generating_
 is a qualitative, ordinal **acid-generating-potential (AGP)** map built from the
 secondary AMD-indicator assemblage — jarosite, the Fe-oxyhydroxides
 (hematite/goethite), and gypsum. The tiers follow the iron-mineral pH zonation
-of supergene weathering over sulfide-bearing ground (Swayze et al. 2000, USGS
-OFR 2000-0205; Williams & Hauff 2007): jarosite `KFe₃(SO₄)₂(OH)₆` is stable only
+of supergene weathering over sulfide-bearing ground (Swayze et al. 2000, Environ. Sci.
+Technol. 34, 47-54): jarosite `KFe₃(SO₄)₂(OH)₆` is stable only
 in acidic (pH ≈ 2–4), oxidising, sulfate-rich conditions and is the diagnostic
 active-acid indicator; the Fe-oxyhydroxides are the higher-pH, partly-neutralised
 oxidation products; gypsum, absent the acidic iron phases, points to a buffered

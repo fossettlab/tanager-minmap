@@ -132,4 +132,4 @@ Planet Labs PBC, CC BY 4.0; NASA EMIT reflectance via LP DAAC. Boardman (1998), 
 and Roush (1984), J. Geophys. Res. 89, 6329–6340. Kokaly et al. (2017), USGS
 Data Series 1035. Rockwell and Bonham (2017), ASTER-derived mineral and
 alteration maps of the western US, USGS data release, doi:10.5066/F7CR5RK7.
-Swayze et al. (2000), USGS OFR 2000-0205.
+Swayze et al. (2000), Environ. Sci. Technol. 34, 47-54, doi:10.1021/es990046w.
