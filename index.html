@@ -140,7 +140,7 @@
 <figure><img src="figures/goldfield_spectra.png" alt="Library vs scene spectra">
 <figcaption>Measured USGS mineral spectra (solid) compared with mean spectra from the Tanager pixels most strongly identified as each mineral (dashed). The diagnostic absorption features occur in both.</figcaption></figure>
 
-<h2 id="spectral-ablation"><span class="n">3</span>What Sentinel-2 spectral sampling blurs</h2>
+<h2 id="spectral-ablation"><span class="n">3</span>The 2200 nm test: Tanager vs Sentinel-2</h2>
 <p>The advantage of contiguous spectral sampling is easiest to see around 2200&nbsp;nm. Alunite and kaolinite have different absorption shapes here, allowing the two minerals — and the alteration environments they represent — to be distinguished spectrally.</p>
 <p>We took the measured mineral spectra and deliberately degraded them to Sentinel-2's spectral resolution using the published Sentinel-2 response functions. Their spectral-angle separation — the angle between two spectra treated as vectors — falls from <b>5.1° to 2.6°, a 50% loss</b>. Sentinel-2 band 12 spans most of the diagnostic structure that separates the two minerals.</p>
 <p>This is not a demonstration that hyperspectral data always outperform multispectral data. The jarosite–goethite contrast in the visible and near infrared survives the same degradation much better. The information loss is greatest where the diagnostic mineral structure falls within a broad satellite band.</p>
@@ -163,7 +163,7 @@
 <div class="mapwrap"><iframe src="goldfield_map.html" title="Goldfield interactive mineral map" loading="lazy"></iframe></div>
 <p class="maphint">Interactive: pan and zoom the Goldfield mineral classes over satellite imagery; toggle the overlay at top-right.</p>
 
-<h2 id="independent-map"><span class="n">6</span>Does the Tanager map agree with an independent map?</h2>
+<h2 id="independent-map"><span class="n">6</span>How the maps compare with USGS alteration mapping</h2>
 <p>Goldfield provides an independent check because USGS previously mapped alteration in the district using ASTER data (Rockwell &amp; Bonham 2017). That product was not used to calibrate our Tanager analysis.</p>
 <p>Agreement is strongest for the Al-OH and gypsum-carbonate spectral indices, which each reach a rank AUC of <b>0.78</b> (1 would be perfect ranking; 0.5 is chance). The alunite and muscovite MTMF maps each reach <b>0.70</b>.</p>
 <p>Iron oxides and kaolinite agree less well. Some of this reflects differences between the mineral classes used here and the broader categories in the published map. We report those disagreements rather than tuning the Tanager classifications to reproduce the reference map.</p>
@@ -202,7 +202,7 @@
 </ul>
 
 <h2><span class="n">10</span>Reproduce the analysis</h2>
-<p>The analysis is packaged as a command-line workflow that runs directly from Tanager's Open STAC imagery:</p>
+<p>The analysis is packaged as a command-line workflow. From a clone of the repository, after <code>uv sync</code> and the documented data downloads, each stage is one command:</p>
 <p><code>uv run tanager-minmap hero --site goldfield --output out/</code></p>
 <p>The repository contains the seven-stage <code>tanager-minmap</code> pipeline and reproduction instructions in <code>REPRODUCIBILITY.md</code>. The code and its shared data layer are public; the archival deposit of the derivative maps is the one release step still open.</p>
 

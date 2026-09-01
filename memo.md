@@ -32,7 +32,7 @@ own background covariance, with an infeasibility score that suppresses
 spectrally implausible detections. The analytical stages run from one installed
 command, and the code and its shared data layer are public.
 
-## What Sentinel-2 spectral sampling blurs
+## The 2200 nm test: Tanager vs Sentinel-2
 
 The case for contiguous VSWIR is sharpest at the 2200 nm Al-OH doublet. Alunite
 and kaolinite (advanced-argillic versus argillic alteration, an important
@@ -46,7 +46,7 @@ universal; the visible-to-near-infrared jarosite-goethite contrast survives
 degradation, which is the control showing the effect is the doublet itself and
 not coarse resampling.
 
-## Comparison with an independent alteration map
+## How the maps compare with USGS alteration mapping
 
 At Goldfield the maps were compared with the USGS ASTER alteration map of the
 district (Rockwell and Bonham 2017), an independent remote-sensing product with
