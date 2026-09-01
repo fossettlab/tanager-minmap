@@ -66,16 +66,6 @@
           "path": "submission/index.html",
           "locator": "section 1, Two named sites",
           "state": "tracked_release_surface"
-        },
-        {
-          "path": "video/segments_v2/02_stakes.txt",
-          "locator": "two-site narration",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "output/draft_v4.srt",
-          "locator": "caption cue 7",
-          "state": "tracked_release_surface"
         }
       ],
       "status": "source_gap",
@@ -123,26 +113,6 @@
           "path": "submission/index.html",
           "locator": "opening question",
           "state": "tracked_release_surface"
-        },
-        {
-          "path": "video/segments_v2/00_title.txt",
-          "locator": "title narration",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "video/segments_v2/03_data.txt",
-          "locator": "data narration",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "output/draft_v4.srt",
-          "locator": "caption cues 1 and 8",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "output/draft_v4.mp4",
-          "locator": "title, data beat, and end-card text",
-          "state": "tracked_release_surface"
         }
       ],
       "status": "source_gap",
@@ -176,13 +146,13 @@
       "generating_command": "uv run python scripts/build_hard_pairs_dataset.py",
       "public_destinations": [
         {
-          "path": "output/draft_v4.mp4",
-          "locator": "title-card wavelength span",
+          "path": "METHODS.md",
+          "locator": "quality-mask policy: 426 bands span 376-2499 nm",
           "state": "tracked_release_surface"
         }
       ],
       "status": "source_gap",
-      "notes": "The video rounds both per-scene axes to whole nanometers; the ledger preserves both exact generated endpoints. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed."
+      "notes": "The video rounds both per-scene axes to whole nanometers; the ledger preserves both exact generated endpoints. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed. Video destinations removed with the withdrawn walkthrough; the span remains stated in METHODS.md."
     },
     {
       "id": "tanager-ground-sample-distance",
@@ -216,21 +186,6 @@
         {
           "path": "submission/index.html",
           "locator": "Cross-checked with EMIT and Limits",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "video/segments_v2/03_data.txt",
-          "locator": "data narration",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "output/draft_v4.srt",
-          "locator": "caption cue 8",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "output/draft_v4.mp4",
-          "locator": "data beat and end-card text",
           "state": "tracked_release_surface"
         }
       ],
@@ -269,16 +224,6 @@
         {
           "path": "submission/index.html",
           "locator": "sections 2 and 3",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "video/segments_v2/03_data.txt",
-          "locator": "data narration",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "output/draft_v4.srt",
-          "locator": "caption cue 9",
           "state": "tracked_release_surface"
         }
       ],
@@ -327,16 +272,6 @@
         {
           "path": "submission/figures/bingham_20250911_191523_58_4001_band_ablation.png",
           "locator": "spectral-angle annotation",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "video/segments_v2/04_ablation.txt",
-          "locator": "central-result narration associated with the figure",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "output/draft_v4.mp4",
-          "locator": "ablation beat and on-screen figure",
           "state": "tracked_release_surface"
         }
       ],
@@ -580,23 +515,18 @@
       "generating_command": "doppler run --project mac --config dev -- uv run python scripts/compare_emit.py --site goldfield",
       "public_destinations": [
         {
-          "path": "video/segments_v2/06_validation.txt",
-          "locator": "EMIT narration",
+          "path": "METHODS.md",
+          "locator": "EMIT cross-sensor comparison: alunite detection correlation",
           "state": "tracked_release_surface"
         },
         {
-          "path": "output/draft_v4.srt",
-          "locator": "caption cue 21",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "output/draft_v4.mp4",
-          "locator": "EMIT beat caption and narration",
+          "path": "submission/figures/goldfield_20240925_185504_87_4001_emit_comparison.png",
+          "locator": "detection r = 0.550 annotation",
           "state": "tracked_release_surface"
         }
       ],
       "status": "source_gap",
-      "notes": "The corrected value rounds to the existing 0.55 public form. This is cross-sensor consistency, not independent accuracy. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed."
+      "notes": "The corrected value rounds to the existing 0.55 public form. This is cross-sensor consistency, not independent accuracy. Retired 2026-08-31: the video walkthrough was withdrawn from the submission package; its narration and render artifacts are no longer release surfaces and are not distributed. Video destinations removed with the withdrawn walkthrough; the value remains in METHODS.md and the comparison figure."
     },
     {
       "id": "emit-jarosite-detection-correlation",
@@ -632,21 +562,6 @@
         {
           "path": "submission/index.html",
           "locator": "section 7",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "video/segments_v2/06_validation.txt",
-          "locator": "EMIT narration",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "output/draft_v4.srt",
-          "locator": "caption cue 21",
-          "state": "tracked_release_surface"
-        },
-        {
-          "path": "output/draft_v4.mp4",
-          "locator": "EMIT beat caption and narration",
           "state": "tracked_release_surface"
         }
       ],
