@@ -180,3 +180,26 @@ tests/test_public_claim_copy.py
 tests/test_repro_metadata.py
 tests/test_basic_ortho.py
 tests/test_emit_l2b.py
+
+# Not part of the public release: video production, HPC scheduler scripts,
+# and internal release-verification machinery
+video/
+scripts/video/
+scripts/*.sbatch
+scripts/preflight_*.sh
+scripts/admit_*.py
+scripts/capture_*.py
+scripts/check_release_artifacts.py
+scripts/install_source_recovery_with_parent.py
+scripts/verify_*.py
+scripts/validate_repro_metadata.py
+scripts/build_input_manifest.py
+scripts/run_basic_ortho_sensitivity_launcher.py
+docs/video_reproduction.md
+tests/test_capture_*.py
+tests/test_input_manifest.py
+tests/test_install_source_recovery_with_parent.py
+tests/test_release_artifacts.py
+tests/test_verify_*.py
+tests/test_ensemble_v*_wrapper_lock.py
+tests/test_ensemble_v6_git_descriptor.py
