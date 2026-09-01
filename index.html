@@ -89,7 +89,7 @@
   <h1>Tanager VSWIR reveals mine-waste and alteration minerals that broadband satellites miss</h1>
 </header>
 
-<p class="question">What can Tanager's 426-band spectra tell us about mine waste that broadband satellite imagery cannot? We test whether Tanager preserves diagnostic mineral signatures that Sentinel-2 blurs, and whether those signatures can help screen for potentially acid-generating mine waste.</p>
+<p class="question">What can Tanager's 426-band spectra tell us about mine waste that broadband satellite imagery cannot? We test whether Tanager preserves diagnostic mineral signatures that Sentinel-2 blurs, and whether those signatures can help identify mine waste showing evidence of acidic oxidative weathering.</p>
 
 <section class="evidence-grid" aria-label="Three headline results">
   <a class="evidence-card" href="#spectral-ablation">
@@ -179,13 +179,13 @@
 <figcaption>Tanager vs. EMIT: scene-mean spectra (left) and the alunite MTMF map from each sensor at native resolution. The detection correlation carries the quantitative claim.</figcaption></figure>
 
 <h2><span class="n">8</span>Can the mineral maps help screen mine waste?</h2>
-<p>Acid-generating mine waste leaves mineralogical clues at the surface. Jarosite forms under acidic, oxidizing, sulfate-rich conditions, while iron oxyhydroxides generally represent oxidation at higher pH. Gypsum without the acidic iron phases is more consistent with a buffered setting (Swayze et al. 2000).</p>
-<p>We use those mineral indicators to assign each pixel a relative acid-generating-potential tier. This is deliberately a screening product: it identifies surface mineral assemblages associated with different geochemical conditions, but it does not measure pH or predict drainage chemistry directly.</p>
-<p>At Bingham Canyon, the highest-potential pixels cluster around the open pit and tailings areas.</p>
+<p>Acid-generating mine waste leaves mineralogical clues at the surface. Jarosite forms under acidic, oxidizing, sulfate-rich conditions and provides a strong mineralogical indicator of acidic oxidative weathering. Iron oxyhydroxides are generally associated with oxidation under less acidic conditions, and gypsum without the acidic iron phases is more consistent with a comparatively buffered setting (Swayze et al. 2000).</p>
+<p>We use those mineral indicators to assign each pixel an ordinal screening tier — a surface-mineralogical proxy for acidic mine-waste conditions. The tiers rank mineralogical evidence for acidic conditions within the scene; they are not estimates of acid-generating capacity, pH, or acid flux.</p>
+<p>At Bingham Canyon, many of the pixels with the strongest mineralogical indicators of acidic conditions occur around the open pit and tailings areas.</p>
 <figure><img src="figures/bingham_20250911_191523_58_4001_amd_agp.png" alt="Bingham acid-generating-potential">
-<figcaption>Relative acid-generating-potential screening map for Bingham Canyon. The classes are based on surface mineral indicators detected spectrally; they are not measurements of pH or drainage chemistry.</figcaption></figure>
+<figcaption>Scene-relative surface-mineralogical screening for acidic mine-waste conditions at Bingham Canyon. Each class names the mineral indicator detected; the tiers are not measurements of pH or drainage chemistry.</figcaption></figure>
 <div class="mapwrap"><iframe src="bingham_map.html" title="Bingham interactive AMD map" loading="lazy"></iframe></div>
-<p class="maphint">Interactive: the acid-generating-potential tiers over the Bingham pit and tailings; toggle the overlay at top-right.</p>
+<p class="maphint">Interactive: the mineral-indicator screening tiers over the Bingham pit and tailings; toggle the overlay at top-right.</p>
 
 <div class="impact">
   <h3>Operational pathway</h3>
@@ -198,7 +198,7 @@
   <li><b>Features smaller than a pixel:</b> Tanager's delivered products have 30&nbsp;m pixels, so small or narrow mine-waste features may be mixed with surrounding materials.</li>
   <li><b>What lies below the surface:</b> VSWIR spectroscopy measures surface mineralogy. It does not measure bulk composition or subsurface conditions.</li>
   <li><b>Field-verified mineral abundance:</b> The independent comparison is against another remote-sensing alteration product, not field samples. It tests agreement at the alteration-group level, not absolute mineral abundance.</li>
-  <li><b>Validated acid-generation risk:</b> The Bingham acid-generating-potential map is a relative spectral screening layer. It has not been validated against field geochemistry, and the regional reference data contain too little overlapping jarosite to provide that test.</li>
+  <li><b>Validated acid-generation risk:</b> The Bingham mine-waste acidity screening proxy is a relative spectral screening layer. It has not been validated against field geochemistry, and the regional reference data contain too little overlapping jarosite to provide that test.</li>
 </ul>
 
 <h2><span class="n">10</span>Reproduce the analysis</h2>
