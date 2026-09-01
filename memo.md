@@ -6,16 +6,16 @@ Washington University in St. Louis (abradley@wustl.edu).
 
 ## The question
 
-Hydrothermal alteration and mine waste are recorded in a small set of minerals —
-alunite, kaolinite, jarosite, the iron oxides, gypsum, and the white micas —
-whose diagnostic absorptions fall in the shortwave infrared. Can Tanager's
-contiguous 426-band visible-to-shortwave-infrared (VSWIR) measurements resolve
-that mineralogy at a specificity multispectral sensors cannot, and what can the
-answer support as a screening layer for acid-mine-drainage risk? This entry
-tests the question at
-two named United States sites: the Bingham Canyon / Kennecott porphyry-copper
-mine and tailings impoundment in Utah, and the Goldfield hydrothermal district
-in Nevada, adjacent to the USGS Cuprite spectral benchmark.
+What can Tanager's 426-band visible-to-shortwave-infrared (VSWIR) spectra tell
+us about mine waste that broadband satellite imagery cannot? Hydrothermal
+alteration and mine waste are recorded in a small set of minerals — alunite,
+kaolinite, jarosite, the iron oxides, gypsum, and the white micas — whose
+diagnostic absorptions fall in the shortwave infrared. We test whether Tanager
+preserves those signatures where Sentinel-2 blurs them, and whether the maps
+can help screen for potentially acid-generating waste, at two well-studied
+districts: the Bingham Canyon / Kennecott porphyry-copper mine and tailings
+impoundment in Utah, and the Goldfield hydrothermal district in Nevada,
+adjacent to the USGS Cuprite spectral benchmark.
 
 ## Approach
 
@@ -66,13 +66,13 @@ discrimination is strong.
 
 ## Cross-sensor agreement with EMIT
 
-The same library-driven pipeline was run on a pinned overlapping NASA EMIT
-scene, the only other spaceborne imaging spectrometer with comparable
-coverage. This is a cross-sensor consistency check, not independent mineral
-truth, because the code and endmembers are shared. Scene-mean reflectance
-correlates at Pearson r = 0.962 over 240 shared bands (spectral angle 3.72°),
-and all six target-mineral maps correlate positively, ranging from muscovite
-(r = +0.335) to jarosite (r = +0.584) (Figure 3). The map agreement is
+The same mineral-mapping pipeline was run on a pinned overlapping scene from
+NASA's EMIT imaging spectrometer, the only other spaceborne instrument with
+comparable coverage. Scene-mean reflectance correlates at Pearson r = 0.962
+over 240 shared bands (spectral angle 3.72°), and all six target-mineral maps
+correlate positively, ranging from muscovite (r = +0.335) to jarosite
+(r = +0.584) (Figure 3). Because both analyses use the same code and mineral
+endmembers, this tests cross-sensor consistency, not independent accuracy. The map agreement is
 moderate, not near-unity, as expected from the acquisition-date offset
 and the different delivered grids. In these products, Tanager's 30 m ortho
 pixels cover about one-quarter the area of EMIT's ~60 m pixels. This is a
@@ -81,12 +81,12 @@ claim.
 
 ## Acid-generating-potential screening
 
-The secondary minerals that record acid generation are spectrally distinct,
-which makes a hedged hazard proxy possible. Jarosite is stable only in acidic,
-oxidizing, sulfate-rich conditions and is the diagnostic active-acid indicator;
-the iron oxyhydroxides are the higher-pH oxidation products; gypsum, in the
-absence of the acidic iron phases, points to a buffered setting (Swayze et al.
-2000). Each pixel is assigned an ordinal acid-generating-potential tier from the
+Acid-generating mine waste leaves mineralogical clues at the surface, and those
+minerals are spectrally distinct. Jarosite forms under acidic, oxidizing,
+sulfate-rich conditions and is the diagnostic active-acid indicator; the iron
+oxyhydroxides generally represent oxidation at higher pH; gypsum, in the
+absence of the acidic iron phases, is more consistent with a buffered setting
+(Swayze et al. 2000). Each pixel is assigned an ordinal acid-generating-potential tier from the
 most acidic indicator present, rather than by summing abundances across
 minerals. At Bingham the high-potential pixels cluster around the pit and
 tailings ground (Figure 4). The layer is a spectral indicator of surface
