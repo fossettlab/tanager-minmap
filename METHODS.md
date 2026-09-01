@@ -280,7 +280,7 @@ spectral family (Bingham porphyry sericite/argillic).
 
 ### EMIT cross-sensor comparison (Goldfield lead scene, contains Cuprite)
 
-EMIT is the only other spaceborne imaging spectrometer with comparable VSWIR
+EMIT is a spaceborne imaging spectrometer with comparable VSWIR
 coverage (285 bands, 381-2493 nm, ~60 m), so re-running the *same* pipeline on
 an EMIT scene over the shared site is a cross-sensor consistency check. It is
 independent in instrument and acquisition, but deliberately shares this

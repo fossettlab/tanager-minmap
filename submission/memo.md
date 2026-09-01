@@ -27,8 +27,8 @@ removed band depth (Clark and Roush 1984) measures the diagnostic absorptions
 directly — the 2200 nm aluminum-hydroxyl (Al-OH) doublet that separates alunite from kaolinite, the
 2265 nm jarosite feature, the 2340 nm gypsum-carbonate feature, and the
 visible-to-near-infrared ferric-iron bands. A mixture-tuned matched filter
-(MTMF; Boardman 1998) then estimates per-mineral abundance against the scene's
-own background covariance, with an infeasibility score that suppresses
+(MTMF; Boardman 1998) then produces a relative abundance score for each
+mineral against the scene's own background covariance, with an infeasibility score that suppresses
 spectrally implausible detections. The analytical stages run from one installed
 command, and the code and its shared data layer are public.
 
@@ -66,8 +66,7 @@ spectral classes correspond to the reference map's classes.
 ## Cross-sensor agreement with EMIT
 
 The same mineral-mapping pipeline was run on a pre-selected overlapping scene from
-NASA's EMIT imaging spectrometer, the only other spaceborne instrument with
-comparable coverage. Scene-mean reflectance correlates at Pearson r = 0.962
+NASA's EMIT imaging spectrometer. Scene-mean reflectance correlates at Pearson r = 0.962
 over 240 shared bands (spectral angle 3.72°), and all six target-mineral maps
 correlate positively, ranging from muscovite (r = +0.335) to jarosite
 (r = +0.584) (Figure 3). Because both analyses use the same code and mineral
