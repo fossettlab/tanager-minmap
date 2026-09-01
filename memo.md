@@ -118,7 +118,7 @@ mapping is largest over mining districts — the scenes the open archive should
 grow. The pipeline ships as an open tool
 (`tanager-minmap`, MIT) with its shared data layer at a tagged public
 release, and the code and derivative mineral maps are archived at
-doi:10.5281/zenodo.22218608.
+doi:10.5281/zenodo.22218607.
 
 ---
 
