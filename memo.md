@@ -19,12 +19,12 @@ adjacent to the USGS Cuprite spectral benchmark.
 
 ## Approach
 
-Mineral identity is anchored to the USGS spectral library (splib07a; Kokaly et
-al. 2017): every endmember is a measured library spectrum resampled to the
+Mineral identity is anchored to version 7 of the USGS spectral library
+(splib07a; Kokaly et al. 2017): every endmember is a measured library spectrum resampled to the
 Tanager wavelength axis, and no spectral shape is synthesized. Two methods map
 the target assemblage on each scene's surface-reflectance product. Continuum-
 removed band depth (Clark and Roush 1984) measures the diagnostic absorptions
-directly — the 2200 nm Al-OH doublet that separates alunite from kaolinite, the
+directly — the 2200 nm aluminum-hydroxyl (Al-OH) doublet that separates alunite from kaolinite, the
 2265 nm jarosite feature, the 2340 nm gypsum-carbonate feature, and the
 visible-to-near-infrared ferric-iron bands. A mixture-tuned matched filter
 (MTMF; Boardman 1998) then estimates per-mineral abundance against the scene's
@@ -61,12 +61,11 @@ spectral library groups them, and that disagreement is reported rather than
 tuned away. Bingham agrees more weakly with the regional alteration map, by
 design and by geology: a porphyry
 system whose pervasive sericite does not partition into the published
-acid-sulfate zones. That contrast is itself informative about where the method's
-discrimination is strong.
+acid-sulfate zones.
 
 ## Cross-sensor agreement with EMIT
 
-The same mineral-mapping pipeline was run on a pinned overlapping scene from
+The same mineral-mapping pipeline was run on a pre-selected overlapping scene from
 NASA's EMIT imaging spectrometer, the only other spaceborne instrument with
 comparable coverage. Scene-mean reflectance correlates at Pearson r = 0.962
 over 240 shared bands (spectral angle 3.72°), and all six target-mineral maps
@@ -74,10 +73,9 @@ correlate positively, ranging from muscovite (r = +0.335) to jarosite
 (r = +0.584) (Figure 3). Because both analyses use the same code and mineral
 endmembers, this tests cross-sensor consistency, not independent accuracy. The map agreement is
 moderate, not near-unity, as expected from the acquisition-date offset
-and the different delivered grids. In these products, Tanager's 30 m ortho
-pixels cover about one-quarter the area of EMIT's ~60 m pixels. This is a
-product-grid comparison, not a native-footprint or minimum-mappable-feature
-claim.
+and the different delivered grids. Tanager's delivered 30 m pixels cover about
+one-quarter the area of EMIT's ~60 m pixels; we compare the delivered
+products, not native instrument footprints.
 
 ## Acid-generating-potential screening
 
@@ -114,12 +112,11 @@ users are the state geological surveys and the federal agencies
 (USGS, BLM, EPA) that characterize critical-mineral potential and mine-waste
 hazard, for whom a reproducible, library-anchored mineral map over a named
 district is a candidate screening layer for field follow-up. The result also
-makes an archive argument: Tanager's shortwave infrared preserves mineral
-structure that broadband multispectral sampling blurs, and the
-public benefit of that capability is largest over mining districts — the scenes
-the open archive should grow. The pipeline ships as an open tool
-(`tanager-minmap`, MIT) with its shared data layer released at a pinned
-version; the citable derivative-map archive is the one release step still
+makes an archive argument: the public benefit of shortwave-infrared mineral
+mapping is largest over mining districts — the scenes the open archive should
+grow. The pipeline ships as an open tool
+(`tanager-minmap`, MIT) with its shared data layer at a tagged public
+release; the citable derivative-map archive is the one release step still
 open.
 
 ---
@@ -128,7 +125,8 @@ open.
 doublet. (2) Goldfield/Cuprite alteration-group validation. (3) Tanager–EMIT
 cross-sensor comparison. (4) Bingham acid-generating-potential proxy.
 
-*References.* Boardman (1998), 7th JPL Airborne Earth Science Workshop. Clark
+*Data and references.* Tanager STAC data (www.planet.com/data/stac), © 2024–2025
+Planet Labs PBC, CC BY 4.0; NASA EMIT reflectance via LP DAAC. Boardman (1998), 7th JPL Airborne Earth Science Workshop. Clark
 and Roush (1984), J. Geophys. Res. 89, 6329–6340. Kokaly et al. (2017), USGS
 Data Series 1035. Rockwell and Bonham (2017), ASTER-derived mineral and
 alteration maps of the western US, USGS data release, doi:10.5066/F7CR5RK7.
