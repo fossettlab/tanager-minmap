@@ -28,11 +28,11 @@ import numpy as np
 from tanager_spec.bands import indices_in_windows
 from tanager_spec.io import load_tanager_sr_hdf5
 
-from tanager_rocks.config import DIAGNOSTIC_NM, SITES, TANAGER_SR_ASSET
-from tanager_rocks.figures import RGB_NM, _nearest
-from tanager_rocks.pairs import SWIR_WINDOW_NM, continuum_removed, stretch_to_uint8
-from tanager_rocks.quality import mask_tanager_scene
-from tanager_rocks.viz import MINERAL_COLORS, setup_style
+from tanager_minmap.config import DIAGNOSTIC_NM, SITES, TANAGER_SR_ASSET
+from tanager_minmap.figures import RGB_NM, _nearest
+from tanager_minmap.pairs import SWIR_WINDOW_NM, continuum_removed, stretch_to_uint8
+from tanager_minmap.quality import mask_tanager_scene
+from tanager_minmap.viz import MINERAL_COLORS, setup_style
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)

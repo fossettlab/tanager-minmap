@@ -9,8 +9,8 @@ import xarray as xr
 from rasterio.crs import CRS
 from rasterio.transform import Affine
 
-import tanager_rocks.pairs as pairs_module
-from tanager_rocks.pairs import (
+import tanager_minmap.pairs as pairs_module
+from tanager_minmap.pairs import (
     Patch,
     continuum_removed,
     pooled_rgb_percentiles,
@@ -24,7 +24,7 @@ from tanager_rocks.pairs import (
     write_chip_checksum_manifest,
     write_chip_geotiff,
 )
-from tanager_rocks.speclib import pairwise_spectral_angle
+from tanager_minmap.speclib import pairwise_spectral_angle
 
 
 def _patch(label: str, rgb_mean, rgb_std, swir_mean) -> Patch:

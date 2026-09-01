@@ -7,7 +7,7 @@ is alunite vs kaolinite: S2's single broad ~2200 nm band (B12) spans the whole
 Al-OH doublet, roughly halving their separability. Writes a CSV of the pair
 angles and the band-ablation figure.
 
-Thin wrapper over :func:`tanager_rocks.pipeline.run_ablate`; the installed
+Thin wrapper over :func:`tanager_minmap.pipeline.run_ablate`; the installed
 ``tanager-minmap ablate`` runs the same logic.
 
 Run::
@@ -22,8 +22,8 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
-from tanager_rocks.config import SITES
-from tanager_rocks.pipeline import PipelinePaths, run_ablate
+from tanager_minmap.config import SITES
+from tanager_minmap.pipeline import PipelinePaths, run_ablate
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 

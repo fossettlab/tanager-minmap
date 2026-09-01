@@ -43,7 +43,7 @@
         "unit": "sites"
       },
       "source_artifact": {
-        "path": "src/tanager_rocks/config.py",
+        "path": "src/tanager_minmap/config.py",
         "selector": "SITES contains exactly bingham and goldfield",
         "sha256": "9a7537791bf2af5c6ec2bdcddbb0bf329019a13b9d9d6d7f31a3c00ea77c5f22"
       },
@@ -233,7 +233,7 @@
         "unit": "nanometers"
       },
       "source_artifact": {
-        "path": "src/tanager_rocks/config.py",
+        "path": "src/tanager_minmap/config.py",
         "selector": "DIAGNOSTIC_NM",
         "sha256": "9a7537791bf2af5c6ec2bdcddbb0bf329019a13b9d9d6d7f31a3c00ea77c5f22"
       },

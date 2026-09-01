@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from tanager_rocks.features import (
+from tanager_minmap.features import (
     FeatureDef,
     band_depth,
     diagnostic_feature_maps,

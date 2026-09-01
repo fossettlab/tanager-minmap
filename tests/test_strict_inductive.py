@@ -12,9 +12,9 @@ import xarray as xr
 from affine import Affine
 from rasterio.transform import from_origin
 
-import tanager_rocks.strict_inductive as strict
-from tanager_rocks.speclib import Endmember
-from tanager_rocks.unmix import fit_mtmf_background
+import tanager_minmap.strict_inductive as strict
+from tanager_minmap.speclib import Endmember
+from tanager_minmap.unmix import fit_mtmf_background
 
 
 def _cube() -> tuple[xr.DataArray, dict[str, Endmember]]:

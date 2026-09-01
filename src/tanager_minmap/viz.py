@@ -143,7 +143,7 @@ def zone_discrimination_panel(
     For every validated layer, the score distribution in the published positive
     zone is drawn beside the distribution over the other classified ground; the
     panel title carries the rank AUC. This is the visual companion to
-    :func:`tanager_rocks.validate.validate_scores`.
+    :func:`tanager_minmap.validate.validate_scores`.
 
     Parameters
     ----------
@@ -299,7 +299,7 @@ def mineral_map(
     ----------
     abundance : xr.Dataset
         Per-mineral abundance layers (one ``(y, x)`` var each) from
-        :mod:`tanager_rocks.unmix`, typically infeasibility-gated.
+        :mod:`tanager_minmap.unmix`, typically infeasibility-gated.
     title : str
         Figure title.
     per_mineral_quantile : float
@@ -352,7 +352,7 @@ def mineral_map(
 
 
 # Sequential acid-generating-potential palette (ColorBrewer YlOrRd hues),
-# keyed by the ordinal tier codes in :mod:`tanager_rocks.hazard`. Background is
+# keyed by the ordinal tier codes in :mod:`tanager_minmap.hazard`. Background is
 # the same light grey as the hero map; low/moderate/high escalate in luminance
 # so the ramp reads for common colorblindness. Off-domain pixels are white.
 AGP_TIER_COLORS: dict[int, tuple[float, float, float] | str] = {
@@ -372,7 +372,7 @@ def amd_map(
     """Render the ordinal AMD acid-generating-potential map (spec step 7).
 
     ``tiers`` is the ordinal AGP code per pixel from
-    :func:`tanager_rocks.hazard.acid_generating_potential` (``NaN`` off the
+    :func:`tanager_minmap.hazard.acid_generating_potential` (``NaN`` off the
     in-scene domain). Each tier is drawn in its :data:`AGP_TIER_COLORS` hue over
     a white base; off-domain pixels stay transparent (white). Only tiers present
     in the map appear in the legend.
@@ -385,7 +385,7 @@ def amd_map(
         Figure title.
     labels : dict, optional
         Tier-code -> legend label. Defaults to a generic ramp; callers pass
-        :data:`tanager_rocks.hazard.AGP_LABELS` for the science-grounded text.
+        :data:`tanager_minmap.hazard.AGP_LABELS` for the science-grounded text.
     scale_bar_m : float, optional
         Scale-bar length in metres (projected CRS); ``None`` to omit.
 
@@ -446,7 +446,7 @@ def emit_comparison_panel(
     ----------
     common_nm, tan_mean, emit_mean : np.ndarray
         Common wavelength axis and the two scene-mean spectra (from
-        :func:`tanager_rocks.compare.spectral_agreement`).
+        :func:`tanager_minmap.compare.spectral_agreement`).
     pearson_r, spectral_angle_deg : float
         Scene-mean spectral agreement.
     tan_score, emit_score : xr.DataArray

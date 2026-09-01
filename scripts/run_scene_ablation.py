@@ -22,10 +22,10 @@ import rioxarray
 from tanager_spec.io import load_tanager_sr_hdf5
 from tanager_spec.srf import load_s2_srf
 
-from tanager_rocks.config import TANAGER_SR_ASSET, TARGET_MINERALS
-from tanager_rocks.quality import mask_tanager_scene
-from tanager_rocks.reference import MINERAL_TO_ROCKWELL
-from tanager_rocks.sensor_ablation import (
+from tanager_minmap.config import TANAGER_SR_ASSET, TARGET_MINERALS
+from tanager_minmap.quality import mask_tanager_scene
+from tanager_minmap.reference import MINERAL_TO_ROCKWELL
+from tanager_minmap.sensor_ablation import (
     BOOTSTRAP_REPLICATES,
     CONFIRMATORY_STATUS,
     FDR_ALPHA,
@@ -45,7 +45,7 @@ from tanager_rocks.sensor_ablation import (
     paired_sensor_auc_randomization,
     support_governance,
 )
-from tanager_rocks.speclib import load_library, select_endmembers
+from tanager_minmap.speclib import load_library, select_endmembers
 
 ROOT = Path(__file__).resolve().parents[1]
 SCENE_ID = "20240925_185504_87_4001"
@@ -757,7 +757,7 @@ def run(args: argparse.Namespace) -> dict[str, Path]:
             "seed": SEED,
             "positive_class": 3,
             "negative_class": 4,
-            "quality_policy": "tanager_rocks.quality.mask_tanager_scene",
+            "quality_policy": "tanager_minmap.quality.mask_tanager_scene",
             "retained_bands": quality.retained_bands,
             "mtmf_covariance_scope": "full_scene_label_free_per_sensor",
             "secondary_fdr": {
@@ -795,7 +795,7 @@ def run(args: argparse.Namespace) -> dict[str, Path]:
         },
         "software_versions": {
             package: metadata.version(package)
-            for package in ("tanager-rocks", "tanager-spec", "numpy", "pandas", "xarray")
+            for package in ("tanager-minmap", "tanager-spec", "numpy", "pandas", "xarray")
         },
     }
     provenance_path.write_text(

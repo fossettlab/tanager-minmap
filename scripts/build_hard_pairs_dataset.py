@@ -55,8 +55,8 @@ import pyproj
 import rioxarray
 from tanager_spec.io import load_tanager_sr_hdf5
 
-from tanager_rocks.config import SEED, SITES, TANAGER_SR_ASSET
-from tanager_rocks.pairs import (
+from tanager_minmap.config import SEED, SITES, TANAGER_SR_ASSET
+from tanager_minmap.pairs import (
     Patch,
     promote_staged_dataset,
     rgb_ambiguity_clusters,

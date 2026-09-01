@@ -48,7 +48,7 @@ CSS = """
   size: Letter;
   margin: 0.55in 0.58in 0.62in;
   @bottom-right {
-    content: "Tanager Rocks  ·  " counter(page) " / " counter(pages);
+    content: "tanager-minmap  ·  " counter(page) " / " counter(pages);
     color: #59657a;
     font-size: 8pt;
   }
@@ -199,9 +199,9 @@ def render(source: Path, output_dir: Path) -> dict[str, object]:
         heading: (ROOT / rel).resolve(strict=True) for heading, (rel, _) in FIGURES.items()
     }
     output_dir.mkdir(parents=True, exist_ok=True)
-    html_out = output_dir / "tanager_rocks_memo.html"
-    pdf_out = output_dir / "tanager_rocks_memo.pdf"
-    manifest_out = output_dir / "tanager_rocks_memo_manifest.json"
+    html_out = output_dir / "tanager_minmap_memo.html"
+    pdf_out = output_dir / "tanager_minmap_memo.pdf"
+    manifest_out = output_dir / "tanager_minmap_memo_manifest.json"
 
     prepared = insert_figures(source.read_text(encoding="utf-8"))
     with tempfile.TemporaryDirectory(prefix="tanager-memo-") as tmp_name:
@@ -234,7 +234,7 @@ def render(source: Path, output_dir: Path) -> dict[str, object]:
     subprocess.run([weasyprint, str(html_out), str(pdf_out)], check=True)
     page_count = pdf_page_count(pdf_out, pdfinfo)
     manifest: dict[str, object] = {
-        "schema": "tanager-rocks.memo-render/1",
+        "schema": "tanager-minmap.memo-render/1",
         "source": {"path": str(source.relative_to(ROOT)), "sha256": sha256(source)},
         "figures": [
             {

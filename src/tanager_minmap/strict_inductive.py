@@ -1248,7 +1248,7 @@ def run_strict_inductive(
                 "scene_id": site.scene_id,
                 "scene_path": str(scene_path),
                 "scene_sha256": declared_scene["sha256"],
-                "quality_policy": "tanager_rocks.quality.mask_tanager_scene",
+                "quality_policy": "tanager_minmap.quality.mask_tanager_scene",
                 "retained_bands": quality.retained_bands,
                 "ridge": FROZEN_RIDGE,
                 "endmembers": {

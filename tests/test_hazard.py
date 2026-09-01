@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from tanager_rocks.hazard import (
+from tanager_minmap.hazard import (
     AGP_BACKGROUND,
     AGP_HIGH,
     AGP_LOW,

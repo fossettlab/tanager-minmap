@@ -11,14 +11,14 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from tanager_rocks.config import SiteSpec
-from tanager_rocks.pipeline import (
+from tanager_minmap.config import SiteSpec
+from tanager_minmap.pipeline import (
     PipelinePaths,
     _ensure_emit_granule,
     _load_masked_cube,
     _write_amd_counts_csv,
 )
-from tanager_rocks.quality import TanagerQualityReport
+from tanager_minmap.quality import TanagerQualityReport
 
 
 def _paths(tmp_path: Path) -> PipelinePaths:
@@ -70,8 +70,8 @@ def test_pipeline_load_routes_cube_through_shared_quality_policy(tmp_path, monke
         calls.append((path, Path("mask")))
         return masked, TanagerQualityReport(2, 1, 0, 0, 1, 0, 0, 2)
 
-    monkeypatch.setattr("tanager_rocks.pipeline.load_tanager_sr_hdf5", fake_load)
-    monkeypatch.setattr("tanager_rocks.pipeline.mask_tanager_scene", fake_mask)
+    monkeypatch.setattr("tanager_minmap.pipeline.load_tanager_sr_hdf5", fake_load)
+    monkeypatch.setattr("tanager_minmap.pipeline.mask_tanager_scene", fake_mask)
     expected_path = paths.raw_dir / f"{scene_id}_ortho_sr_hdf5.h5"
     expected_path.parent.mkdir()
     expected_path.touch()
@@ -149,8 +149,8 @@ def test_emit_download_returns_actual_written_filename(tmp_path: Path, monkeypat
     monkeypatch.setitem(sys.modules, "earthaccess", fake_earthaccess)
     monkeypatch.setenv("EARTHDATA_USERNAME", "configured")
     monkeypatch.setenv("EARTHDATA_PASSWORD", "configured")
-    monkeypatch.setattr("tanager_rocks.pipeline.rank_granules", lambda *_args: [chosen])
-    monkeypatch.setattr("tanager_rocks.pipeline.select_granule", lambda _ranked: chosen)
+    monkeypatch.setattr("tanager_minmap.pipeline.rank_granules", lambda *_args: [chosen])
+    monkeypatch.setattr("tanager_minmap.pipeline.select_granule", lambda _ranked: chosen)
 
     result = _ensure_emit_granule([-1.0, -1.0, 1.0, 1.0], emit_dir)
 

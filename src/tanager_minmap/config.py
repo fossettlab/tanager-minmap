@@ -1,4 +1,4 @@
-"""Shared constants for the tanager-rocks mineral-mapping flagship.
+"""Shared constants for the tanager-minmap mineral-mapping flagship.
 
 Values here are sourced from ``spec.md`` (sites, diagnostic absorptions,
 target assemblage) or re-exported from :mod:`tanager_spec` (the SR asset

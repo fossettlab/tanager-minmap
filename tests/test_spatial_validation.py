@@ -13,8 +13,8 @@ import rasterio
 import rioxarray
 from rasterio.transform import from_origin
 
-from tanager_rocks.repeatability import BlockHandoff, _complete_overlap_block_ids
-from tanager_rocks.spatial_validation import (
+from tanager_minmap.repeatability import BlockHandoff, _complete_overlap_block_ids
+from tanager_minmap.spatial_validation import (
     FINITE_REPLICATE_FRACTION,
     BlockSample,
     VariogramPoint,

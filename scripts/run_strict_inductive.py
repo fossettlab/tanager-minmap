@@ -11,7 +11,7 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 
-from tanager_rocks.strict_inductive import (
+from tanager_minmap.strict_inductive import (
     failure_payload,
     preflight_strict_inductive,
     run_strict_inductive,

@@ -1,4 +1,4 @@
-"""tanager-rocks: mineral and alteration mapping from Tanager VSWIR surface reflectance.
+"""tanager-minmap: mineral and alteration mapping from Tanager VSWIR surface reflectance.
 
 Prepared for the Planet Tanager Open Data Competition. This package builds the
 analysis-specific workflow — continuum-removal diagnostic-feature

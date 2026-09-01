@@ -10,7 +10,7 @@ import pytest
 import rioxarray  # noqa: F401
 import xarray as xr
 
-from tanager_rocks.quality import load_tanager_quality_metadata, mask_tanager_scene
+from tanager_minmap.quality import load_tanager_quality_metadata, mask_tanager_scene
 
 
 def _cube() -> tuple[xr.DataArray, np.ndarray]:

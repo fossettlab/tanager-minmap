@@ -29,13 +29,13 @@ from pathlib import Path
 import rioxarray  # noqa: F401  (registers the .rio accessor)
 from tanager_spec.io import load_tanager_sr_hdf5
 
-from tanager_rocks.config import SITES, TANAGER_SR_ASSET, site_search_bbox
-from tanager_rocks.reference import align_reference
+from tanager_minmap.config import SITES, TANAGER_SR_ASSET, site_search_bbox
+from tanager_minmap.reference import align_reference
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("download_reference")
 
-USER_AGENT = "tanager-rocks/0.1 (research; abradley@wustl.edu)"
+USER_AGENT = "tanager-minmap/0.1 (research; abradley@wustl.edu)"
 # Parent collection of the western-US ASTER alteration data release (doi
 # 10.5066/F7CR5RK7). The southwestern-US child tile (build AA61, v8) spans the
 # whole product extent and covers both study sites.

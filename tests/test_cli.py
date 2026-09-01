@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from tanager_rocks import cli
-from tanager_rocks.pipeline import PipelinePaths
+from tanager_minmap import cli
+from tanager_minmap.pipeline import PipelinePaths
 
 
 def _patch(monkeypatch, name: str) -> dict:

@@ -55,21 +55,21 @@ EXPLORATORY_BLOCKS = 5
 AMENDMENT_SCHEMA_VERSION = "1.0"
 AMENDMENT_TYPE = "e6_pre_result_protocol_amendment"
 GOVERNING_FILES = (
-    "src/tanager_rocks/ensemble_sensitivity.py",
+    "src/tanager_minmap/ensemble_sensitivity.py",
     "scripts/run_ensemble_sensitivity.py",
     "tests/test_ensemble_sensitivity.py",
     "docs/m2_ensemble_sensitivity_preregistration.md",
     "docs/m2_spatial_validation_preregistration.md",
     "docs/tanager_quality_mask_policy.md",
-    "src/tanager_rocks/spatial_validation.py",
-    "src/tanager_rocks/strict_inductive.py",
-    "src/tanager_rocks/unmix.py",
-    "src/tanager_rocks/quality.py",
-    "src/tanager_rocks/speclib.py",
-    "src/tanager_rocks/reference.py",
-    "src/tanager_rocks/config.py",
-    "src/tanager_rocks/pipeline.py",
-    "src/tanager_rocks/viz.py",
+    "src/tanager_minmap/spatial_validation.py",
+    "src/tanager_minmap/strict_inductive.py",
+    "src/tanager_minmap/unmix.py",
+    "src/tanager_minmap/quality.py",
+    "src/tanager_minmap/speclib.py",
+    "src/tanager_minmap/reference.py",
+    "src/tanager_minmap/config.py",
+    "src/tanager_minmap/pipeline.py",
+    "src/tanager_minmap/viz.py",
 )
 
 EXPECTED_CANDIDATE_COUNTS = {
@@ -983,7 +983,7 @@ def fit_mtmf_numpy(
 ) -> MtmfFit:
     """Compute one MTMF fit with full-scene or multiplicity-weighted covariance.
 
-    This follows :mod:`tanager_rocks.unmix`: shared finite bands, a shared
+    This follows :mod:`tanager_minmap.unmix`: shared finite bands, a shared
     scene background, ``ridge * trace(C) / n_band`` loading, and a direct
     inverse.  Failed inverses and degenerate covariance are surfaced as failed
     members; no pseudoinverse or redraw is attempted.
@@ -2368,7 +2368,7 @@ def validate_rockwell_reference(
 
 
 def _software_versions() -> dict[str, str]:
-    packages = ("numpy", "pandas", "rasterio", "xarray", "tanager-spec", "tanager-rocks")
+    packages = ("numpy", "pandas", "rasterio", "xarray", "tanager-spec", "tanager-minmap")
     versions: dict[str, str] = {}
     for package in packages:
         try:

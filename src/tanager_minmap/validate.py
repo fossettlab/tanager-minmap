@@ -3,7 +3,7 @@
 spec.md pipeline step 4-5 ("validated maps"). Each continuous score map (a
 diagnostic band depth or an MTMF abundance) is tested for how well it
 discriminates the published alteration class(es) that contain its mineral group
-(:mod:`tanager_rocks.reference` mappings) from the other classified, reliable
+(:mod:`tanager_minmap.reference` mappings) from the other classified, reliable
 ground. The rank-based ROC AUC equals the Mann-Whitney U statistic divided by
 the pair count, so one rank test yields both a significance value and the
 separability (AUC). A Youden-J-optimal score threshold is reported per layer —
@@ -45,7 +45,7 @@ def analysis_domain(reference: xr.DataArray) -> np.ndarray:
     """Boolean mask of reference pixels usable for validation.
 
     Drops the excluded classes (nodata, vegetation, semi-corrupted SWIR; see
-    :data:`tanager_rocks.reference.ROCKWELL_EXCLUDED`) and non-finite cells, so
+    :data:`tanager_minmap.reference.ROCKWELL_EXCLUDED`) and non-finite cells, so
     discrimination is tested only among classified, reliable ground.
     """
     vals = reference.values

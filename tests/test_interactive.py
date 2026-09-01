@@ -6,7 +6,7 @@ import numpy as np
 import xarray as xr
 from rasterio.transform import from_origin
 
-from tanager_rocks.interactive import class_rgba, reproject_classes_4326
+from tanager_minmap.interactive import class_rgba, reproject_classes_4326
 
 
 def test_class_rgba_colors_and_transparency():

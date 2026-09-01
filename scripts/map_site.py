@@ -6,7 +6,7 @@ from the splib07 endmembers (data-driven, not hand-picked), compute the
 band-depth maps, and write GeoTIFFs + a PNG panel. This is the "one real map"
 deliverable; SAM/MTMF unmixing (unmix.py) comes later.
 
-Thin wrapper over :func:`tanager_rocks.pipeline.run_map`; the installed
+Thin wrapper over :func:`tanager_minmap.pipeline.run_map`; the installed
 ``tanager-minmap map`` runs the same logic.
 
 Run::
@@ -23,8 +23,8 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
-from tanager_rocks.config import SITES
-from tanager_rocks.pipeline import PipelinePaths, run_map
+from tanager_minmap.config import SITES
+from tanager_minmap.pipeline import PipelinePaths, run_map
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 

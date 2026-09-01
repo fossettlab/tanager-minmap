@@ -2,7 +2,7 @@
 
 This module implements the frozen design in
 ``docs/m2_spatial_validation_preregistration.md`` without changing the legacy
-pixelwise routines in :mod:`tanager_rocks.validate`.  Functions are written as
+pixelwise routines in :mod:`tanager_minmap.validate`.  Functions are written as
 pure transformations over arrays and immutable records so synthetic tests can
 exercise the statistical contract without repository data.
 """

@@ -4,7 +4,7 @@ Reprojects a categorical class raster (dominant mineral, or AMD tier) to
 geographic coordinates and renders it as a translucent RGBA overlay on a
 satellite basemap with :mod:`folium`, so a reader can pan and zoom the Tanager
 results over the real terrain. The colours match the static figures
-(:data:`tanager_rocks.viz.MINERAL_COLORS`, :data:`tanager_rocks.viz.AGP_TIER_COLORS`).
+(:data:`tanager_minmap.viz.MINERAL_COLORS`, :data:`tanager_minmap.viz.AGP_TIER_COLORS`).
 """
 
 from __future__ import annotations

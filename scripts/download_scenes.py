@@ -25,12 +25,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from tanager_rocks.config import SITES, TANAGER_SR_ASSET
+from tanager_minmap.config import SITES, TANAGER_SR_ASSET
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("download_scenes")
 
-USER_AGENT = "tanager-rocks/0.1 (research; abradley@wustl.edu)"
+USER_AGENT = "tanager-minmap/0.1 (research; abradley@wustl.edu)"
 ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "data" / "raw"
 INVENTORY_CSV = ROOT / "data" / "intermediate" / "tanager_scene_inventory.csv"

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "hash_algorithm": "sha256",
-  "scope": "Scientific source inputs used by the current Tanager Rocks study",
+  "scope": "Scientific source inputs used by the current tanager-minmap study",
   "inputs": [
     {
       "id": "dependency-lock",

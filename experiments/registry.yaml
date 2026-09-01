@@ -290,7 +290,7 @@
           "kind": "file",
           "sha256": "08e824241ed4a2c25f2655e318ba4fcaaaeafbdbeac50ec0997d9b3a7f634176",
           "availability": "present",
-          "notes": "Granule UR is pinned in src/tanager_rocks/pipeline.py and hash is recorded in docs/input_manifest.json."
+          "notes": "Granule UR is pinned in src/tanager_minmap/pipeline.py and hash is recorded in docs/input_manifest.json."
         }
       ],
       "split": {

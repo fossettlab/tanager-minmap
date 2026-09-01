@@ -6,16 +6,16 @@ the CLI parses) without exercising any not-yet-implemented analysis.
 
 from __future__ import annotations
 
-import tanager_rocks
-from tanager_rocks import config
-from tanager_rocks.cli import _build_parser
+import tanager_minmap
+from tanager_minmap import config
+from tanager_minmap.cli import _build_parser
 
 
 def test_package_imports():
-    assert tanager_rocks.__version__ == "0.1.0"
+    assert tanager_minmap.__version__ == "0.1.0"
     # All analysis submodules are importable from the top level.
     for name in ("config", "features", "speclib", "unmix", "viz"):
-        assert hasattr(tanager_rocks, name)
+        assert hasattr(tanager_minmap, name)
 
 
 def test_sites_present_and_confirmed():

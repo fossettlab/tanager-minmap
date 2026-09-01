@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
-from tanager_rocks.validate import analysis_domain, discriminate, validate_scores
+from tanager_minmap.validate import analysis_domain, discriminate, validate_scores
 
 
 def _da(values: np.ndarray) -> xr.DataArray:

@@ -2,11 +2,11 @@
 
 Runs the MTMF pipeline, reduces the secondary AMD-indicator assemblage
 (jarosite / Fe-oxides / gypsum) to an ordinal acid-generating-potential map via
-:func:`tanager_rocks.hazard.acid_generating_potential`, and writes the tier
+:func:`tanager_minmap.hazard.acid_generating_potential`, and writes the tier
 GeoTIFF + a categorical PNG. Site-agnostic; the default is the headline
 narrative site (Bingham / Kennecott), but it runs identically on Goldfield.
 
-Thin wrapper over :func:`tanager_rocks.pipeline.run_amd`; the installed
+Thin wrapper over :func:`tanager_minmap.pipeline.run_amd`; the installed
 ``tanager-minmap amd`` runs the same logic.
 
 Run::
@@ -22,8 +22,8 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
-from tanager_rocks.config import SITES
-from tanager_rocks.pipeline import PipelinePaths, run_amd
+from tanager_minmap.config import SITES
+from tanager_minmap.pipeline import PipelinePaths, run_amd
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 

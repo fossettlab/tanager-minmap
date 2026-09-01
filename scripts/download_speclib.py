@@ -22,7 +22,7 @@ from pathlib import Path
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("download_speclib")
 
-USER_AGENT = "tanager-rocks/0.1 (research; abradley@wustl.edu)"
+USER_AGENT = "tanager-minmap/0.1 (research; abradley@wustl.edu)"
 # ScienceBase item "Spectra of materials in ASCII format" (USGS DS 1035).
 SCIENCEBASE_ITEM = "586e8c88e4b0f5ce109fccae"
 ZIP_NAME = "ASCIIdata_splib07a.zip"

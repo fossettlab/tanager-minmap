@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from tanager_rocks.speclib import (
+from tanager_minmap.speclib import (
     Endmember,
     by_mineral,
     load_library,

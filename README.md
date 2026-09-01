@@ -1,4 +1,4 @@
-# tanager-rocks
+# tanager-minmap
 
 Mineral and hydrothermal-alteration mapping from Planet Tanager 426-band VSWIR
 surface reflectance at two named US mine sites — **Bingham Canyon / Kennecott
@@ -25,7 +25,7 @@ package. Release artifacts require `tanager-spec==0.1.0`; this development
 workspace overrides that requirement with the editable sibling checkout.
 
 ```
-src/tanager_rocks/
+src/tanager_minmap/
   config.py     # sites, target assemblage, diagnostic absorptions
   speclib.py    # USGS / ECOSTRESS reference-library loader
   features.py   # continuum removal + diagnostic-feature maps
@@ -105,10 +105,10 @@ artifact inspection and synthetic software checks from full reproduction.
 Everything from this effort lives under the
 [fossettlab](https://github.com/fossettlab) organization:
 
-- [`tanager-rocks`](https://github.com/fossettlab/tanager-rocks) — this
+- [`tanager-minmap`](https://github.com/fossettlab/tanager-minmap) — this
   repository: the analysis, the `tanager-minmap` pipeline, and the submission
   materials. Story page:
-  [fossettlab.github.io/tanager-rocks](https://fossettlab.github.io/tanager-rocks/).
+  [fossettlab.github.io/tanager-minmap](https://fossettlab.github.io/tanager-minmap/).
 - [`tanager-spec`](https://github.com/fossettlab/tanager-spec) — the shared
   data layer (STAC ingest, quality masking, band utilities, Sentinel-2
   response-function simulation, reproducible sampling), released at `v0.1.0`.

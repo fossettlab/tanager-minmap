@@ -5,8 +5,8 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
-from tanager_rocks.config import TARGET_MINERALS
-from tanager_rocks.reference import (
+from tanager_minmap.config import TARGET_MINERALS
+from tanager_minmap.reference import (
     FEATURE_TO_ROCKWELL,
     MINERAL_TO_ROCKWELL,
     ROCKWELL_CLASSES,

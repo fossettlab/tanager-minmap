@@ -20,7 +20,7 @@ MTMF abundances are **not** summed across minerals (their matched-filter scores
 are not on a common scale — see the EMIT comparison's per-map stretch). Instead
 each mineral is reduced to a per-pixel presence call using the *same*
 per-mineral upper-tail detection floor as the hero map
-(:func:`tanager_rocks.viz.mineral_map`), and the AGP tier is assigned by the
+(:func:`tanager_minmap.viz.mineral_map`), and the AGP tier is assigned by the
 most acidic indicator present.
 """
 
@@ -82,7 +82,7 @@ class AmdResult:
 def _present(gated: np.ndarray, quantile: float) -> np.ndarray:
     """Per-pixel presence: gated abundance at or above its own upper-tail floor.
 
-    Mirrors the per-mineral detection floor in :func:`tanager_rocks.viz.mineral_map`
+    Mirrors the per-mineral detection floor in :func:`tanager_minmap.viz.mineral_map`
     so "detection" means the same thing everywhere: the threshold is the
     ``quantile`` of the mineral's own positive (infeasibility-gated) abundances.
     Infeasibility-gated (``NaN``) pixels are never present.
@@ -116,7 +116,7 @@ def acid_generating_potential(
     Parameters
     ----------
     mtmf_ds : xr.Dataset
-        Output of :func:`tanager_rocks.unmix.mtmf` (``<mineral>_mf`` abundance +
+        Output of :func:`tanager_minmap.unmix.mtmf` (``<mineral>_mf`` abundance +
         ``<mineral>_infeas`` per mineral). Must include jarosite.
     max_infeas : float
         Infeasibility gate applied per mineral before the presence call.

@@ -60,7 +60,7 @@ O2/H2O windows remove 53 channels. Their union removes 63 channels and retains
 
 ## Fixed primary policy
 
-`tanager_rocks.quality.mask_tanager_scene` now owns the policy:
+`tanager_minmap.quality.mask_tanager_scene` now owns the policy:
 
 1. Exclude a spatial pixel through the complete cube if any beta QA field is
    nonzero or any reflectance value is non-finite.

@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "tanager-rocks: mineral and mine-waste mapping from Planet Tanager VSWIR surface reflectance"
+title: "tanager-minmap: mineral and mine-waste mapping from Planet Tanager VSWIR surface reflectance"
 authors:
   - family-names: Bradley
     given-names: Alex
@@ -8,4 +8,4 @@ authors:
     affiliation: "Department of Earth, Environmental, and Planetary Sciences, Washington University in St. Louis"
 version: 0.1.0
 license: MIT
-repository-code: "https://github.com/fossettlab/tanager-rocks"
+repository-code: "https://github.com/fossettlab/tanager-minmap"

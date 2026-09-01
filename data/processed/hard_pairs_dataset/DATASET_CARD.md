@@ -16,7 +16,7 @@ size_categories:
 # Tanager Hard-Pairs Probe: RGB-Ambiguous, SWIR-Separable Mineral Patches
 
 **Status: local build only.** This dataset lives at
-`data/processed/hard_pairs_dataset/` in the `tanager-rocks` repository, built by
+`data/processed/hard_pairs_dataset/` in the `tanager-minmap` repository, built by
 `scripts/build_hard_pairs_dataset.py`. It has not been published anywhere;
 publishing it (Hugging Face Hub or otherwise) is a separate, explicit
 decision for the project team. The source license and required attribution are
@@ -32,7 +32,7 @@ It is built the same way: mine patches whose *visible-band* statistics carry
 little information about the label, so that any model accuracy above an
 RGB-only ceiling has to come from the non-visible bands. Where the blog
 restricts *land-cover class* (ESA WorldCover), this dataset restricts
-*dominant alteration mineral*, derived from the `tanager-rocks` pipeline's own
+*dominant alteration mineral*, derived from the `tanager-minmap` pipeline's own
 mixture-tuned matched filter (MTMF) product — the same one behind the
 project's hero mineral map.
 
@@ -116,7 +116,7 @@ component of the RGB mean/std similarity graph and spans at least two
 RGB-ambiguous candidate pairs (the same bottom-decile-distance graph used to
 select `pairs.csv`'s candidates, *before* the SWIR-separability filter is
 applied) — re-derived deterministically from `patches.csv`'s own RGB
-statistics by `tanager_rocks.pairs.rgb_ambiguity_clusters`, with no cube
+statistics by `tanager_minmap.pairs.rgb_ambiguity_clusters`, with no cube
 reload and no re-running MTMF. Long format, one row per (cluster, patch)
 membership:
 
@@ -247,7 +247,7 @@ repo's `METHODS.md`. Both sites are MRDS-confirmed developed mineral deposits
 (Goldfield District Gold Deposits; Bingham Open Pit Mine).
 
 **Labels.** Each patch's label is the mode of the hero map's per-pixel
-dominant-mineral class (`tanager_rocks.viz.dominant_mineral_class`): an
+dominant-mineral class (`tanager_minmap.viz.dominant_mineral_class`): an
 infeasibility-gated (`max_infeas < 1.0`), per-mineral-90th-percentile-floor
 mixture-tuned matched filter (MTMF) against USGS splib07a reference spectra
 for eight target alteration minerals (alunite, kaolinite, dickite, jarosite,
@@ -343,7 +343,7 @@ mineralogy.
   channels (their union removes 63 of 426 bands in the project analysis); a
   probe that naively averages or feeds all bands to a model should account for
   this. The project policy is implemented by
-  `tanager_rocks.quality.mask_tanager_scene`.
+  `tanager_minmap.quality.mask_tanager_scene`.
 
 ## Licensing
 
@@ -388,12 +388,12 @@ preserves the source reflectance samples without spectral resampling, writes
 per-chip georeferencing and compression, and adds project-authored weak labels,
 pair/cluster tables, manifests, checksums, and documentation. The resulting
 chip dataset is Adapted Material distributed under CC BY 4.0 if publication is
-separately approved. The `tanager-rocks` source code remains separately
+separately approved. The `tanager-minmap` source code remains separately
 licensed under MIT.
 
 ## Citation
 
-If you use this dataset, credit the `tanager-rocks` project (Bradley Lab,
+If you use this dataset, credit the `tanager-minmap` project (Bradley Lab,
 Washington University in St. Louis; use the repository's `CITATION.cff` until
 a DOI is minted) and formally cite the benchmark-design paper it adapts:
 

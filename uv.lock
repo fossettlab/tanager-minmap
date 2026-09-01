@@ -2304,7 +2304,7 @@ wheels = [
 ]
 
 [[package]]
-name = "tanager-rocks"
+name = "tanager-minmap"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

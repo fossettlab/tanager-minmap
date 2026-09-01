@@ -7,7 +7,7 @@ import numpy as np
 import rioxarray  # noqa: F401  (registers the .rio accessor)
 from shapely.geometry import Polygon, box
 
-from tanager_rocks.emit import (
+from tanager_minmap.emit import (
     EmitGranule,
     _granule_polygon,
     _ortho_window,

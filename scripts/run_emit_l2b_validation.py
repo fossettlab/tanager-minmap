@@ -33,7 +33,7 @@ import numpy as np
 import rasterio
 from tanager_spec.io import load_tanager_sr_hdf5
 
-from tanager_rocks.emit_l2b import (
+from tanager_minmap.emit_l2b import (
     GROUPS,
     EmitL2BPair,
     EmitL2BSourcePair,
@@ -63,7 +63,7 @@ from tanager_rocks.emit_l2b import (
     whole_block_spatial_nulls,
     write_strict_json,
 )
-from tanager_rocks.emit_l2b_nonresult import (
+from tanager_minmap.emit_l2b_nonresult import (
     NonResultError,
     atomic_write_bundle,
     canonical_json_bytes,
@@ -79,18 +79,18 @@ from tanager_rocks.emit_l2b_nonresult import (
     verify_nonresult_bundle,
     verify_resource_admission_bundle,
 )
-from tanager_rocks.features import build_feature_defs, diagnostic_feature_maps
-from tanager_rocks.quality import mask_tanager_scene
-from tanager_rocks.sensor_ablation import FDR_ALPHA, support_governance
-from tanager_rocks.spatial_validation import (
+from tanager_minmap.features import build_feature_defs, diagnostic_feature_maps
+from tanager_minmap.quality import mask_tanager_scene
+from tanager_minmap.sensor_ablation import FDR_ALPHA, support_governance
+from tanager_minmap.spatial_validation import (
     BOOTSTRAP_REPLICATES,
     FINITE_REPLICATE_FRACTION,
     PERMUTATION_REPLICATES,
     SEED,
     benjamini_hochberg,
 )
-from tanager_rocks.speclib import load_library, select_endmembers
-from tanager_rocks.unmix import mtmf
+from tanager_minmap.speclib import load_library, select_endmembers
+from tanager_minmap.unmix import mtmf
 
 ROOT = Path(__file__).resolve().parents[1]
 M2_PROTOCOL = ROOT / "docs" / "m2_spatial_validation_preregistration.md"
@@ -1413,7 +1413,7 @@ def run(args: argparse.Namespace) -> None:
         },
         "code": {
             "git": _git_revision(),
-            "emit_l2b_module_sha256": sha256_file(ROOT / "src" / "tanager_rocks" / "emit_l2b.py"),
+            "emit_l2b_module_sha256": sha256_file(ROOT / "src" / "tanager_minmap" / "emit_l2b.py"),
             "driver_sha256": sha256_file(Path(__file__)),
             "pyproject_sha256": sha256_file(ROOT / "pyproject.toml"),
             "uv_lock_sha256": sha256_file(ROOT / "uv.lock"),
@@ -1568,8 +1568,8 @@ def _m2_mapping_contract(path: Path) -> tuple[dict[str, Any], str]:
 def _code_manifest() -> dict[str, Any]:
     files = {
         "run_emit_l2b_validation.py": Path(__file__),
-        "emit_l2b.py": ROOT / "src" / "tanager_rocks" / "emit_l2b.py",
-        "emit_l2b_nonresult.py": ROOT / "src" / "tanager_rocks" / "emit_l2b_nonresult.py",
+        "emit_l2b.py": ROOT / "src" / "tanager_minmap" / "emit_l2b.py",
+        "emit_l2b_nonresult.py": ROOT / "src" / "tanager_minmap" / "emit_l2b_nonresult.py",
     }
     return {
         "schema_version": "e4-nonresult-code-manifest/v1",

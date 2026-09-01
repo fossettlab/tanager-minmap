@@ -35,9 +35,9 @@ from tanager_spec.bands import indices_in_windows
 from tanager_spec.io import load_tanager_sr_hdf5
 from tanager_spec.mask import invalid_pixel_mask
 
-from tanager_rocks.config import SITES, TANAGER_SR_ASSET, TARGET_MINERALS
-from tanager_rocks.figures import RGB_NM, RGB_VALID_RANGE, _nearest
-from tanager_rocks.pairs import (
+from tanager_minmap.config import SITES, TANAGER_SR_ASSET, TARGET_MINERALS
+from tanager_minmap.figures import RGB_NM, RGB_VALID_RANGE, _nearest
+from tanager_minmap.pairs import (
     PATCH_SIZE_PX,
     PURITY_FLOOR,
     RGB_CANDIDATE_QUANTILE,
@@ -50,8 +50,8 @@ from tanager_rocks.pairs import (
     swir_separable_pairs,
     tile_and_label,
 )
-from tanager_rocks.quality import mask_tanager_scene
-from tanager_rocks.viz import dominant_mineral_class
+from tanager_minmap.quality import mask_tanager_scene
+from tanager_minmap.viz import dominant_mineral_class
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ def _dominant_code(site_id: str, scene_id: str, max_infeas: float, quantile: flo
 
     Reads the ``mf_<mineral>.tif`` / ``infeas_<mineral>.tif`` products already
     written by ``scripts/unmix_site.py`` and gates/composites them with the
-    IDENTICAL function the hero map uses (:func:`tanager_rocks.viz.
+    IDENTICAL function the hero map uses (:func:`tanager_minmap.viz.
     dominant_mineral_class`), so patch labels agree with the published map by
     construction rather than by re-deriving the logic.
     """

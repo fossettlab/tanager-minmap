@@ -1,7 +1,7 @@
 """Submission presentation figures (Visualization & Storytelling).
 
 Composite, presentation-grade figures for the competition story page, distinct
-from the per-stage analytical panels in :mod:`tanager_rocks.viz`. They assemble
+from the per-stage analytical panels in :mod:`tanager_minmap.viz`. They assemble
 true-color context, the diagnostic-spectra story, and the validation
 side-by-side from the same products the pipeline computes — nothing here
 re-derives analysis, it only presents it.

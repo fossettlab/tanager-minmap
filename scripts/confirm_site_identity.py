@@ -28,14 +28,14 @@ from pathlib import Path
 
 import geopandas as gpd
 
-from tanager_rocks.config import SITES, SiteSpec, site_search_bbox
+from tanager_minmap.config import SITES, SiteSpec, site_search_bbox
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("confirm_site_identity")
 
 MRDS_WFS = "https://mrdata.usgs.gov/wfs/mrds"
 # mrdata.usgs.gov rejects the default urllib User-Agent (403); identify the client.
-USER_AGENT = "tanager-rocks/0.1 (research; abradley@wustl.edu)"
+USER_AGENT = "tanager-minmap/0.1 (research; abradley@wustl.edu)"
 # Development stages that denote a real, developed deposit (vs a bare occurrence).
 DEVELOPED = {"Producer", "Past Producer", "Plant"}
 # Per-site identity expectation: name keyword + the MRDS commodity code that

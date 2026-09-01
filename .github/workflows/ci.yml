@@ -19,10 +19,10 @@ jobs:
       # Check out both repos as siblings so the local development override for
       # tanager-spec resolves. The release gate requires tanager-spec to be
       # public and immutably identified before this workflow is enabled.
-      - name: Check out tanager-rocks
+      - name: Check out tanager-minmap
         uses: actions/checkout@v4
         with:
-          path: tanager-rocks
+          path: tanager-minmap
 
       - name: Check out tanager-spec (shared data layer)
         uses: actions/checkout@v4
@@ -37,34 +37,34 @@ jobs:
           enable-cache: true
 
       - name: Sync environment
-        working-directory: tanager-rocks
+        working-directory: tanager-minmap
         run: uv sync --locked --extra dev --python ${{ matrix.python-version }}
 
       - name: Ruff lint
-        working-directory: tanager-rocks
+        working-directory: tanager-minmap
         run: uv run ruff check src tests scripts
 
       - name: Ruff format check
-        working-directory: tanager-rocks
+        working-directory: tanager-minmap
         run: uv run ruff format --check src tests scripts
 
       - name: Pytest
-        working-directory: tanager-rocks
+        working-directory: tanager-minmap
         run: uv run pytest
 
       - name: Validate reproducibility metadata
-        working-directory: tanager-rocks
+        working-directory: tanager-minmap
         run: uv run python scripts/validate_repro_metadata.py
 
       - name: Build both wheels
         run: |
           uv build tanager-spec
-          uv build tanager-rocks
+          uv build tanager-minmap
 
       - name: Install built wheels in an isolated environment
         run: |
           uv venv wheel-venv --python ${{ matrix.python-version }}
           uv pip install --python wheel-venv/bin/python \
-            tanager-spec/dist/*.whl tanager-rocks/dist/*.whl
-          wheel-venv/bin/python -c "import tanager_rocks, tanager_spec"
+            tanager-spec/dist/*.whl tanager-minmap/dist/*.whl
+          wheel-venv/bin/python -c "import tanager_minmap, tanager_spec"
           wheel-venv/bin/tanager-minmap --help

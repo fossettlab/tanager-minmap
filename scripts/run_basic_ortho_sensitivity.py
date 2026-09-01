@@ -103,14 +103,14 @@ LAUNCHER_RESIDUAL_TRUST = {
 }
 
 _PROJECT_MODULE_FILES = {
-    "": "src/tanager_rocks/__init__.py",
-    ".basic_ortho": "src/tanager_rocks/basic_ortho.py",
-    ".config": "src/tanager_rocks/config.py",
-    ".features": "src/tanager_rocks/features.py",
-    ".quality": "src/tanager_rocks/quality.py",
-    ".speclib": "src/tanager_rocks/speclib.py",
-    ".unmix": "src/tanager_rocks/unmix.py",
-    ".viz": "src/tanager_rocks/viz.py",
+    "": "src/tanager_minmap/__init__.py",
+    ".basic_ortho": "src/tanager_minmap/basic_ortho.py",
+    ".config": "src/tanager_minmap/config.py",
+    ".features": "src/tanager_minmap/features.py",
+    ".quality": "src/tanager_minmap/quality.py",
+    ".speclib": "src/tanager_minmap/speclib.py",
+    ".unmix": "src/tanager_minmap/unmix.py",
+    ".viz": "src/tanager_minmap/viz.py",
 }
 _TANAGER_SPEC_EDITABLE_LOGICAL_ROOT = "../tanager-spec"
 _TANAGER_SPEC_PACKAGE_LOGICAL_ROOT = "../tanager-spec/src/tanager_spec"
@@ -700,9 +700,9 @@ class _SealedModuleFinder(importlib.abc.MetaPathFinder):
         level: int = 0,
     ) -> Any:
         """Reject canonical project and out-of-capsule dependency imports."""
-        if level == 0 and (name == "tanager_rocks" or name.startswith("tanager_rocks.")):
+        if level == 0 and (name == "tanager_minmap" or name.startswith("tanager_minmap.")):
             self.blocked_canonical_imports.add(name)
-            raise ModuleNotFoundError(f"canonical tanager_rocks import blocked in capsule: {name}")
+            raise ModuleNotFoundError(f"canonical tanager_minmap import blocked in capsule: {name}")
         if level == 0 and _is_canonical_dependency_module(name):
             if name not in self.dependency_module_records:
                 self.blocked_dependency_imports.add(name)
@@ -718,10 +718,10 @@ class _SealedModuleFinder(importlib.abc.MetaPathFinder):
     ) -> importlib.machinery.ModuleSpec | None:
         if not self.active:
             return None
-        if self.active and (fullname == "tanager_rocks" or fullname.startswith("tanager_rocks.")):
+        if self.active and (fullname == "tanager_minmap" or fullname.startswith("tanager_minmap.")):
             self.blocked_canonical_imports.add(fullname)
             raise ModuleNotFoundError(
-                f"canonical tanager_rocks import blocked in capsule: {fullname}"
+                f"canonical tanager_minmap import blocked in capsule: {fullname}"
             )
         if _is_canonical_dependency_module(fullname):
             self._reject_out_of_capsule_dependency_modules()
@@ -760,7 +760,7 @@ def _next_capsule_prefix(capture: _CapturedRuntime) -> str:
     global _CAPSULE_SERIAL
     _CAPSULE_SERIAL += 1
     root_id = hashlib.sha256(str(capture.root).encode("utf-8")).hexdigest()[:12]
-    return f"_tanager_rocks_m1b_{root_id}_{_CAPSULE_SERIAL}"
+    return f"_tanager_minmap_m1b_{root_id}_{_CAPSULE_SERIAL}"
 
 
 def _module_origin(module: ModuleType) -> Path | None:
@@ -806,7 +806,7 @@ def _new_repo_module_origins(
 
 
 def _is_canonical_project_module(name: str) -> bool:
-    return name == "tanager_rocks" or name.startswith("tanager_rocks.")
+    return name == "tanager_minmap" or name.startswith("tanager_minmap.")
 
 
 def _is_canonical_dependency_module(name: str) -> bool:
@@ -998,7 +998,7 @@ def _validate_runtime_binding(binding: _RuntimeBinding) -> dict[str, str]:
     observed_canonical_modules = sorted(_canonical_project_modules())
     if observed_canonical_modules:
         raise BootstrapError(
-            "canonical tanager_rocks module inventory was populated during the "
+            "canonical tanager_minmap module inventory was populated during the "
             f"sealed capsule lifetime: {observed_canonical_modules}"
         )
     expected_project_files = set(_PROJECT_MODULE_FILES.values())
@@ -1020,7 +1020,7 @@ def _validate_runtime_binding(binding: _RuntimeBinding) -> dict[str, str]:
         )
     if binding.finder.blocked_canonical_imports:
         raise BootstrapError(
-            "canonical tanager_rocks imports were attempted from the sealed capsule: "
+            "canonical tanager_minmap imports were attempted from the sealed capsule: "
             f"{sorted(binding.finder.blocked_canonical_imports)}"
         )
     if binding.finder.blocked_dependency_imports:
@@ -1170,7 +1170,7 @@ def _validate_runtime_teardown(binding: _RuntimeBinding) -> None:
         observed_canonical[name] is not module for name, module in binding.canonical_modules.items()
     ):
         raise BootstrapError(
-            "canonical tanager_rocks module inventory was not restored exactly at teardown"
+            "canonical tanager_minmap module inventory was not restored exactly at teardown"
         )
     observed_dependency = _canonical_dependency_modules()
     if set(observed_dependency) != set(binding.canonical_dependency_modules) or any(

@@ -36,7 +36,7 @@ from tanager_spec.stac import (
     save_inventory,
 )
 
-from tanager_rocks.config import SITES, SiteSpec, site_search_bbox
+from tanager_minmap.config import SITES, SiteSpec, site_search_bbox
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("confirm_sites")

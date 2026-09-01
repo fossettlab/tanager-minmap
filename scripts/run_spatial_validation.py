@@ -24,13 +24,13 @@ from rasterio.transform import Affine
 from rasterio.windows import Window
 from rasterio.windows import bounds as window_bounds
 
-from tanager_rocks.config import SEED, SITES
-from tanager_rocks.reference import (
+from tanager_minmap.config import SEED, SITES
+from tanager_minmap.reference import (
     FEATURE_TO_ROCKWELL,
     MINERAL_TO_ROCKWELL,
     ROCKWELL_EXCLUDED,
 )
-from tanager_rocks.spatial_validation import (
+from tanager_minmap.spatial_validation import (
     BOOTSTRAP_REPLICATES,
     MAX_PAIRS_PER_LAG,
     PERMUTATION_REPLICATES,

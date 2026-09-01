@@ -5,7 +5,7 @@ The mineralogical analog of the "Similar-but-Different" Sentinel-2 benchmark
 statistics but carry different dominant-mineral labels and pull apart in the
 SWIR. Where the blog restricts *land-cover class* using WorldCover, this
 project restricts *dominant alteration mineral* using the same infeasibility-
-gated MTMF product that drives the hero map (:func:`tanager_rocks.viz.
+gated MTMF product that drives the hero map (:func:`tanager_minmap.viz.
 dominant_mineral_class`) -- so a patch pair is "hard" exactly where our own
 published mineral map disagrees with what a look at the true-color chips alone
 would suggest.
@@ -122,7 +122,7 @@ def pooled_rgb_percentiles(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Per-channel low/high percentile bounds pooled across multiple scenes.
 
-    Extends :func:`tanager_rocks.figures.rgb_context`'s single-scene 2nd-98th
+    Extends :func:`tanager_minmap.figures.rgb_context`'s single-scene 2nd-98th
     percentile stretch to a stretch SHARED across scenes, so post-stretch
     uint8 RGB values sit on one absolute scale and cross-scene distances are
     meaningful (a deliberate divergence from ``rgb_context``'s per-scene
@@ -132,7 +132,7 @@ def pooled_rgb_percentiles(
     ----------
     channel_stacks : list of (rgb_raw, invalid)
         Per scene: ``rgb_raw`` is ``(3, ny, nx)`` raw reflectance at the
-        nearest bands to :data:`tanager_rocks.figures.RGB_NM`; ``invalid`` is
+        nearest bands to :data:`tanager_minmap.figures.RGB_NM`; ``invalid`` is
         the matching ``(ny, nx)`` boolean invalid-pixel mask.
     pct : tuple of float
         Lower/upper percentiles.
@@ -156,7 +156,7 @@ def stretch_to_uint8(
 ) -> np.ndarray:
     """Apply a fixed per-channel stretch: ``(3, ny, nx)`` reflectance -> ``(ny, nx, 3)`` uint8.
 
-    Same clip-and-scale convention as :func:`tanager_rocks.figures.rgb_context`
+    Same clip-and-scale convention as :func:`tanager_minmap.figures.rgb_context`
     (there, per-scene percentiles; here, a shared ``lo``/``hi`` computed by
     :func:`pooled_rgb_percentiles`). Invalid pixels render white (255),
     matching ``rgb_context``'s white background for off-scene/invalid pixels.
@@ -177,7 +177,7 @@ def stretch_to_uint8(
 def continuum_removed(wl: np.ndarray, spectrum: np.ndarray) -> np.ndarray:
     """Linear 2-point continuum-removed reflectance, for DISPLAY only.
 
-    Same convention as :func:`tanager_rocks.features.band_depth` (Clark &
+    Same convention as :func:`tanager_minmap.features.band_depth` (Clark &
     Roush 1984), generalised from a single absorption's shoulders to a
     display window's own endpoints as the continuum anchors:
     ``reflectance / continuum``, which dips below 1 wherever an absorption
@@ -227,7 +227,7 @@ def tile_and_label(
     Parameters
     ----------
     dominant_code : np.ndarray
-        ``(ny, nx)`` int array from :func:`tanager_rocks.viz.
+        ``(ny, nx)`` int array from :func:`tanager_minmap.viz.
         dominant_mineral_class`; ``-1`` = no mineral clears its detection
         floor.
     minerals : list of str
@@ -682,7 +682,7 @@ def swir_separable_pairs(
     """Keep RGB-ambiguous candidates whose SWIR spectral angle beats the same-label null.
 
     The separability bar is calibrated from this project's own same-mineral
-    patch pairs: the ``null_quantile`` percentile of :func:`tanager_rocks.
+    patch pairs: the ``null_quantile`` percentile of :func:`tanager_minmap.
     speclib.pairwise_spectral_angle` computed on patch-mean SWIR-window
     spectra for every pair of patches sharing the SAME dominant label (the
     natural spread from sub-pixel mixing and noise). A cross-label candidate

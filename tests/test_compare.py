@@ -6,7 +6,7 @@ import numpy as np
 import rioxarray  # noqa: F401  (registers the .rio accessor)
 import xarray as xr
 
-from tanager_rocks.compare import (
+from tanager_minmap.compare import (
     detection_agreement,
     mean_spectrum,
     resample_spectrum,

@@ -1,6 +1,6 @@
 """``tanager-minmap`` command-line interface.
 
-A thin entry point over :mod:`tanager_rocks.pipeline` so the whole offline
+A thin entry point over :mod:`tanager_minmap.pipeline` so the whole offline
 pipeline runs from one installed command (spec.md "Workflow & Tool").
 Subcommands map onto the pipeline stages:
 

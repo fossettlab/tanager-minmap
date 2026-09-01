@@ -12,7 +12,7 @@ import pytest
 import xarray as xr
 from tanager_spec.srf import gaussian_srf
 
-from tanager_rocks.sensor_ablation import (
+from tanager_minmap.sensor_ablation import (
     BOOTSTRAP_REPLICATES,
     MIN_COVERAGE,
     NEGATIVE_CLASS,
@@ -35,7 +35,7 @@ from tanager_rocks.sensor_ablation import (
     percentile_interval,
     support_governance,
 )
-from tanager_rocks.speclib import Endmember
+from tanager_minmap.speclib import Endmember
 
 
 @pytest.fixture(scope="module")

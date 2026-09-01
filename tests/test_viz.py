@@ -9,8 +9,8 @@ matplotlib.use("Agg")  # headless; no display needed for the compositing logic
 import numpy as np  # noqa: E402
 import xarray as xr  # noqa: E402
 
-from tanager_rocks.hazard import AGP_LABELS  # noqa: E402
-from tanager_rocks.viz import amd_map, dominant_mineral_class, mineral_map  # noqa: E402
+from tanager_minmap.hazard import AGP_LABELS  # noqa: E402
+from tanager_minmap.viz import amd_map, dominant_mineral_class, mineral_map  # noqa: E402
 
 
 def _layer(values):

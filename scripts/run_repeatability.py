@@ -15,7 +15,7 @@ from collections.abc import Sequence
 from dataclasses import replace
 from pathlib import Path
 
-from tanager_rocks.repeatability import RepeatabilityPaths, run_repeatability_packet
+from tanager_minmap.repeatability import RepeatabilityPaths, run_repeatability_packet
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 

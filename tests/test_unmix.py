@@ -5,8 +5,8 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
-from tanager_rocks.speclib import Endmember
-from tanager_rocks.unmix import matched_filter_maps, mtmf, sam_classify, spectral_angle
+from tanager_minmap.speclib import Endmember
+from tanager_minmap.unmix import matched_filter_maps, mtmf, sam_classify, spectral_angle
 
 _WL = np.array([1000.0, 1100.0, 1200.0])
 # pixel 0 = (2,0,0) parallel to endmember (1,0,0); pixel 1 = (0,1,0) orthogonal.

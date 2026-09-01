@@ -7,7 +7,7 @@ reports, per layer, how well the score separates its published alteration
 zone(s) from the other classified ground (rank AUC + Mann-Whitney p) plus the
 Youden-J-optimal threshold that calibrates detection to the external map.
 
-Thin wrapper over :func:`tanager_rocks.pipeline.run_validate`; the installed
+Thin wrapper over :func:`tanager_minmap.pipeline.run_validate`; the installed
 ``tanager-minmap validate`` runs the same logic.
 
 Run::
@@ -23,8 +23,8 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
-from tanager_rocks.config import SITES
-from tanager_rocks.pipeline import PipelinePaths, run_validate
+from tanager_minmap.config import SITES
+from tanager_minmap.pipeline import PipelinePaths, run_validate
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 

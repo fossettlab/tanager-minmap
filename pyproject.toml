@@ -1,5 +1,5 @@
 [project]
-name = "tanager-rocks"
+name = "tanager-minmap"
 version = "0.1.0"
 description = "Mineral and hydrothermal-alteration mapping from Planet Tanager 426-band VSWIR surface reflectance at named US mine sites (Bingham Canyon, Goldfield), with a Sentinel-2 band-ablation comparison and an EMIT cross-sensor benchmark."
 readme = "README.md"
@@ -30,21 +30,21 @@ dev = [
 ]
 
 [project.scripts]
-tanager-minmap = "tanager_rocks.cli:main"
+tanager-minmap = "tanager_minmap.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/fossettlab/tanager-rocks"
+Homepage = "https://github.com/fossettlab/tanager-minmap"
 
 [build-system]
 requires = ["hatchling==1.31.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/tanager_rocks"]
+packages = ["src/tanager_minmap"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "/src/tanager_rocks",
+    "/src/tanager_minmap",
     "/README.md",
     "/METHODS.md",
     "/REPRODUCIBILITY.md",

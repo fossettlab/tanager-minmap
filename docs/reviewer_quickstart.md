@@ -1,4 +1,4 @@
-# Tanager Rocks reviewer quick start
+# tanager-minmap reviewer quick start
 
 Status: release-candidate guide, 2026-08-10. This path uses precomputed
 repository artifacts and does not claim independent reproduction. Final public

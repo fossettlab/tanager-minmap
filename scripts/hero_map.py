@@ -5,7 +5,7 @@ mixture-tuned infeasibility, and composites the per-mineral layers into a single
 dominant-mineral map — the submission's "readable in 10 s" figure. Defaults
 match unmix so the hero is consistent with the per-mineral panels.
 
-Thin wrapper over :func:`tanager_rocks.pipeline.run_hero`; the installed
+Thin wrapper over :func:`tanager_minmap.pipeline.run_hero`; the installed
 ``tanager-minmap hero`` runs the same logic.
 
 Run::
@@ -20,8 +20,8 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
-from tanager_rocks.config import SITES
-from tanager_rocks.pipeline import PipelinePaths, run_hero
+from tanager_minmap.config import SITES
+from tanager_minmap.pipeline import PipelinePaths, run_hero
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 

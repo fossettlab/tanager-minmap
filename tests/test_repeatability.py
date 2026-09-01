@@ -14,7 +14,7 @@ import rasterio
 import xarray as xr
 from rasterio.transform import from_origin
 
-from tanager_rocks.repeatability import (
+from tanager_minmap.repeatability import (
     PRIMARY_PAIRS,
     SECONDARY_PAIRS,
     RepeatabilityPaths,
@@ -42,7 +42,7 @@ from tanager_rocks.repeatability import (
     site_scene_order,
     symmetric_boundary_distance_m,
 )
-from tanager_rocks.speclib import Endmember
+from tanager_minmap.speclib import Endmember
 
 
 def test_frozen_pairs_cover_every_declared_comparison_once():

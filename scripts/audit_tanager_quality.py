@@ -22,7 +22,7 @@ import numpy as np
 from tanager_spec.bands import indices_in_windows
 from tanager_spec.config import ABSORPTION_MASKS_NM
 
-from tanager_rocks.config import SITES
+from tanager_minmap.config import SITES
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_RAW_DIR = ROOT / "data" / "raw"

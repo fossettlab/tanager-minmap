@@ -22,8 +22,8 @@ the corrected products below.
 
 ```bash
 git clone https://github.com/fossettlab/tanager-spec.git
-git clone https://github.com/fossettlab/tanager-rocks.git
-cd tanager-rocks
+git clone https://github.com/fossettlab/tanager-minmap.git
+cd tanager-minmap
 uv sync --extra dev
 uv run pytest          # full suite; release-verification tests that need
                        # internal staging artifacts are excluded from this repo
@@ -78,7 +78,7 @@ reported separately under the frozen M2 protocol.
 
 ## Historical verified reproduction
 
-A clean side-by-side clone of `tanager-rocks` + `tanager-spec`, `uv sync
+A clean side-by-side clone of `tanager-minmap` + `tanager-spec`, `uv sync
 --extra dev`, then the CLI run against the public inputs reproduced every
 headline number exactly at commit `d36046b`. This table is retained as a
 historical pre-QA record and must not be substituted for the corrected table

@@ -13,8 +13,8 @@ import pytest
 import rasterio
 from rasterio.transform import from_origin
 
-import tanager_rocks.repeatability as repeatability_module
-from tanager_rocks.repeatability import (
+import tanager_minmap.repeatability as repeatability_module
+from tanager_minmap.repeatability import (
     _RESAMPLED_METRIC_COMPONENTS,
     BOOTSTRAP_REPLICATES,
     EXECUTION_SCHEMA_VERSION,

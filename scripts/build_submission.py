@@ -23,16 +23,16 @@ import rioxarray  # noqa: F401  (registers the .rio accessor; used via open_rast
 import xarray as xr
 from tanager_spec.io import load_tanager_sr_hdf5
 
-from tanager_rocks.config import SITES, TANAGER_SR_ASSET
-from tanager_rocks.figures import (
+from tanager_minmap.config import SITES, TANAGER_SR_ASSET
+from tanager_minmap.figures import (
     representative_spectra,
     rgb_context,
     spectra_story,
     validation_pair,
 )
-from tanager_rocks.hazard import acid_generating_potential
-from tanager_rocks.interactive import class_rgba, reproject_classes_4326, story_map
-from tanager_rocks.pipeline import (
+from tanager_minmap.hazard import acid_generating_potential
+from tanager_minmap.interactive import class_rgba, reproject_classes_4326, story_map
+from tanager_minmap.pipeline import (
     EMIT_GRANULE_URS,
     PipelinePaths,
     run_ablate,
@@ -40,11 +40,11 @@ from tanager_rocks.pipeline import (
     run_emit,
     run_hero,
 )
-from tanager_rocks.quality import mask_tanager_scene
-from tanager_rocks.reference import MINERAL_TO_ROCKWELL, ROCKWELL_EXCLUDED, align_reference
-from tanager_rocks.speclib import load_library, select_endmembers
-from tanager_rocks.unmix import mtmf
-from tanager_rocks.viz import AGP_TIER_COLORS, MINERAL_COLORS, dominant_mineral_class, setup_style
+from tanager_minmap.quality import mask_tanager_scene
+from tanager_minmap.reference import MINERAL_TO_ROCKWELL, ROCKWELL_EXCLUDED, align_reference
+from tanager_minmap.speclib import load_library, select_endmembers
+from tanager_minmap.unmix import mtmf
+from tanager_minmap.viz import AGP_TIER_COLORS, MINERAL_COLORS, dominant_mineral_class, setup_style
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("build_submission")

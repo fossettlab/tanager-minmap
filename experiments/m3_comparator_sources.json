@@ -7,7 +7,7 @@
       "unresolved",
       "operator_gate"
     ],
-    "name": "tanager-rocks.m3-comparator-source-ledger",
+    "name": "tanager-minmap.m3-comparator-source-ledger",
     "required_comparator_fields": [
       "adapter",
       "checkpoint",

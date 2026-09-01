@@ -5,7 +5,7 @@ import math
 
 import pytest
 
-from tanager_rocks.e4_registry import (
+from tanager_minmap.e4_registry import (
     E4RegistryValidationError,
     registry_row_sort_key,
     validate_e4_registry,

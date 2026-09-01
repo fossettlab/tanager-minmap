@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
-from tanager_rocks.emit_l2b import (
+from tanager_minmap.emit_l2b import (
     EMIT_L2B_SHORT_NAME,
     EmitL2BSourcePair,
     PinnedEmitL2AInput,

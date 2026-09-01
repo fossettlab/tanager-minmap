@@ -9,7 +9,7 @@ matplotlib.use("Agg")  # headless
 import numpy as np  # noqa: E402
 import xarray as xr  # noqa: E402
 
-from tanager_rocks.figures import (  # noqa: E402
+from tanager_minmap.figures import (  # noqa: E402
     _nearest,
     _normalize,
     representative_spectra,
@@ -17,7 +17,7 @@ from tanager_rocks.figures import (  # noqa: E402
     spectra_story,
     validation_pair,
 )
-from tanager_rocks.speclib import Endmember  # noqa: E402
+from tanager_minmap.speclib import Endmember  # noqa: E402
 
 
 def _cube(values: np.ndarray, wl: np.ndarray) -> xr.DataArray:

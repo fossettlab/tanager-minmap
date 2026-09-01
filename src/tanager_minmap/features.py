@@ -9,7 +9,7 @@ named absorptions directly (2200 nm Al-OH, 2265 nm jarosite, 2340 nm gypsum).
 Feature definitions are NOT hard-coded here. A :class:`FeatureDef` carries its
 shoulder wavelengths plus a ``source`` string; the shoulders are meant to be
 derived from the reference spectral-library endmembers
-(:mod:`tanager_rocks.speclib`) so they are data-driven, not invented. Input
+(:mod:`tanager_minmap.speclib`) so they are data-driven, not invented. Input
 cubes come from :func:`tanager_spec.io.load_tanager_sr_hdf5` after masking.
 """
 

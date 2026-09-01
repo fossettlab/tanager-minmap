@@ -7,7 +7,7 @@ matched-filter abundance plus the mixture-tuned infeasibility, gated to keep
 abundance only where the pixel is spectrally feasible. Writes class/abundance/
 infeasibility GeoTIFFs and PNG panels.
 
-Thin wrapper over :func:`tanager_rocks.pipeline.run_unmix`; the installed
+Thin wrapper over :func:`tanager_minmap.pipeline.run_unmix`; the installed
 ``tanager-minmap unmix`` runs the same logic.
 
 Run::
@@ -22,8 +22,8 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
-from tanager_rocks.config import SITES
-from tanager_rocks.pipeline import PipelinePaths, run_unmix
+from tanager_minmap.config import SITES
+from tanager_minmap.pipeline import PipelinePaths, run_unmix
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 

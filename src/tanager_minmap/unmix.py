@@ -3,7 +3,7 @@
 Implements spec.md pipeline step 4. MTMF (a covariance-aware matched filter)
 is the primary method because the methodology suite found Tanager's
 information lives in covariance-aware statistics; SAM is the band-independent
-comparison. Both consume endmembers from :mod:`tanager_rocks.speclib` and a
+comparison. Both consume endmembers from :mod:`tanager_minmap.speclib` and a
 masked SR cube from the :mod:`tanager_spec` data layer.
 """
 
@@ -30,7 +30,7 @@ def spectral_angle(cube: xr.DataArray, endmembers: dict[str, Endmember]) -> xr.D
     cube : xr.DataArray
         Masked surface-reflectance cube (band, y, x).
     endmembers : dict
-        Mineral -> :class:`tanager_rocks.speclib.Endmember`, resampled to the
+        Mineral -> :class:`tanager_minmap.speclib.Endmember`, resampled to the
         cube's wavelength axis.
 
     Returns
@@ -309,7 +309,7 @@ def matched_filter_maps(
     cube : xr.DataArray
         Masked surface-reflectance cube (band, y, x).
     endmembers : dict
-        Mineral -> :class:`tanager_rocks.speclib.Endmember`.
+        Mineral -> :class:`tanager_minmap.speclib.Endmember`.
     ridge : float
         Diagonal-loading fraction applied to the covariance before inversion.
 
@@ -362,7 +362,7 @@ def mtmf(
     cube : xr.DataArray
         Masked surface-reflectance cube (band, y, x).
     endmembers : dict
-        Mineral -> :class:`tanager_rocks.speclib.Endmember`.
+        Mineral -> :class:`tanager_minmap.speclib.Endmember`.
     ridge : float
         Diagonal-loading fraction applied to the covariance before inversion.
 

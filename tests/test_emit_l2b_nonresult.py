@@ -11,9 +11,9 @@ import h5py
 import numpy as np
 import pytest
 
-import tanager_rocks.emit_l2b as emit_l2b
-from tanager_rocks.emit_l2b import load_emit_l2b_metadata
-from tanager_rocks.emit_l2b_nonresult import (
+import tanager_minmap.emit_l2b as emit_l2b
+from tanager_minmap.emit_l2b import load_emit_l2b_metadata
+from tanager_minmap.emit_l2b_nonresult import (
     REQUIRED_BUNDLE_FILES,
     RESOURCE_ADMISSION_EVIDENCE_FILES_V2,
     RESOURCE_ATTESTATION_FILENAMES_V2,
@@ -1308,7 +1308,7 @@ def test_resource_telemetry_v2_enforces_stage_limits(metric: str, value: int):
 
 
 def test_json_duplicate_keys_and_nonfinite_values_fail_closed():
-    from tanager_rocks.emit_l2b_nonresult import strict_json_load_bytes
+    from tanager_minmap.emit_l2b_nonresult import strict_json_load_bytes
 
     with pytest.raises(NonResultError, match="duplicate_json_key"):
         strict_json_load_bytes(b'{"a": 1, "a": 2}')

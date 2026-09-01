@@ -13,7 +13,7 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
-from tanager_rocks.ensemble_sensitivity import (
+from tanager_minmap.ensemble_sensitivity import (
     FROZEN_BOOTSTRAP_REPLICATES,
     FROZEN_QUANTILES,
     FROZEN_RIDGES,

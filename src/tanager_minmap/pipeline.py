@@ -1,4 +1,4 @@
-"""Pipeline orchestration for the tanager-rocks mineral-mapping stages.
+"""Pipeline orchestration for the tanager-minmap mineral-mapping stages.
 
 Each ``run_*`` function executes one ``spec.md`` pipeline stage end-to-end for a
 site — load the SR cube, mask absorption bands, compute, and write the

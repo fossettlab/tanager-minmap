@@ -76,14 +76,14 @@ TANAGER_SPEC_PACKAGE_DATA_FILES = frozenset(
 GOVERNING_FILE_KEYS = frozenset(
     {
         "scripts/run_basic_ortho_sensitivity.py",
-        "src/tanager_rocks/__init__.py",
-        "src/tanager_rocks/basic_ortho.py",
-        "src/tanager_rocks/config.py",
-        "src/tanager_rocks/features.py",
-        "src/tanager_rocks/quality.py",
-        "src/tanager_rocks/speclib.py",
-        "src/tanager_rocks/unmix.py",
-        "src/tanager_rocks/viz.py",
+        "src/tanager_minmap/__init__.py",
+        "src/tanager_minmap/basic_ortho.py",
+        "src/tanager_minmap/config.py",
+        "src/tanager_minmap/features.py",
+        "src/tanager_minmap/quality.py",
+        "src/tanager_minmap/speclib.py",
+        "src/tanager_minmap/unmix.py",
+        "src/tanager_minmap/viz.py",
         *TANAGER_SPEC_MODULE_FILES.values(),
         *TANAGER_SPEC_PACKAGE_DATA_FILES,
     }

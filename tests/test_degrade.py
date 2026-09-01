@@ -6,13 +6,13 @@ import numpy as np
 import xarray as xr
 from tanager_spec.srf import gaussian_srf
 
-from tanager_rocks.degrade import (
+from tanager_minmap.degrade import (
     degrade_cube,
     degrade_spectra,
     separability,
     srf_band_stats,
 )
-from tanager_rocks.speclib import Endmember
+from tanager_minmap.speclib import Endmember
 
 # Source spectra grid and a two-band synthetic SRF well inside it.
 _SRC = np.arange(400.0, 2401.0, 10.0)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from tanager_rocks.spatial_validation import (
+from tanager_minmap.spatial_validation import (
     BlockSample,
     complete_blocks,
     sample_blocks,
