@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "tanager-minmap: mineral and alteration mapping from Planet Tanager VSWIR surface reflectance"
+title: "tanager-rocks: mineral and mine-waste mapping from Planet Tanager VSWIR surface reflectance"
 authors:
   - family-names: Bradley
     given-names: Alex
