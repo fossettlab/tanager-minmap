@@ -6,7 +6,7 @@ authors:
     given-names: Alex
     email: abradley@wustl.edu
     affiliation: "Department of Earth, Environmental, and Planetary Sciences, Washington University in St. Louis"
-version: 0.1.0
-doi: 10.5281/zenodo.22218608
+version: 0.1.1
+doi: 10.5281/zenodo.22218607
 license: MIT
 repository-code: "https://github.com/fossettlab/tanager-minmap"

@@ -1,6 +1,6 @@
 [project]
 name = "tanager-minmap"
-version = "0.1.0"
+version = "0.1.1"
 description = "Mineral and hydrothermal-alteration mapping from Planet Tanager 426-band VSWIR surface reflectance at named US mine sites (Bingham Canyon, Goldfield), with a Sentinel-2 band-ablation comparison and an EMIT cross-sensor benchmark."
 readme = "README.md"
 requires-python = ">=3.11"
