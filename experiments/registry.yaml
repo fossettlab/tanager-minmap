@@ -69,16 +69,16 @@
           "path": "data/raw/20250911_191523_58_4001_ortho_sr_hdf5.h5",
           "kind": "file",
           "sha256": "fc15137a7277ae5021c64c82f4701f3587fb2cc60e8d6523f96d94ff8f89789f",
-          "availability": "present",
-          "notes": "Hash is also recorded in docs/input_manifest.json."
+          "availability": "unrecorded",
+          "notes": "Hash is also recorded in docs/input_manifest.json. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "usgs-splib07a-archive",
           "path": "data/speclib/ASCIIdata_splib07a.zip",
           "kind": "file",
           "sha256": "d232645740869a82aafcad5839448c50b1dc72965ce042d1374f29b7a798a91c",
-          "availability": "present",
-          "notes": "Authoritative downloaded archive; hash is also recorded in docs/input_manifest.json."
+          "availability": "unrecorded",
+          "notes": "Authoritative downloaded archive; hash is also recorded in docs/input_manifest.json. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         }
       ],
       "split": {
@@ -122,8 +122,8 @@
           "path": "figures/bingham_20250911_191523_58_4001_band_ablation.png",
           "kind": "file",
           "sha256": "25b4617d875bd71c14445f6b18e3e0a558dd5864dc44c8974220f5fc073c4c50",
-          "availability": "present",
-          "notes": "Current generated ablation panel."
+          "availability": "unrecorded",
+          "notes": "Current generated ablation panel. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         }
       ],
       "primary_endpoint": "Alunite-kaolinite Tanager and Sentinel-2 spectral angles and percent loss.",
@@ -166,24 +166,24 @@
           "path": "data/raw/20240925_185504_87_4001_ortho_sr_hdf5.h5",
           "kind": "file",
           "sha256": "1f17e0ce5de44bfaf3177b0e0d626315ba8ef566d6ecbc1b02b864727ffba831",
-          "availability": "present",
-          "notes": "Hash is also recorded in docs/input_manifest.json."
+          "availability": "unrecorded",
+          "notes": "Hash is also recorded in docs/input_manifest.json. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "rockwell-aster-reference-img",
           "path": "data/reference/raw/aster_southwest_aa61_v8_1-17-17.img",
           "kind": "file",
           "sha256": "9a99261042ea46cb7b05e0ce2cba5976f12128c49d011a84a1d3cb0d9e2af817",
-          "availability": "present",
-          "notes": "Raster header; paired payload is recorded as the next input and both hashes are in docs/input_manifest.json."
+          "availability": "unrecorded",
+          "notes": "Raster header; paired payload is recorded as the next input and both hashes are in docs/input_manifest.json. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "rockwell-aster-reference-ige",
           "path": "data/reference/raw/aster_southwest_aa61_v8_1-17-17.ige",
           "kind": "file",
           "sha256": "5f79ab016834ee1c9c5b06749ef3bfbd3919a6e9984ded86932efe554b6a29fc",
-          "availability": "present",
-          "notes": "Raster payload paired with the IMG header."
+          "availability": "unrecorded",
+          "notes": "Raster payload paired with the IMG header. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         }
       ],
       "split": {
@@ -196,7 +196,10 @@
         "values": {
           "site": "goldfield",
           "reference": "Rockwell ASTER alteration classes",
-          "score_families": ["diagnostic band depth", "MTMF abundance"]
+          "score_families": [
+            "diagnostic band depth",
+            "MTMF abundance"
+          ]
         },
         "grid": null,
         "thresholds": {
@@ -228,16 +231,16 @@
           "path": "figures/goldfield_20240925_185504_87_4001_validation_features.png",
           "kind": "file",
           "sha256": "cdb6b01ac4e197b227bbd2b7d1f6a5540e14d6c21ee9f4e5bed3aca72205f8e0",
-          "availability": "present",
-          "notes": "Corrected QA-mask feature validation figure."
+          "availability": "unrecorded",
+          "notes": "Corrected QA-mask feature validation figure. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "validation-mtmf-figure",
           "path": "figures/goldfield_20240925_185504_87_4001_validation_mtmf.png",
           "kind": "file",
           "sha256": "14117cc5ef65f6496c9eff8617bb249b23a79432bf194a9261a6356d2958f56e",
-          "availability": "present",
-          "notes": "Corrected QA-mask MTMF validation figure."
+          "availability": "unrecorded",
+          "notes": "Corrected QA-mask MTMF validation figure. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         }
       ],
       "primary_endpoint": "Rank-AUC for each declared feature or MTMF layer against compatible alteration classes.",
@@ -281,16 +284,16 @@
           "path": "data/raw/20240925_185504_87_4001_ortho_sr_hdf5.h5",
           "kind": "file",
           "sha256": "1f17e0ce5de44bfaf3177b0e0d626315ba8ef566d6ecbc1b02b864727ffba831",
-          "availability": "present",
-          "notes": "Hash is also recorded in docs/input_manifest.json."
+          "availability": "unrecorded",
+          "notes": "Hash is also recorded in docs/input_manifest.json. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "emit-l2a-granule",
           "path": "data/raw/emit/EMIT_L2A_RFL_001_20230804T191650_2321613_007.nc",
           "kind": "file",
           "sha256": "08e824241ed4a2c25f2655e318ba4fcaaaeafbdbeac50ec0997d9b3a7f634176",
-          "availability": "present",
-          "notes": "Granule UR is pinned in src/tanager_minmap/pipeline.py and hash is recorded in docs/input_manifest.json."
+          "availability": "unrecorded",
+          "notes": "Granule UR is pinned in src/tanager_minmap/pipeline.py and hash is recorded in docs/input_manifest.json. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         }
       ],
       "split": {
@@ -333,8 +336,8 @@
           "path": "figures/goldfield_20240925_185504_87_4001_emit_comparison.png",
           "kind": "file",
           "sha256": "d6345da8543aa7817303498aedc6dfab9827c1c74a8beb2b337203a011819157",
-          "availability": "present",
-          "notes": "Corrected QA-mask comparison figure using the pinned EMIT granule."
+          "availability": "unrecorded",
+          "notes": "Corrected QA-mask comparison figure using the pinned EMIT granule. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         }
       ],
       "primary_endpoint": "Scene-mean spectral Pearson correlation and per-mineral MTMF detection correlations.",
@@ -377,8 +380,8 @@
           "path": "data/raw/20250911_191523_58_4001_ortho_sr_hdf5.h5",
           "kind": "file",
           "sha256": "fc15137a7277ae5021c64c82f4701f3587fb2cc60e8d6523f96d94ff8f89789f",
-          "availability": "present",
-          "notes": "Hash is also recorded in docs/input_manifest.json."
+          "availability": "unrecorded",
+          "notes": "Hash is also recorded in docs/input_manifest.json. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         }
       ],
       "split": {
@@ -390,7 +393,12 @@
       "parameters": {
         "values": {
           "site": "bingham",
-          "tier_order": ["background", "low", "moderate", "high"]
+          "tier_order": [
+            "background",
+            "low",
+            "moderate",
+            "high"
+          ]
         },
         "grid": null,
         "thresholds": {
@@ -423,16 +431,16 @@
           "path": "data/intermediate/maps/bingham_20250911_191523_58_4001_amd_agp.tif",
           "kind": "file",
           "sha256": "3738e56b2e1438a109444ed3afa04c5341acd8ea1cea8c3e55fa2b7d3b632864",
-          "availability": "present",
-          "notes": "Corrected QA-mask ordinal screening raster."
+          "availability": "unrecorded",
+          "notes": "Corrected QA-mask ordinal screening raster. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "amd-tier-figure",
           "path": "figures/bingham_20250911_191523_58_4001_amd_agp.png",
           "kind": "file",
           "sha256": "f6ff9d28a952485096ba28733cd8aab52a39ce92d2e3de3c89e952d7cc53b109",
-          "availability": "present",
-          "notes": "Corrected QA-mask ordinal screening figure."
+          "availability": "unrecorded",
+          "notes": "Corrected QA-mask ordinal screening figure. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         }
       ],
       "primary_endpoint": "In-scene pixel counts in high, moderate, low, and background ordinal tiers.",
@@ -483,16 +491,16 @@
           "path": "data/raw/20240925_185504_87_4001_ortho_sr_hdf5.h5",
           "kind": "file",
           "sha256": "1f17e0ce5de44bfaf3177b0e0d626315ba8ef566d6ecbc1b02b864727ffba831",
-          "availability": "present",
-          "notes": "Hash is also recorded in docs/input_manifest.json."
+          "availability": "unrecorded",
+          "notes": "Hash is also recorded in docs/input_manifest.json. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "bingham-lead-scene-hdf5",
           "path": "data/raw/20250911_191523_58_4001_ortho_sr_hdf5.h5",
           "kind": "file",
           "sha256": "fc15137a7277ae5021c64c82f4701f3587fb2cc60e8d6523f96d94ff8f89789f",
-          "availability": "present",
-          "notes": "Hash is also recorded in docs/input_manifest.json."
+          "availability": "unrecorded",
+          "notes": "Hash is also recorded in docs/input_manifest.json. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         }
       ],
       "split": {
@@ -505,7 +513,10 @@
         "values": {
           "patch_size_px": 11,
           "purity_floor": 0.7,
-          "swir_window_nm": [2000.0, 2450.0]
+          "swir_window_nm": [
+            2000.0,
+            2450.0
+          ]
         },
         "grid": null,
         "thresholds": {
@@ -649,16 +660,16 @@
           "path": "data/processed/hard_pairs_dataset/patches.csv",
           "kind": "file",
           "sha256": "4e43f1819e6a47ac203933965a80a3f33983f13067823f60e9022a139aa4c8f3",
-          "availability": "present",
-          "notes": "Current 268-row self-contained QA-valid patch manifest."
+          "availability": "unrecorded",
+          "notes": "Current 268-row self-contained QA-valid patch manifest. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "dataset-pairs",
           "path": "data/processed/hard_pairs_dataset/pairs.csv",
           "kind": "file",
           "sha256": "55d43bdb50a4d73a5646eab5b053b3f403a8dc6e9826beb9f719d4ab1598bf41",
-          "availability": "present",
-          "notes": "Current 18-row pair manifest."
+          "availability": "unrecorded",
+          "notes": "Current 18-row pair manifest. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "dataset-clusters",
@@ -681,8 +692,8 @@
           "path": "data/processed/hard_pairs_dataset/chips",
           "kind": "directory",
           "sha256": null,
-          "availability": "present",
-          "notes": "Directory is present; this M0 scaffold does not invent a directory digest or per-chip manifest hash."
+          "availability": "unrecorded",
+          "notes": "Directory is present; this M0 scaffold does not invent a directory digest or per-chip manifest hash. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         }
       ],
       "primary_endpoint": "Manifest completeness and exact round-trip agreement for a seeded-random exported chip.",
@@ -727,8 +738,8 @@
           "path": "docs/m1b_basic_ortho_sensitivity_preregistration.md",
           "kind": "file",
           "sha256": "d546eee8971fb0467b99775dc1f8d8c73ec18b1781116af13f192658fe95d1ba",
-          "availability": "present",
-          "notes": "Frozen before either downloaded basic reflectance file or any scientific endpoint was inspected."
+          "availability": "unrecorded",
+          "notes": "Frozen before either downloaded basic reflectance file or any scientific endpoint was inspected. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "basic-ortho-acquisition-manifest",
@@ -743,32 +754,32 @@
           "path": "data/raw/20240925_185504_87_4001_basic_sr_hdf5.h5",
           "kind": "file",
           "sha256": "7dbf2c8206c851d2b5c0f70fe59918dc132ad39653979f148139a4e07a19c03d",
-          "availability": "present",
-          "notes": "Official public basic_sr_hdf5; 978021782 bytes, HDF5-open verified after atomic acquisition."
+          "availability": "unrecorded",
+          "notes": "Official public basic_sr_hdf5; 978021782 bytes, HDF5-open verified after atomic acquisition. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "bingham-basic-sr",
           "path": "data/raw/20250911_191523_58_4001_basic_sr_hdf5.h5",
           "kind": "file",
           "sha256": "26f126bfa03a6ac7dbb03f0a856ef7ec57df7e41b4e1ef130e2749a46e92f847",
-          "availability": "present",
-          "notes": "Official public basic_sr_hdf5; 1264928116 bytes, HDF5-open verified after atomic acquisition."
+          "availability": "unrecorded",
+          "notes": "Official public basic_sr_hdf5; 1264928116 bytes, HDF5-open verified after atomic acquisition. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "goldfield-ortho-sr",
           "path": "data/raw/20240925_185504_87_4001_ortho_sr_hdf5.h5",
           "kind": "file",
           "sha256": "1f17e0ce5de44bfaf3177b0e0d626315ba8ef566d6ecbc1b02b864727ffba831",
-          "availability": "present",
-          "notes": "Existing corrected-pipeline Goldfield anchor."
+          "availability": "unrecorded",
+          "notes": "Existing corrected-pipeline Goldfield anchor. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         },
         {
           "id": "bingham-ortho-sr",
           "path": "data/raw/20250911_191523_58_4001_ortho_sr_hdf5.h5",
           "kind": "file",
           "sha256": "fc15137a7277ae5021c64c82f4701f3587fb2cc60e8d6523f96d94ff8f89789f",
-          "availability": "present",
-          "notes": "Existing corrected-pipeline Bingham anchor."
+          "availability": "unrecorded",
+          "notes": "Existing corrected-pipeline Bingham anchor. Not distributed in the release tree: raw inputs are obtained via the documented download commands (bytes pinned in docs/input_manifest.json) and generated figures are reproduced by the pipeline; the story-page copies live under submission/figures/."
         }
       ],
       "split": {
@@ -779,8 +790,14 @@
       },
       "parameters": {
         "values": {
-          "sites": ["goldfield", "bingham"],
-          "branches": ["ortho_first", "basic_first"],
+          "sites": [
+            "goldfield",
+            "bingham"
+          ],
+          "branches": [
+            "ortho_first",
+            "basic_first"
+          ],
           "projection": "nearest-neighbour scalar fields only",
           "spectral_interpolation": "prohibited"
         },

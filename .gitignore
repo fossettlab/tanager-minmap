@@ -225,3 +225,5 @@ data/processed/hard_pairs/*
 !data/processed/hard_pairs/summary.json
 !data/processed/hard_pairs_dataset/wavelengths.csv
 !docs/basic_ortho_acquisition_manifest.json
+!data/processed/hard_pairs/patches.csv
+!data/processed/hard_pairs_dataset/clusters.csv
