@@ -1,0 +1,61 @@
+{
+  "composition_plan": {
+    "chunks": [
+      {
+        "text": "[Title]",
+        "duration_ms": 7158,
+        "positive_styles": ["cinematic minimal ambient documentary underscore", "sustained evolving synth pads", "restrained low pulse", "slow ~78 BPM", "neutral key resolving hopeful", "instrumental", "low-mid focus leaving 1-4 kHz clear for narration", "soft emergence from near-silence", "single low pad, slight brightening swell", "lowest energy"],
+        "negative_styles": ["vocals", "lead melody", "drum kit or percussion hits", "EDM drop", "orchestral bombast", "trailer braam", "riser or whoosh stinger", "sudden dropout", "pulse", "movement"]
+      },
+      {
+        "text": "[Hook]",
+        "duration_ms": 16927,
+        "positive_styles": ["cinematic minimal ambient documentary underscore", "sustained evolving synth pads", "restrained low pulse", "slow ~78 BPM", "neutral key resolving hopeful", "instrumental", "low-mid focus leaving 1-4 kHz clear for narration", "quiet tension", "subtle low pulse enters", "unresolved"],
+        "negative_styles": ["vocals", "lead melody", "drum kit or percussion hits", "EDM drop", "orchestral bombast", "trailer braam", "riser or whoosh stinger", "sudden dropout", "swell", "brightness"]
+      },
+      {
+        "text": "[Stakes]",
+        "duration_ms": 19879,
+        "positive_styles": ["cinematic minimal ambient documentary underscore", "sustained evolving synth pads", "restrained low pulse", "slow ~78 BPM", "neutral key resolving hopeful", "instrumental", "low-mid focus leaving 1-4 kHz clear for narration", "sustain low pulse", "slightly more forward motion", "steady, purposeful"],
+        "negative_styles": ["vocals", "lead melody", "drum kit or percussion hits", "EDM drop", "orchestral bombast", "trailer braam", "riser or whoosh stinger", "sudden dropout"]
+      },
+      {
+        "text": "[Data]",
+        "duration_ms": 25731,
+        "positive_styles": ["cinematic minimal ambient documentary underscore", "sustained evolving synth pads", "restrained low pulse", "slow ~78 BPM", "neutral key resolving hopeful", "instrumental", "low-mid focus leaving 1-4 kHz clear for narration", "sparse and atmospheric", "thin to a single sustained pad", "quietest, most transparent section"],
+        "negative_styles": ["vocals", "lead melody", "drum kit or percussion hits", "EDM drop", "orchestral bombast", "trailer braam", "riser or whoosh stinger", "sudden dropout", "swell", "build", "new instruments"]
+      },
+      {
+        "text": "[Central Result]",
+        "duration_ms": 22047,
+        "positive_styles": ["cinematic minimal ambient documentary underscore", "sustained evolving synth pads", "restrained low pulse", "slow ~78 BPM", "neutral key resolving hopeful", "instrumental", "low-mid focus leaving 1-4 kHz clear for narration", "slow deliberate build and swell", "crest about two-thirds through then ease", "fullest warmest most resolved moment"],
+        "negative_styles": ["vocals", "lead melody", "drum kit or percussion hits", "EDM drop", "orchestral bombast", "trailer braam", "riser or whoosh stinger", "sudden dropout", "abrupt hit", "drum fill"]
+      },
+      {
+        "text": "[Deliverable]",
+        "duration_ms": 21394,
+        "positive_styles": ["cinematic minimal ambient documentary underscore", "sustained evolving synth pads", "restrained low pulse", "slow ~78 BPM", "neutral key resolving hopeful", "instrumental", "low-mid focus leaving 1-4 kHz clear for narration", "warm and forward", "sense of arrival and payoff", "gently positive, settled"],
+        "negative_styles": ["vocals", "lead melody", "drum kit or percussion hits", "EDM drop", "orchestral bombast", "trailer braam", "riser or whoosh stinger", "sudden dropout"]
+      },
+      {
+        "text": "[Validation]",
+        "duration_ms": 25156,
+        "positive_styles": ["cinematic minimal ambient documentary underscore", "sustained evolving synth pads", "restrained low pulse", "slow ~78 BPM", "neutral key resolving hopeful", "instrumental", "low-mid focus leaving 1-4 kHz clear for narration", "steady and confident", "corroboration", "subtle resolution building"],
+        "negative_styles": ["vocals", "lead melody", "drum kit or percussion hits", "EDM drop", "orchestral bombast", "trailer braam", "riser or whoosh stinger", "sudden dropout"]
+      },
+      {
+        "text": "[AMD]",
+        "duration_ms": 17084,
+        "positive_styles": ["cinematic minimal ambient documentary underscore", "sustained evolving synth pads", "restrained low pulse", "slow ~78 BPM", "neutral key resolving hopeful", "instrumental", "low-mid focus leaving 1-4 kHz clear for narration", "grounded and purposeful", "utility and consequence", "steady, unshowy"],
+        "negative_styles": ["vocals", "lead melody", "drum kit or percussion hits", "EDM drop", "orchestral bombast", "trailer braam", "riser or whoosh stinger", "sudden dropout"]
+      },
+      {
+        "text": "[Close]",
+        "duration_ms": 18624,
+        "positive_styles": ["cinematic minimal ambient documentary underscore", "sustained evolving synth pads", "restrained low pulse", "slow ~78 BPM", "neutral key resolving hopeful", "instrumental", "low-mid focus leaving 1-4 kHz clear for narration", "resolve, pad opens to a calm cadence", "decay to near-silence for the tail fade", "bookend to the opening"],
+        "negative_styles": ["vocals", "lead melody", "drum kit or percussion hits", "EDM drop", "orchestral bombast", "trailer braam", "riser or whoosh stinger", "sudden dropout", "new motif", "build"]
+      }
+    ]
+  },
+  "model_id": "music_v2"
+}

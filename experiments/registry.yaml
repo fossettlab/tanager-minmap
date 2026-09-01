@@ -1,0 +1,832 @@
+{
+  "schema_version": "1.0",
+  "snapshot_date": "2026-08-09",
+  "_schema": {
+    "description": "One record per existing or planned experiment. Every contract field is explicit; null means not applicable or not yet recorded and must be explained in the adjacent notes or gate evidence.",
+    "document_format": "JSON-compatible YAML, parsed by scripts/validate_repro_metadata.py with the Python standard library.",
+    "status_definitions": {
+      "current": "The listed artifact set exists at this snapshot. This does not imply release acceptance or scientific validation.",
+      "pending": "A required rerun, source record, method gate, or decision remains before the experiment can be treated as current."
+    },
+    "artifact_availability_definitions": {
+      "present": "The repository-relative path exists; present files carry a verified SHA-256.",
+      "pending": "The output is planned but does not yet exist.",
+      "unrecorded": "The artifact may exist, but an authoritative hash or complete provenance record is not captured here.",
+      "not_applicable": "The experiment does not use this artifact class."
+    },
+    "path_policy": "Paths are repository-relative. Present paths must exist and may not escape the repository root.",
+    "required_experiment_fields": [
+      "id",
+      "title",
+      "status",
+      "classification",
+      "hypothesis",
+      "code",
+      "inputs",
+      "split",
+      "parameters",
+      "checkpoint",
+      "command",
+      "outputs",
+      "primary_endpoint",
+      "uncertainty_method",
+      "gate",
+      "data_quality"
+    ],
+    "field_descriptions": {
+      "code": "Commit provenance plus the dependency-lock artifact.",
+      "inputs": "Input identifiers, paths, availability, and hashes when recorded.",
+      "split": "Independent sampling unit and exact membership manifest, or an explicit statement that no split exists.",
+      "parameters": "Values, grids, thresholds, seed, and stopping rule without silent defaults.",
+      "checkpoint": "Model checkpoint provenance, including an explicit not-applicable record for non-model experiments.",
+      "outputs": "Generated artifacts and hashes; directories are named but not assigned a synthetic digest.",
+      "gate": "Predeclared rule, current decision, and evidence limitations.",
+      "data_quality": "Dropped samples, NaN handling, coverage masks, and known deviations."
+    }
+  },
+  "experiments": [
+    {
+      "id": "ablation-bingham-endmember-separability",
+      "title": "Bingham Tanager-to-Sentinel-2 endmember separability",
+      "status": "current",
+      "classification": "confirmatory",
+      "hypothesis": "Sentinel-2 spectral-response degradation reduces alunite-kaolinite spectral-angle separability while retaining the jarosite-goethite control.",
+      "code": {
+        "commit": null,
+        "commit_source": "Git state was intentionally not inspected in this metadata-only task. REPRODUCIBILITY.md ties the prior verified headline run to d36046b, not to the current dirty worktree.",
+        "dependency_lock": {
+          "id": "uv-lock",
+          "path": "uv.lock",
+          "kind": "file",
+          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "availability": "present",
+          "notes": "Current dependency lock at the metadata snapshot."
+        }
+      },
+      "inputs": [
+        {
+          "id": "bingham-lead-scene-hdf5",
+          "path": "data/raw/20250911_191523_58_4001_ortho_sr_hdf5.h5",
+          "kind": "file",
+          "sha256": "fc15137a7277ae5021c64c82f4701f3587fb2cc60e8d6523f96d94ff8f89789f",
+          "availability": "present",
+          "notes": "Hash is also recorded in docs/input_manifest.json."
+        },
+        {
+          "id": "usgs-splib07a-archive",
+          "path": "data/speclib/ASCIIdata_splib07a.zip",
+          "kind": "file",
+          "sha256": "d232645740869a82aafcad5839448c50b1dc72965ce042d1374f29b7a798a91c",
+          "availability": "present",
+          "notes": "Authoritative downloaded archive; hash is also recorded in docs/input_manifest.json."
+        }
+      ],
+      "split": {
+        "unit": "not applicable; measured library endmembers",
+        "manifest_path": null,
+        "memberships": null,
+        "notes": "This is a library-level separability calculation, not a train/validation/test experiment."
+      },
+      "parameters": {
+        "values": {
+          "site": "bingham",
+          "headline_pair": "alunite-kaolinite",
+          "control_pair": "jarosite-goethite",
+          "degradation": "published Sentinel-2 spectral response functions"
+        },
+        "grid": null,
+        "thresholds": {},
+        "seed": null,
+        "stopping_rule": "One deterministic calculation over the declared mineral pairs."
+      },
+      "checkpoint": {
+        "id": "model-checkpoint",
+        "path": null,
+        "kind": "not_applicable",
+        "sha256": null,
+        "availability": "not_applicable",
+        "notes": "No trained model checkpoint is used."
+      },
+      "command": "uv run python scripts/ablate_site.py --site bingham",
+      "outputs": [
+        {
+          "id": "ablation-table",
+          "path": "data/intermediate/ablation/ablation_bingham_20250911_191523_58_4001.csv",
+          "kind": "file",
+          "sha256": "dc75f47c2337b87153e9b8be0d33a5b4f50b15b616987a4d625dcba9f8cf83b5",
+          "availability": "present",
+          "notes": "Current five-pair spectral-angle table."
+        },
+        {
+          "id": "ablation-figure",
+          "path": "figures/bingham_20250911_191523_58_4001_band_ablation.png",
+          "kind": "file",
+          "sha256": "25b4617d875bd71c14445f6b18e3e0a558dd5864dc44c8974220f5fc073c4c50",
+          "availability": "present",
+          "notes": "Current generated ablation panel."
+        }
+      ],
+      "primary_endpoint": "Alunite-kaolinite Tanager and Sentinel-2 spectral angles and percent loss.",
+      "uncertainty_method": null,
+      "gate": {
+        "rule": "Reconfirm the deterministic table at the intended submission commit and describe it only as an endmember spectral-angle ablation.",
+        "decision": "pending",
+        "evidence": "The table exists, but release_readiness_checklist.md requires submission-commit reconfirmation and correction of video beat 04's classifier wording."
+      },
+      "data_quality": {
+        "dropped_samples": "No dropped endmember pair is reported in the five-row CSV.",
+        "nan_policy": "No NaN is present in the current ablation CSV.",
+        "coverage_masks": "No scene-pixel coverage mask applies to this library-level comparison.",
+        "known_deviations": [
+          "Current video narration describes an identical classifier and class collapse that this experiment did not perform."
+        ]
+      }
+    },
+    {
+      "id": "validation-goldfield-aster",
+      "title": "Goldfield validation against the Rockwell ASTER alteration map",
+      "status": "current",
+      "classification": "confirmatory",
+      "hypothesis": "Tanager feature and MTMF scores discriminate compatible Goldfield alteration zones in the external ASTER-derived map.",
+      "code": {
+        "commit": null,
+        "commit_source": "Git state was intentionally not inspected. REPRODUCIBILITY.md records d36046b for the prior verified headline run only.",
+        "dependency_lock": {
+          "id": "uv-lock",
+          "path": "uv.lock",
+          "kind": "file",
+          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "availability": "present",
+          "notes": "Current dependency lock at the metadata snapshot."
+        }
+      },
+      "inputs": [
+        {
+          "id": "goldfield-lead-scene-hdf5",
+          "path": "data/raw/20240925_185504_87_4001_ortho_sr_hdf5.h5",
+          "kind": "file",
+          "sha256": "1f17e0ce5de44bfaf3177b0e0d626315ba8ef566d6ecbc1b02b864727ffba831",
+          "availability": "present",
+          "notes": "Hash is also recorded in docs/input_manifest.json."
+        },
+        {
+          "id": "rockwell-aster-reference-img",
+          "path": "data/reference/raw/aster_southwest_aa61_v8_1-17-17.img",
+          "kind": "file",
+          "sha256": "9a99261042ea46cb7b05e0ce2cba5976f12128c49d011a84a1d3cb0d9e2af817",
+          "availability": "present",
+          "notes": "Raster header; paired payload is recorded as the next input and both hashes are in docs/input_manifest.json."
+        },
+        {
+          "id": "rockwell-aster-reference-ige",
+          "path": "data/reference/raw/aster_southwest_aa61_v8_1-17-17.ige",
+          "kind": "file",
+          "sha256": "5f79ab016834ee1c9c5b06749ef3bfbd3919a6e9984ded86932efe554b6a29fc",
+          "availability": "present",
+          "notes": "Raster payload paired with the IMG header."
+        }
+      ],
+      "split": {
+        "unit": "pixels in the aligned Goldfield scene and reference map",
+        "manifest_path": null,
+        "memberships": null,
+        "notes": "The current calculation has no spatial-block split; thresholds and evaluation use the same spatially autocorrelated pixels."
+      },
+      "parameters": {
+        "values": {
+          "site": "goldfield",
+          "reference": "Rockwell ASTER alteration classes",
+          "score_families": ["diagnostic band depth", "MTMF abundance"]
+        },
+        "grid": null,
+        "thresholds": {
+          "calibration": "Youden-J threshold selected on the same current pixels"
+        },
+        "seed": null,
+        "stopping_rule": "Evaluate every declared feature and mineral layer once."
+      },
+      "checkpoint": {
+        "id": "model-checkpoint",
+        "path": null,
+        "kind": "not_applicable",
+        "sha256": null,
+        "availability": "not_applicable",
+        "notes": "No trained model checkpoint is used."
+      },
+      "command": "uv run python scripts/validate_site.py --site goldfield",
+      "outputs": [
+        {
+          "id": "validation-table",
+          "path": "data/intermediate/validation/validation_goldfield_20240925_185504_87_4001.csv",
+          "kind": "file",
+          "sha256": "1d4a0f19fb9ef160449a9b8dc9ad0f14ac85a8e6616bf6b3465f6dd49e9f5a72",
+          "availability": "present",
+          "notes": "Corrected QA-mask pixelwise validation table; spatial-block confirmation is a separate preregistered experiment."
+        },
+        {
+          "id": "validation-feature-figure",
+          "path": "figures/goldfield_20240925_185504_87_4001_validation_features.png",
+          "kind": "file",
+          "sha256": "cdb6b01ac4e197b227bbd2b7d1f6a5540e14d6c21ee9f4e5bed3aca72205f8e0",
+          "availability": "present",
+          "notes": "Corrected QA-mask feature validation figure."
+        },
+        {
+          "id": "validation-mtmf-figure",
+          "path": "figures/goldfield_20240925_185504_87_4001_validation_mtmf.png",
+          "kind": "file",
+          "sha256": "14117cc5ef65f6496c9eff8617bb249b23a79432bf194a9261a6356d2958f56e",
+          "availability": "present",
+          "notes": "Corrected QA-mask MTMF validation figure."
+        }
+      ],
+      "primary_endpoint": "Rank-AUC for each declared feature or MTMF layer against compatible alteration classes.",
+      "uncertainty_method": "Current Mann-Whitney pixelwise p-values; no spatial-block interval.",
+      "gate": {
+        "rule": "Retain the corrected pixelwise table as descriptive evidence and require the preregistered spatial-block analysis before stronger accuracy claims.",
+        "decision": "pending",
+        "evidence": "The QA-mask contract and corrected rerun are complete. Spatial pseudoreplication and same-data threshold calibration remain open until the M2 blocked analysis is run."
+      },
+      "data_quality": {
+        "dropped_samples": "Positive and negative pixel counts are recorded per row; no spatial-block discard ledger exists.",
+        "nan_policy": "QA-invalid pixels and non-finite score or reference values are excluded; positive and negative counts are recorded per row.",
+        "coverage_masks": "Intersection of the shared Tanager QA mask and reprojected categorical reference; the mask policy is frozen in docs/tanager_quality_mask_policy.md.",
+        "known_deviations": [
+          "Pixelwise tests overstate independent sample size.",
+          "The reference is alteration-zone, not mineral-level, ground truth."
+        ]
+      }
+    },
+    {
+      "id": "emit-goldfield-l2a-consistency",
+      "title": "Goldfield Tanager versus EMIT L2A consistency",
+      "status": "current",
+      "classification": "confirmatory",
+      "hypothesis": "Tanager and an overlapping EMIT L2A observation produce positively associated scene spectra and MTMF mineral-detection maps under the same library-driven pipeline.",
+      "code": {
+        "commit": null,
+        "commit_source": "Git state was intentionally not inspected. REPRODUCIBILITY.md records d36046b for the prior verified headline run only.",
+        "dependency_lock": {
+          "id": "uv-lock",
+          "path": "uv.lock",
+          "kind": "file",
+          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "availability": "present",
+          "notes": "Current dependency lock at the metadata snapshot."
+        }
+      },
+      "inputs": [
+        {
+          "id": "goldfield-lead-scene-hdf5",
+          "path": "data/raw/20240925_185504_87_4001_ortho_sr_hdf5.h5",
+          "kind": "file",
+          "sha256": "1f17e0ce5de44bfaf3177b0e0d626315ba8ef566d6ecbc1b02b864727ffba831",
+          "availability": "present",
+          "notes": "Hash is also recorded in docs/input_manifest.json."
+        },
+        {
+          "id": "emit-l2a-granule",
+          "path": "data/raw/emit/EMIT_L2A_RFL_001_20230804T191650_2321613_007.nc",
+          "kind": "file",
+          "sha256": "08e824241ed4a2c25f2655e318ba4fcaaaeafbdbeac50ec0997d9b3a7f634176",
+          "availability": "present",
+          "notes": "Granule UR is pinned in src/tanager_rocks/pipeline.py and hash is recorded in docs/input_manifest.json."
+        }
+      ],
+      "split": {
+        "unit": "pixels on the common comparison grid",
+        "manifest_path": null,
+        "memberships": null,
+        "notes": "No train/validation/test split applies; the current product is a cross-sensor consistency comparison."
+      },
+      "parameters": {
+        "values": {
+          "site": "goldfield",
+          "emit_product": "L2A surface reflectance",
+          "comparison": "scene-mean spectra and per-mineral MTMF map correlations"
+        },
+        "grid": null,
+        "thresholds": {},
+        "seed": null,
+        "stopping_rule": "Compare the selected fully overlapping EMIT scene once on the common grid."
+      },
+      "checkpoint": {
+        "id": "model-checkpoint",
+        "path": null,
+        "kind": "not_applicable",
+        "sha256": null,
+        "availability": "not_applicable",
+        "notes": "No trained model checkpoint is used."
+      },
+      "command": "doppler run --project mac --config dev -- uv run python scripts/compare_emit.py --site goldfield",
+      "outputs": [
+        {
+          "id": "emit-comparison-table",
+          "path": "data/intermediate/emit/emit_comparison_goldfield_20240925_185504_87_4001.csv",
+          "kind": "file",
+          "sha256": "77dd7fc97da996b924796289fb9c884cfeef8eaef4e299017909be2c445b9790",
+          "availability": "present",
+          "notes": "Corrected QA-mask comparison table using the pinned EMIT granule."
+        },
+        {
+          "id": "emit-comparison-figure",
+          "path": "figures/goldfield_20240925_185504_87_4001_emit_comparison.png",
+          "kind": "file",
+          "sha256": "d6345da8543aa7817303498aedc6dfab9827c1c74a8beb2b337203a011819157",
+          "availability": "present",
+          "notes": "Corrected QA-mask comparison figure using the pinned EMIT granule."
+        }
+      ],
+      "primary_endpoint": "Scene-mean spectral Pearson correlation and per-mineral MTMF detection correlations.",
+      "uncertainty_method": null,
+      "gate": {
+        "rule": "Record exact input provenance and describe the corrected result as cross-sensor consistency rather than independent truth.",
+        "decision": "pending",
+        "evidence": "The corrected rerun is pinned and hashed; both sensors still use substantially the same library-driven method, so the evidence is not independent mineral truth."
+      },
+      "data_quality": {
+        "dropped_samples": "The CSV reports the common-grid sample count but no exclusion-reason ledger.",
+        "nan_policy": "No NaN appears in the current eight-row output; upstream masked-pixel accounting is not recorded.",
+        "coverage_masks": "Common spatial support after EMIT orthorectification, with the authoritative Tanager QA mask applied on the Tanager side.",
+        "known_deviations": [
+          "Both sensors are evaluated with the same endmembers and MTMF implementation, so this is consistency evidence rather than an independent external validation."
+        ]
+      }
+    },
+    {
+      "id": "amd-bingham-ordinal-proxy",
+      "title": "Bingham ordinal acid-generating-potential proxy",
+      "status": "current",
+      "classification": "exploratory",
+      "hypothesis": "Scene-relative MTMF detections of jarosite, iron oxides, and gypsum form a useful ordinal screening layer for field follow-up.",
+      "code": {
+        "commit": null,
+        "commit_source": "Git state was intentionally not inspected. REPRODUCIBILITY.md records d36046b for the prior verified headline run only.",
+        "dependency_lock": {
+          "id": "uv-lock",
+          "path": "uv.lock",
+          "kind": "file",
+          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "availability": "present",
+          "notes": "Current dependency lock at the metadata snapshot."
+        }
+      },
+      "inputs": [
+        {
+          "id": "bingham-lead-scene-hdf5",
+          "path": "data/raw/20250911_191523_58_4001_ortho_sr_hdf5.h5",
+          "kind": "file",
+          "sha256": "fc15137a7277ae5021c64c82f4701f3587fb2cc60e8d6523f96d94ff8f89789f",
+          "availability": "present",
+          "notes": "Hash is also recorded in docs/input_manifest.json."
+        }
+      ],
+      "split": {
+        "unit": "not applicable; full lead-scene screening map",
+        "manifest_path": null,
+        "memberships": null,
+        "notes": "No held-out split or out-of-scene calibration exists for this exploratory proxy."
+      },
+      "parameters": {
+        "values": {
+          "site": "bingham",
+          "tier_order": ["background", "low", "moderate", "high"]
+        },
+        "grid": null,
+        "thresholds": {
+          "max_infeas": 1.0,
+          "per_mineral_quantile": 0.9
+        },
+        "seed": null,
+        "stopping_rule": "Generate one tier map for the declared lead scene."
+      },
+      "checkpoint": {
+        "id": "model-checkpoint",
+        "path": null,
+        "kind": "not_applicable",
+        "sha256": null,
+        "availability": "not_applicable",
+        "notes": "No trained model checkpoint is used."
+      },
+      "command": "uv run python scripts/amd_site.py --site bingham",
+      "outputs": [
+        {
+          "id": "amd-tier-counts",
+          "path": "data/intermediate/amd/amd_counts_bingham_20250911_191523_58_4001.csv",
+          "kind": "file",
+          "sha256": "c0ed7bd16401eab9d1d0073dcbe3c714e7017c4ef2efa22eb0ce233ff478d832",
+          "availability": "present",
+          "notes": "Machine-readable corrected tier counts and analytical gate values."
+        },
+        {
+          "id": "amd-tier-raster",
+          "path": "data/intermediate/maps/bingham_20250911_191523_58_4001_amd_agp.tif",
+          "kind": "file",
+          "sha256": "3738e56b2e1438a109444ed3afa04c5341acd8ea1cea8c3e55fa2b7d3b632864",
+          "availability": "present",
+          "notes": "Corrected QA-mask ordinal screening raster."
+        },
+        {
+          "id": "amd-tier-figure",
+          "path": "figures/bingham_20250911_191523_58_4001_amd_agp.png",
+          "kind": "file",
+          "sha256": "f6ff9d28a952485096ba28733cd8aab52a39ce92d2e3de3c89e952d7cc53b109",
+          "availability": "present",
+          "notes": "Corrected QA-mask ordinal screening figure."
+        }
+      ],
+      "primary_endpoint": "In-scene pixel counts in high, moderate, low, and background ordinal tiers.",
+      "uncertainty_method": null,
+      "gate": {
+        "rule": "Retain screening-only language; do not present the ordinal proxy as measured acidity or field validation.",
+        "decision": "pending",
+        "evidence": "The corrected raster, figure, and machine-readable tier counts exist and are hashed, but the layer has no field validation or out-of-scene calibration."
+      },
+      "data_quality": {
+        "dropped_samples": "QA-invalid pixels are outside the reported 514262-pixel in-scene domain; the four tier counts sum exactly to that domain.",
+        "nan_policy": "Off-domain and QA-invalid pixels are written as raster nodata.",
+        "coverage_masks": "Lead-scene domain under the authoritative Tanager QA mask; the exact four tier counts are recorded in METHODS.md and docs/claim_ledger.yaml.",
+        "known_deviations": [
+          "The proxy remains scene-relative and has no field or geochemical calibration."
+        ]
+      }
+    },
+    {
+      "id": "hard-pairs-mining",
+      "title": "RGB-ambiguous and SWIR-separable hard-pair mining",
+      "status": "current",
+      "classification": "exploratory",
+      "hypothesis": "Some cross-mineral patches with similar pooled true-color statistics separate in the 2000-2450 nm SWIR window.",
+      "code": {
+        "commit": null,
+        "commit_source": "Git state was intentionally not inspected; current script and artifacts are identified by paths and hashes only.",
+        "dependency_lock": {
+          "id": "uv-lock",
+          "path": "uv.lock",
+          "kind": "file",
+          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "availability": "present",
+          "notes": "Current dependency lock at the metadata snapshot."
+        }
+      },
+      "inputs": [
+        {
+          "id": "cached-mtmf-map-directory",
+          "path": "data/intermediate/maps",
+          "kind": "directory",
+          "sha256": null,
+          "availability": "unrecorded",
+          "notes": "The directory exists, but no manifest hashes every cached mineral and infeasibility raster."
+        },
+        {
+          "id": "goldfield-lead-scene-hdf5",
+          "path": "data/raw/20240925_185504_87_4001_ortho_sr_hdf5.h5",
+          "kind": "file",
+          "sha256": "1f17e0ce5de44bfaf3177b0e0d626315ba8ef566d6ecbc1b02b864727ffba831",
+          "availability": "present",
+          "notes": "Hash is also recorded in docs/input_manifest.json."
+        },
+        {
+          "id": "bingham-lead-scene-hdf5",
+          "path": "data/raw/20250911_191523_58_4001_ortho_sr_hdf5.h5",
+          "kind": "file",
+          "sha256": "fc15137a7277ae5021c64c82f4701f3587fb2cc60e8d6523f96d94ff8f89789f",
+          "availability": "present",
+          "notes": "Hash is also recorded in docs/input_manifest.json."
+        }
+      ],
+      "split": {
+        "unit": "non-overlapping 11 by 11 pixel patches within two lead scenes",
+        "manifest_path": "data/processed/hard_pairs/patches.csv",
+        "memberships": null,
+        "notes": "No train/validation/test split exists; the artifacts are an evaluation-only in-corpus probe."
+      },
+      "parameters": {
+        "values": {
+          "patch_size_px": 11,
+          "purity_floor": 0.7,
+          "swir_window_nm": [2000.0, 2450.0]
+        },
+        "grid": null,
+        "thresholds": {
+          "max_infeas": 1.0,
+          "detection_quantile": 0.9,
+          "rgb_candidate_quantile": 0.1,
+          "swir_null_quantile": 0.95
+        },
+        "seed": null,
+        "stopping_rule": "Enumerate all non-overlapping candidate patches and all qualifying cross-label pairs."
+      },
+      "checkpoint": {
+        "id": "model-checkpoint",
+        "path": null,
+        "kind": "not_applicable",
+        "sha256": null,
+        "availability": "not_applicable",
+        "notes": "No trained model checkpoint is used beyond cached MTMF teacher outputs."
+      },
+      "command": "uv run python scripts/find_hard_pairs.py",
+      "outputs": [
+        {
+          "id": "hard-pairs-summary",
+          "path": "data/processed/hard_pairs/summary.json",
+          "kind": "file",
+          "sha256": "5eee9f95511c3d199b67695d82344a4f54a18fd7e49bd4867fbf1892f330781d",
+          "availability": "present",
+          "notes": "Discard accounting and derived thresholds."
+        },
+        {
+          "id": "hard-pairs-patch-table",
+          "path": "data/processed/hard_pairs/patches.csv",
+          "kind": "file",
+          "sha256": "1e9fac95573cb4adf3bfc825c13480817eca45e1027ac0813c099751351c350e",
+          "availability": "present",
+          "notes": "Current 268-row QA-valid labeled-patch table."
+        },
+        {
+          "id": "hard-pairs-pair-table",
+          "path": "data/processed/hard_pairs/pairs.csv",
+          "kind": "file",
+          "sha256": "665af5e10de86ad9e6c31021680ed953fb0808bec75ddf37659acf9d1ab68abf",
+          "availability": "present",
+          "notes": "Current 18-row SWIR-separable pair table."
+        }
+      ],
+      "primary_endpoint": "Count and ranked SWIR spectral angles of pairs passing the RGB-ambiguity and same-label-null gates.",
+      "uncertainty_method": "The SWIR threshold is the 95th percentile of 5364 same-label null pairs; this is not an independent confidence interval.",
+      "gate": {
+        "rule": "Use only as teacher-agreement or band-reliance evidence; do not treat MTMF-derived labels as independent mineral truth.",
+        "decision": "pending",
+        "evidence": "Current artifacts are deterministic and complete, but the scientific assessment identifies circular labels and two-scene spatial dependence."
+      },
+      "data_quality": {
+        "dropped_samples": "summary.json explicitly records nodata, no-detection, low-purity, and labeled counts for both sites.",
+        "nan_policy": "Patches with any invalid pixel are excluded and counted as nodata.",
+        "coverage_masks": "The script uses the shared authoritative Tanager QA mask and configured atmospheric windows while reusing corrected cached MTMF teacher maps.",
+        "known_deviations": [
+          "Labels are MTMF model output, not ground truth.",
+          "Seventeen of 18 final hard pairs are Goldfield-Goldfield and one is cross-site.",
+          "No scene-disjoint evaluation split exists."
+        ]
+      }
+    },
+    {
+      "id": "hard-pairs-local-dataset-build",
+      "title": "Local hard-pairs GeoTIFF and manifest build",
+      "status": "current",
+      "classification": "mechanical",
+      "hypothesis": "The mined patch and pair records can be exported as georeferenced full-spectrum chips and deterministic manifests without changing labels or thresholds.",
+      "code": {
+        "commit": null,
+        "commit_source": "Git state was intentionally not inspected; current script and artifacts are identified by paths and hashes only.",
+        "dependency_lock": {
+          "id": "uv-lock",
+          "path": "uv.lock",
+          "kind": "file",
+          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "availability": "present",
+          "notes": "Current dependency lock at the metadata snapshot."
+        }
+      },
+      "inputs": [
+        {
+          "id": "hard-pairs-summary",
+          "path": "data/processed/hard_pairs/summary.json",
+          "kind": "file",
+          "sha256": "5eee9f95511c3d199b67695d82344a4f54a18fd7e49bd4867fbf1892f330781d",
+          "availability": "present",
+          "notes": "Upstream thresholds and discard accounting."
+        },
+        {
+          "id": "hard-pairs-patches",
+          "path": "data/processed/hard_pairs/patches.csv",
+          "kind": "file",
+          "sha256": "1e9fac95573cb4adf3bfc825c13480817eca45e1027ac0813c099751351c350e",
+          "availability": "present",
+          "notes": "Upstream patch records."
+        },
+        {
+          "id": "hard-pairs-pairs",
+          "path": "data/processed/hard_pairs/pairs.csv",
+          "kind": "file",
+          "sha256": "665af5e10de86ad9e6c31021680ed953fb0808bec75ddf37659acf9d1ab68abf",
+          "availability": "present",
+          "notes": "Upstream final pair records."
+        }
+      ],
+      "split": {
+        "unit": "patch and RGB-ambiguity connected component",
+        "manifest_path": "data/processed/hard_pairs_dataset/clusters.csv",
+        "memberships": null,
+        "notes": "The manifest records components but defines no train/validation/test split."
+      },
+      "parameters": {
+        "values": {
+          "chip_dtype": "float32",
+          "chip_compression": "LZW",
+          "patch_size_px": 11,
+          "n_bands": 426
+        },
+        "grid": null,
+        "thresholds": {
+          "cluster_graph": "Reuses the upstream RGB candidate quantile and cross-checks the cached mean threshold."
+        },
+        "seed": 42,
+        "stopping_rule": "Export every upstream labeled patch, then verify one seeded-random chip exactly."
+      },
+      "checkpoint": {
+        "id": "model-checkpoint",
+        "path": null,
+        "kind": "not_applicable",
+        "sha256": null,
+        "availability": "not_applicable",
+        "notes": "No trained model checkpoint is used."
+      },
+      "command": "uv run python scripts/build_hard_pairs_dataset.py",
+      "outputs": [
+        {
+          "id": "dataset-patches",
+          "path": "data/processed/hard_pairs_dataset/patches.csv",
+          "kind": "file",
+          "sha256": "4e43f1819e6a47ac203933965a80a3f33983f13067823f60e9022a139aa4c8f3",
+          "availability": "present",
+          "notes": "Current 268-row self-contained QA-valid patch manifest."
+        },
+        {
+          "id": "dataset-pairs",
+          "path": "data/processed/hard_pairs_dataset/pairs.csv",
+          "kind": "file",
+          "sha256": "55d43bdb50a4d73a5646eab5b053b3f403a8dc6e9826beb9f719d4ab1598bf41",
+          "availability": "present",
+          "notes": "Current 18-row pair manifest."
+        },
+        {
+          "id": "dataset-clusters",
+          "path": "data/processed/hard_pairs_dataset/clusters.csv",
+          "kind": "file",
+          "sha256": "57c3c6db4db1087d90c4e653865fd6506c66cb4619bbcc09457f40ed8033c927",
+          "availability": "present",
+          "notes": "Current 175-row membership table spanning 14 connected components."
+        },
+        {
+          "id": "dataset-wavelengths",
+          "path": "data/processed/hard_pairs_dataset/wavelengths.csv",
+          "kind": "file",
+          "sha256": "f7d92723babee9fe182b2c93000f65c48589957cf1ec72718ddbf099a0d4c5af",
+          "availability": "present",
+          "notes": "Current per-site wavelength table with 426 rows per site."
+        },
+        {
+          "id": "dataset-chip-directory",
+          "path": "data/processed/hard_pairs_dataset/chips",
+          "kind": "directory",
+          "sha256": null,
+          "availability": "present",
+          "notes": "Directory is present; this M0 scaffold does not invent a directory digest or per-chip manifest hash."
+        }
+      ],
+      "primary_endpoint": "Manifest completeness and exact round-trip agreement for a seeded-random exported chip.",
+      "uncertainty_method": null,
+      "gate": {
+        "rule": "Keep the dataset local until asset-level redistribution terms are resolved and any TanagerFM 426-by-11-by-11 to 425-by-32-by-32 protocol is separately approved.",
+        "decision": "pending",
+        "evidence": "The local build and four CSV manifests are current; DATASET_CARD.md records CC BY 4.0 source terms, while publication and model adaptation remain separate release decisions."
+      },
+      "data_quality": {
+        "dropped_samples": "Inherited from the upstream summary; the export writes all 268 retained QA-valid patches.",
+        "nan_policy": "Raw chip values are preserved exactly and compared NaN-aware during the round-trip check.",
+        "coverage_masks": "No absorption-band mask is baked into the exported chips.",
+        "known_deviations": [
+          "Chip-directory contents do not yet have a per-file checksum manifest.",
+          "The dataset is local only; a public dataset release is outside the current repository release scope.",
+          "The cluster graph contains one 138-member transitive component."
+        ]
+      }
+    },
+    {
+      "id": "basic-ortho-product-geometry-sensitivity",
+      "title": "Native/basic versus ortho Tanager product-geometry sensitivity",
+      "status": "pending",
+      "classification": "exploratory",
+      "hypothesis": "Applying the unchanged spectral pipeline in native/basic sample space and projecting only scalar outputs will reveal whether ortho nearest-neighbour sample duplication materially changes score ranks, classifications, support, or descriptive reference comparisons.",
+      "code": {
+        "commit": null,
+        "commit_source": "Pre-result protocol is frozen in the current dirty release worktree; implementation does not yet exist.",
+        "dependency_lock": {
+          "id": "uv-lock",
+          "path": "uv.lock",
+          "kind": "file",
+          "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359",
+          "availability": "present",
+          "notes": "Current dependency lock at protocol freeze."
+        }
+      },
+      "inputs": [
+        {
+          "id": "basic-ortho-preregistration",
+          "path": "docs/m1b_basic_ortho_sensitivity_preregistration.md",
+          "kind": "file",
+          "sha256": "d546eee8971fb0467b99775dc1f8d8c73ec18b1781116af13f192658fe95d1ba",
+          "availability": "present",
+          "notes": "Frozen before either downloaded basic reflectance file or any scientific endpoint was inspected."
+        },
+        {
+          "id": "basic-ortho-acquisition-manifest",
+          "path": "docs/basic_ortho_acquisition_manifest.json",
+          "kind": "file",
+          "sha256": "6257ebb9a0c520df75be5cc2dd43cb0540c28b8df11f9ebd387246347b29a930",
+          "availability": "present",
+          "notes": "Official URLs, HTTP object metadata, byte lengths, local paths, SHA-256 values, and atomic acquisition record."
+        },
+        {
+          "id": "goldfield-basic-sr",
+          "path": "data/raw/20240925_185504_87_4001_basic_sr_hdf5.h5",
+          "kind": "file",
+          "sha256": "7dbf2c8206c851d2b5c0f70fe59918dc132ad39653979f148139a4e07a19c03d",
+          "availability": "present",
+          "notes": "Official public basic_sr_hdf5; 978021782 bytes, HDF5-open verified after atomic acquisition."
+        },
+        {
+          "id": "bingham-basic-sr",
+          "path": "data/raw/20250911_191523_58_4001_basic_sr_hdf5.h5",
+          "kind": "file",
+          "sha256": "26f126bfa03a6ac7dbb03f0a856ef7ec57df7e41b4e1ef130e2749a46e92f847",
+          "availability": "present",
+          "notes": "Official public basic_sr_hdf5; 1264928116 bytes, HDF5-open verified after atomic acquisition."
+        },
+        {
+          "id": "goldfield-ortho-sr",
+          "path": "data/raw/20240925_185504_87_4001_ortho_sr_hdf5.h5",
+          "kind": "file",
+          "sha256": "1f17e0ce5de44bfaf3177b0e0d626315ba8ef566d6ecbc1b02b864727ffba831",
+          "availability": "present",
+          "notes": "Existing corrected-pipeline Goldfield anchor."
+        },
+        {
+          "id": "bingham-ortho-sr",
+          "path": "data/raw/20250911_191523_58_4001_ortho_sr_hdf5.h5",
+          "kind": "file",
+          "sha256": "fc15137a7277ae5021c64c82f4701f3587fb2cc60e8d6523f96d94ff8f89789f",
+          "availability": "present",
+          "notes": "Existing corrected-pipeline Bingham anchor."
+        }
+      ],
+      "split": {
+        "unit": "complete canonical M2 spatial blocks on the projected comparison grid",
+        "manifest_path": "data/processed/spatial_validation/block_manifest.json",
+        "memberships": null,
+        "notes": "Native scores are projected by nearest-neighbour scalar assignment with source-index provenance; block geometry is never rebuilt or tuned."
+      },
+      "parameters": {
+        "values": {
+          "sites": ["goldfield", "bingham"],
+          "branches": ["ortho_first", "basic_first"],
+          "projection": "nearest-neighbour scalar fields only",
+          "spectral_interpolation": "prohibited"
+        },
+        "grid": null,
+        "thresholds": {
+          "classification": "fixed ortho threshold transferred to basic plus each branch's governed within-scene rank floor",
+          "finite_replicate_floor": 0.95
+        },
+        "seed": 42,
+        "stopping_rule": "Stop before endpoints on input/hash, schema, axis, geolocation, source-index, branch-reproduction, or finite-governance failure."
+      },
+      "checkpoint": {
+        "id": "model-checkpoint",
+        "path": null,
+        "kind": "not_applicable",
+        "sha256": null,
+        "availability": "not_applicable",
+        "notes": "No trained checkpoint is used."
+      },
+      "command": "PENDING: implement the hash-bound driver specified by docs/m1b_basic_ortho_sensitivity_preregistration.md",
+      "outputs": [
+        {
+          "id": "basic-ortho-output-directory",
+          "path": "data/processed/basic_ortho_sensitivity",
+          "kind": "directory",
+          "sha256": null,
+          "availability": "pending",
+          "notes": "No accepted result directory exists at protocol freeze."
+        }
+      ],
+      "primary_endpoint": "Continuous, class, support, covariance, and descriptive-reference sensitivity of the frozen ortho-first branch to native/basic-first processing.",
+      "uncertainty_method": "Paired complete-M2-block bootstrap with the existing scheduled replicate count, SEED=42, and 95% finite-replicate rule.",
+      "gate": {
+        "rule": "Retain the result as stable, sensitive, or unavailable without outcome-tuned preprocessing or thresholds; no unavailable M2 endpoint is promoted.",
+        "decision": "pending",
+        "evidence": "Official product records establish nearest-neighbour orthorectification and expose both lead-scene basic assets; acquisition and implementation remain incomplete."
+      },
+      "data_quality": {
+        "dropped_samples": "Every unmapped, invalid-QA, duplicate, and unused source sample will be recorded by reason.",
+        "nan_policy": "Invalid or unmapped native samples remain no-calls; no fill, zero, or interpolation is permitted.",
+        "coverage_masks": "Shared authoritative Tanager QA plus exact native-to-ortho source-index and common-support masks.",
+        "known_deviations": [
+          "All current headline outputs were produced from delivered ortho SR products.",
+          "The basic-first branch is a newly preregistered sensitivity and cannot retrospectively convert the completed ortho analyses into native-product results."
+        ]
+      }
+    }
+  ]
+}

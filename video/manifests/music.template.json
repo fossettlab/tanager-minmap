@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "selected": null,
+  "provider": {
+    "name": "ElevenLabs",
+    "product": "Eleven Music"
+  },
+  "output": {
+    "path": null,
+    "sha256": null
+  },
+  "generation": {
+    "id": null,
+    "generated_at_utc": null,
+    "account_plan": null,
+    "service_non_beta": null
+  },
+  "model": {
+    "model_id": null
+  },
+  "request": {
+    "output_format": null,
+    "force_instrumental": null,
+    "seed": null,
+    "seed_unavailable_reason": null
+  },
+  "composition_plan": {
+    "path": "video/build/music_v2_composition_plan.json",
+    "sha256": null
+  },
+  "terms": {
+    "url": "https://elevenlabs.io/eleven-music-model-specific-terms",
+    "retrieved_at_utc": null,
+    "snapshot_path": "video/manifests/evidence/eleven-music-terms.html",
+    "snapshot_sha256": null
+  },
+  "rights_review": {
+    "publication_rights_attested": null,
+    "reviewer": null,
+    "reviewed_at_utc": null
+  },
+  "editorial": {
+    "decision": null,
+    "notes": null
+  }
+}

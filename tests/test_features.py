@@ -46,6 +46,18 @@ def test_shoulders_must_bracket_center():
         FeatureDef("bad", center_nm=2200, lo_shoulder_nm=2300, hi_shoulder_nm=2100, source="x")
 
 
+def test_band_depth_rejects_unresolved_center_and_shoulders():
+    wavelengths = np.array([2100.0, 2300.0])
+    cube = xr.DataArray(
+        np.ones((2, 1, 1)),
+        dims=("band", "y", "x"),
+        coords={"band": wavelengths},
+    )
+
+    with pytest.raises(ValueError, match="fewer than three distinct sensor bands"):
+        band_depth(cube, wavelengths, FEATURE)
+
+
 def test_diagnostic_feature_maps_assembles_dataset():
     ds = diagnostic_feature_maps(CUBE, WL, [FEATURE])
     assert "aloh_test" in ds

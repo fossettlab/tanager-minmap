@@ -1,7 +1,7 @@
 [project]
 name = "tanager-rocks"
 version = "0.1.0"
-description = "Mineral and hydrothermal-alteration mapping from Planet Tanager 426-band VSWIR surface reflectance at named US mine sites (Bingham Canyon, Goldfield), with a Sentinel-2 band-ablation comparison and an EMIT cross-sensor benchmark. Track I of the Planet Tanager Open Data Competition."
+description = "Mineral and hydrothermal-alteration mapping from Planet Tanager 426-band VSWIR surface reflectance at named US mine sites (Bingham Canyon, Goldfield), with a Sentinel-2 band-ablation comparison and an EMIT cross-sensor benchmark."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -9,7 +9,7 @@ authors = [{ name = "Alex Bradley", email = "abradley@wustl.edu" }]
 keywords = ["hyperspectral", "tanager", "mineral-mapping", "alteration", "mine-waste", "remote-sensing"]
 
 dependencies = [
-    "tanager-spec",          # shared data layer: stac / io / mask / bands / srf / sample
+    "tanager-spec==0.1.0",   # immutable public release; local development override below
     "numpy>=1.26",
     "pandas>=2.1",
     "scipy>=1.12",           # continuum removal, matched-filter algebra
@@ -33,14 +33,30 @@ dev = [
 tanager-minmap = "tanager_rocks.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/bradleylab/tanager-rocks"
+Homepage = "https://github.com/fossettlab/tanager-rocks"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling==1.31.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/tanager_rocks"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src/tanager_rocks",
+    "/README.md",
+    "/METHODS.md",
+    "/REPRODUCIBILITY.md",
+    "/LICENSE",
+    "/NOTICE.md",
+    "/CITATION.cff",
+]
+exclude = [
+    "**/__pycache__",
+    "**/*.pyc",
+    "**/.DS_Store",
+]
 
 # tanager-spec is a sibling repo in the Tanager workspace, consumed as an
 # editable path dependency (same pattern as tanager-isofit). It is the

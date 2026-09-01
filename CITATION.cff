@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "tanager-minmap: mineral and alteration mapping from Planet Tanager VSWIR surface reflectance"
+authors:
+  - family-names: Bradley
+    given-names: Alex
+    email: abradley@wustl.edu
+    affiliation: "Department of Earth, Environmental, and Planetary Sciences, Washington University in St. Louis"
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/fossettlab/tanager-rocks"

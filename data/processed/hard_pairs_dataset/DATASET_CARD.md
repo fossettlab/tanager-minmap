@@ -1,6 +1,5 @@
 ---
-license: other
-license_name: tbd-pending-tanager-competition-terms-review
+license: cc-by-4.0
 task_categories:
   - image-classification
   - other
@@ -17,12 +16,11 @@ size_categories:
 # Tanager Hard-Pairs Probe: RGB-Ambiguous, SWIR-Separable Mineral Patches
 
 **Status: local build only.** This dataset lives at
-`data/processed/hard_pairs_dataset/` in the `tanager-rocks` repository
-(Track I of the Planet Tanager Open Data Competition), built by
+`data/processed/hard_pairs_dataset/` in the `tanager-rocks` repository, built by
 `scripts/build_hard_pairs_dataset.py`. It has not been published anywhere;
 publishing it (Hugging Face Hub or otherwise) is a separate, explicit
-decision for the project team — see "Licensing" below before doing so, the
-license question is not yet resolved.
+decision for the project team. The source license and required attribution are
+resolved below; the present project release still excludes the chip files.
 
 ## Dataset summary
 
@@ -40,7 +38,7 @@ project's hero mineral map.
 
 It is intended as a small **evaluation-only probe**: a frozen-embedding or
 linear-probe eval to check whether a pretrained hyperspectral model (e.g.
-TanagerFM, this workspace's Track II submission) actually reads bands beyond
+TanagerFM, a separate workspace project) actually reads bands beyond
 RGB when discriminating hydrothermal-alteration minerals, not a training set.
 See "Intended uses" below for why. TanagerFM's own band-ablation eval design
 doc (`TanagerFM/docs/band_ablation_eval_and_masking.md`, "A.7 Hard-pairs
@@ -53,10 +51,11 @@ column.
 ```
 hard_pairs_dataset/
 ├── DATASET_CARD.md          this file
-├── patches.csv               one row per labeled patch (333 rows)
-├── pairs.csv                  RGB-ambiguous, SWIR-separable patch pairs (29 rows)
-├── clusters.csv                RGB-ambiguity-graph connected components (14 clusters, 218 member rows)
+├── patches.csv               one row per labeled patch (268 rows)
+├── pairs.csv                  RGB-ambiguous, SWIR-separable patch pairs (18 rows)
+├── clusters.csv                RGB-ambiguity-graph connected components (14 clusters, 175 member rows)
 ├── wavelengths.csv             per-scene band-center wavelengths (nm)
+├── chips.sha256                sorted SHA-256 manifest, one entry per patch row
 └── chips/
     └── <scene_id>/
         └── <patch_id>.tif     one 426-band, float32, LZW-compressed GeoTIFF per patch
@@ -72,7 +71,7 @@ over introducing a new format.
 
 ### `patches.csv`
 
-333 patches (11×11 px, 330 m footprint at Tanager's 30 m GSD), each carrying
+268 patches (11×11 px, 330 m footprint at Tanager's 30 m GSD), each carrying
 a confident dominant-mineral label from the project's hero-map pipeline.
 Self-contained: every field a downstream consumer needs (chip path, label,
 geolocation, RGB stats) lives here, at full float precision (not the
@@ -96,7 +95,7 @@ geolocation, RGB stats) lives here, at full float precision (not the
 
 ### `pairs.csv`
 
-The 29 patch pairs that cleared both the RGB-ambiguity gate (bottom-decile
+The 18 patch pairs that cleared both the RGB-ambiguity gate (bottom-decile
 cross-label RGB mean/std distance) and the SWIR-separability gate (spectral
 angle exceeding the 95th percentile of same-mineral patch pairs). `rank`
 orders by `swir_angle_deg` descending (strongest separation first);
@@ -104,7 +103,7 @@ orders by `swir_angle_deg` descending (strongest separation first);
 
 | Field | Description |
 |---|---|
-| `rank` | 1 (most separable) .. 29 |
+| `rank` | 1 (most separable) .. 18 |
 | `patch_id_a`, `label_a`, `patch_id_b`, `label_b` | The pair and their labels |
 | `rgb_mean_l2`, `rgb_std_l2` | True-color distance (DN, pooled stretch) |
 | `swir_angle_deg` | Spectral angle between the two patches' mean 2000–2450 nm reflectance |
@@ -113,7 +112,7 @@ orders by `swir_angle_deg` descending (strongest separation first);
 
 The blog's `test_hard_clusters.parquet` analog: "each cluster is a connected
 component of the RGB mean/std similarity graph and spans at least two
-[...] labels." Here, nodes are the 333 labeled patches and edges are the 743
+[...] labels." Here, nodes are the 268 labeled patches and edges are the 415
 RGB-ambiguous candidate pairs (the same bottom-decile-distance graph used to
 select `pairs.csv`'s candidates, *before* the SWIR-separability filter is
 applied) — re-derived deterministically from `patches.csv`'s own RGB
@@ -147,10 +146,10 @@ how TanagerFM intends to consume it.
 
 **Honest finding on cluster-size distribution.** Unlike the blog's clusters
 (sizes 2–4, 53 clusters from a 30,927-patch pool), ours are bimodal: 13
-clusters of size 2–6 (36 patches total), and **one giant cluster of 176
-patches spanning all 8 minerals** — more than half of every labeled patch in
+clusters of size 2–7 (37 patches total), and **one giant cluster of 138
+patches spanning all 8 minerals** — more than half of all labeled patches in
 the dataset. This is a real, unforced consequence of transitive chaining at
-this dataset's much smaller N (333 vs. 30,927): with a bottom-decile distance
+this dataset's much smaller N (268 vs. 30,927): with a bottom-decile distance
 threshold, near-identical RGB statistics chain patch-to-patch (A close to B,
 B close to C, ...) into one dominant connected component rather than many
 small isolated ones. It was not filtered or reshaped to look more like the
@@ -182,19 +181,46 @@ The project's own O2/H2O absorption-window mask
 pre-applied here. Chips are grouped in a per-`scene_id` subdirectory (two
 scenes total) rather than one flat directory.
 
-**Round-trip verified.** `scripts/build_hard_pairs_dataset.py` re-loads the
-source scene for one seeded-random patch after every build and confirms band
-count, CRS, and bit-exact pixel values (NaN-aware, no resampling tolerance)
-against the chip it just wrote. Latest build: PASSED
-(`goldfield_r74_c66`, 426/426/426 bands, matching CRS, exact pixel match).
+### Exact chip set and checksums
+
+`patches.csv` is the authority for chip membership. `chips.sha256` contains
+one standard, lowercase SHA-256 line for every referenced `chip_path`, sorted
+lexicographically by that relative POSIX path. The checker fails closed when
+it encounters a missing chip, an unreferenced file anywhere below `chips/`, a
+duplicate or non-canonical path, a symlink, an unsorted or malformed checksum
+manifest, or a digest mismatch. This prevents files left by an older build
+from silently becoming part of a release.
+
+The builder writes all chips and tables into a new sibling staging directory.
+Before promotion it verifies the frozen release contract (268 patches, 18
+pairs, 14 clusters, and 175 cluster-membership rows), confirms pair and
+cluster references, writes `chips.sha256`, validates every digest and the
+exact chip set, and round-trips one seeded-random patch against its source
+scene for band count, CRS, and bit-exact pixel values (NaN-aware, with no
+resampling tolerance). Only a fully validated staging directory is promoted
+to the canonical path; same-filesystem renames preserve the prior directory
+until validation finishes and restore it if promotion fails. A pre-existing
+recovery backup causes the build to stop rather than guess which directory is
+authoritative.
+
+Build and check commands are:
+
+```bash
+uv run python scripts/build_hard_pairs_dataset.py
+uv run python scripts/build_hard_pairs_dataset.py --check
+```
+
+The second command is read-only. A legacy pre-checksum build is not
+release-ready until it has been rebuilt once and this check passes.
 
 **Band count: 426, verified from the source HDF5's own metadata, not a
 nominal figure.** The `surface_reflectance` field's `wavelengths` attribute
 is a 426-element array (376.44–2499.00 nm, uniform ~5 nm spacing throughout,
 including the last band -- no anomaly, gap, or duplicate at the boundary),
 and Planet's own per-band `good_wavelengths` QA flag (also 426 elements,
-read directly from the HDF5) marks the 426th band GOOD (value 1, same as
-every band outside the three documented atmospheric-absorption windows).
+read directly from the HDF5) marks the 426th band GOOD (value 1). Across the
+full axis that QA field marks 58 bands bad; the project combines it with the
+configured atmospheric windows rather than assuming the two masks coincide.
 Band 426 is a real, good-quality spectral band, not a QA/mask layer folded
 into the cube -- the file's ancillary QA layers (`beta_cloud_mask`,
 `nodata_pixels`, `aerosol_optical_depth`, sensor/sun geometry, etc.) are
@@ -215,8 +241,8 @@ probe dataset.
 ## Dataset creation
 
 **Source data.** Two Planet Tanager `ortho_sr_hdf5` scenes: Goldfield
-district, NV (2024-09-25, 276 patches) and Bingham Canyon / Kennecott, UT
-(2025-09-11, 57 patches) — the same two lead scenes documented in the parent
+district, NV (2024-09-25, 255 patches) and Bingham Canyon / Kennecott, UT
+(2025-09-11, 13 patches) — the same two lead scenes documented in the parent
 repo's `METHODS.md`. Both sites are MRDS-confirmed developed mineral deposits
 (Goldfield District Gold Deposits; Bingham Open Pit Mine).
 
@@ -230,7 +256,8 @@ model output, not ground truth** — see "Limitations" below.
 
 **Filtering.** Both sites' lead scenes were tiled into 7,290 (Bingham) and
 7,480 (Goldfield) candidate 11×11 px patches. A patch was kept only if every
-pixel was valid (no nodata / off-nadir fill / RGB-overshoot) and its modal
+pixel was valid (no cloud, cirrus, nodata / off-nadir fill, or RGB overshoot)
+and its modal
 dominant-mineral class covered ≥70% of the patch (the blog's WorldCover
 purity rule, used unmodified). Full discard accounting is in
 `../hard_pairs/summary.json` and `METHODS.md`.
@@ -248,15 +275,15 @@ loss — not a rounding tolerance that was loosened to make a check pass).
 
 | Label | Bingham | Goldfield | Total |
 |---|---:|---:|---:|
-| gypsum | 27 | 53 | 80 |
-| goethite | 6 | 57 | 63 |
-| muscovite | 11 | 41 | 52 |
-| alunite | 2 | 48 | 50 |
-| hematite | 5 | 34 | 39 |
-| jarosite | 3 | 20 | 23 |
-| dickite | 2 | 15 | 17 |
-| kaolinite | 1 | 8 | 9 |
-| **Total** | **57** | **276** | **333** |
+| goethite | 3 | 55 | 58 |
+| gypsum | 4 | 44 | 48 |
+| alunite | 0 | 42 | 42 |
+| muscovite | 0 | 37 | 37 |
+| hematite | 3 | 33 | 36 |
+| jarosite | 2 | 23 | 25 |
+| dickite | 0 | 15 | 15 |
+| kaolinite | 1 | 6 | 7 |
+| **Total** | **13** | **255** | **268** |
 
 The class distribution is unbalanced and reflects each site's actual
 alteration mineralogy, not a designed sampling scheme — Bingham (a porphyry
@@ -277,7 +304,7 @@ mineralogy.
 
 ## Out-of-scope uses
 
-- **Not a training set.** 333 patches from 2 source scenes is far too small
+- **Not a training set.** 268 patches from 2 source scenes is far too small
   and too scene-correlated for supervised training (the blog's dataset has
   30,927 patches from 2,709 scenes with a scene-disjoint train/val/test
   split; this dataset has no split at all, by design, and mixing patches
@@ -299,30 +326,31 @@ mineralogy.
   dataset's accuracy as a measurement of *band reliance*, exactly the caveat
   the blog states for its own WorldCover labels — not of mineralogical
   accuracy.
-- **Two source scenes only.** All 333 patches come from exactly two Tanager
+- **Two source scenes only.** All 268 patches come from exactly two Tanager
   acquisitions. There is no guarantee that patterns learned or probed here
   generalize beyond these two sites' geology, sun angle, and acquisition
   conditions.
-- **All 29 hard pairs are Goldfield-only.** Bingham contributed labeled
-  patches but none of its RGB-ambiguous candidates cleared the SWIR-
-  separability bar — a ranking outcome of the mining, not a filter applied
-  to exclude Bingham. Bingham does contribute to `clusters.csv` (e.g. cluster
-  0 includes a Bingham patch).
-- **Cluster-size distribution is bimodal, not blog-like** (one 176-member
-  cluster spanning all 8 labels, plus 13 small 2-6-member clusters) — see the
+- **Site support is highly uneven.** Seventeen of 18 hard pairs are within
+  Goldfield; one pairs a Bingham jarosite patch with a Goldfield hematite
+  patch. Bingham contributes only 13 of 268 labeled patches, so the probe is
+  primarily a Goldfield diagnostic rather than a balanced cross-site test.
+- **Cluster-size distribution is bimodal, not blog-like** (one 138-member
+  cluster spanning all 8 labels, plus 13 small 2-7-member clusters) — see the
   "Honest finding" note under `clusters.csv` above.
 - **Unbalanced classes**, reflecting real site mineralogy (see table above),
   not a deliberate sampling design.
-- **Raw, unmasked bands.** Chips include Tanager's known O2/H2O absorption
-  windows (53 of 426 bands); a probe that naively averages or feeds all
-  bands to a model should account for this (mask via
-  `tanager_spec.mask.mask_absorption_bands` if desired).
+- **Raw, unmasked bands.** Chips include the product-bad and configured O2/H2O
+  channels (their union removes 63 of 426 bands in the project analysis); a
+  probe that naively averages or feeds all bands to a model should account for
+  this. The project policy is implemented by
+  `tanager_rocks.quality.mask_tanager_scene`.
 
 ## Licensing
 
-**License: TBD — pending operator review of the competition terms.** Do
-**not** redistribute or publish this dataset outside the project team until
-this is resolved.
+**License: CC BY 4.0. Current release decision: do not publish the chip files.**
+The license question is resolved, but publication remains a separate operator
+decision because this is a two-scene, model-labeled evaluation probe rather
+than an independently validated benchmark.
 
 The Tanager Open Data Competition Terms & Conditions
 (`Planet-TermsConditions-TanagerCompetition.pdf`, workspace root) address
@@ -337,32 +365,37 @@ variant:
   any other license or ownership rights other than the license provided with
   the applicable Tanager Open STAC data."
 
-Both clauses point to "the [applicable] Creative Commons license" attached to
-the specific STAC asset on Planet's Open STAC catalog — a license this build
-did not fetch, and whose exact CC variant (CC-BY? CC-BY-SA? CC-BY-NC-SA?) is
-not stated anywhere in this PDF. Neither clause explicitly addresses whether
-a cropped, resampled, and relabeled derivative dataset (like this one, built
-from raw pixel values plus this project's own MTMF labels) inherits that
-same license or is treated as new IP — the document is silent on derivative
-works specifically, only on redistributing "the Tanager Open STAC data"
-itself. Separately, the document's "General Solution Requirements" section
-does list "links to data derivatives, hosted on Zenodo or another open data
-platform" as an accepted optional submission component, which is supportive
-context (the competition contemplates and permits sharing derivative
-datasets) but does not resolve which license text such a derivative should
-carry.
+The live Planet Open STAC catalog licenses the Tanager Core Imagery Licensed
+Material under `CC-BY-4.0`. The exact Goldfield item is in the `natural-lands`
+collection and its `properties.license` is `CC-BY-4.0`; the exact Bingham item
+is in the `energy-mining` collection and carries the same item-level license.
+The catalog root requires the following form for adapted material. Because the
+two source scenes were captured in different years, both year-specific
+attributions apply:
 
-**Action needed:** the operator should (a) look up the specific Creative
-Commons license attached to the two source STAC assets used
-(`20240925_185504_87_4001`, `20250911_191523_58_4001`) on Planet's Open STAC
-catalog, and (b) decide whether this derivative dataset inherits that license
-verbatim or needs its own statement, before any publication.
+- Adapted from Tanager STAC Data, available at www.planet.com/data/stac
+  © 2024 Planet Labs PBC. All Rights Reserved.
+- Adapted from Tanager STAC Data, available at www.planet.com/data/stac
+  © 2025 Planet Labs PBC. All Rights Reserved.
+
+Exact source records: Planet's public
+[Goldfield item](https://www.planet.com/data/stac/tanager-core-imagery/natural-lands/20240925_185504_87_4001/20240925_185504_87_4001.json),
+[Bingham item](https://www.planet.com/data/stac/tanager-core-imagery/energy-mining/20250911_191523_58_4001/20250911_191523_58_4001.json), and
+[Tanager catalog root](https://www.planet.com/data/stac/tanager-core-imagery/catalog.json),
+verified 2026-08-11. Changes from the licensed source are explicit: the builder
+crops non-overlapping 11×11-pixel windows from each `ortho_sr_hdf5` scene,
+preserves the source reflectance samples without spectral resampling, writes
+per-chip georeferencing and compression, and adds project-authored weak labels,
+pair/cluster tables, manifests, checksums, and documentation. The resulting
+chip dataset is Adapted Material distributed under CC BY 4.0 if publication is
+separately approved. The `tanager-rocks` source code remains separately
+licensed under MIT.
 
 ## Citation
 
 If you use this dataset, credit the `tanager-rocks` project (Bradley Lab,
-Washington University in St. Louis — no separate DOI or CITATION.cff exists
-for it yet) and formally cite the benchmark-design paper it adapts:
+Washington University in St. Louis; use the repository's `CITATION.cff` until
+a DOI is minted) and formally cite the benchmark-design paper it adapts:
 
 ```
 @online{robinson2026similar,

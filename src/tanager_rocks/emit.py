@@ -132,6 +132,66 @@ def rfl_path(dest_dir: Path, granule_ur: str) -> Path:
     return Path(dest_dir) / f"{granule_ur}.nc"
 
 
+def validate_emit_reflectance_file(path: str | Path) -> Path:
+    """Validate the structural metadata needed from a cached EMIT L2A file.
+
+    This intentionally does not read reflectance values. It rejects truncated,
+    wrong-product, or incomplete cache files before the pipeline treats their
+    mere existence as a completed download.
+
+    Parameters
+    ----------
+    path : str or pathlib.Path
+        Candidate EMIT L2A reflectance NetCDF/HDF5 file.
+
+    Returns
+    -------
+    pathlib.Path
+        The validated path.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the candidate is absent.
+    ValueError
+        If the HDF5 structure is incomplete or internally inconsistent.
+    """
+    candidate = Path(path)
+    if not candidate.is_file():
+        raise FileNotFoundError(candidate)
+    try:
+        with h5py.File(candidate, "r") as handle:
+            required = (
+                "reflectance",
+                "sensor_band_parameters/wavelengths",
+                "sensor_band_parameters/good_wavelengths",
+                "location/glt_x",
+                "location/glt_y",
+            )
+            missing = [name for name in required if name not in handle]
+            if missing:
+                raise ValueError(f"missing required datasets: {missing}")
+            reflectance = handle["reflectance"]
+            wavelengths = handle["sensor_band_parameters/wavelengths"]
+            good = handle["sensor_band_parameters/good_wavelengths"]
+            glt_x = handle["location/glt_x"]
+            glt_y = handle["location/glt_y"]
+            if reflectance.ndim != 3 or not all(size > 0 for size in reflectance.shape):
+                raise ValueError(f"invalid reflectance shape: {reflectance.shape}")
+            if wavelengths.ndim != 1 or good.shape != wavelengths.shape:
+                raise ValueError("wavelength and good-wavelength arrays are inconsistent")
+            if reflectance.shape[-1] != wavelengths.shape[0]:
+                raise ValueError("reflectance band count does not match wavelengths")
+            if glt_x.ndim != 2 or glt_y.shape != glt_x.shape:
+                raise ValueError("GLT arrays are inconsistent")
+            geotransform = np.asarray(handle.attrs.get("geotransform", ()), dtype=float)
+            if geotransform.shape != (6,) or not np.isfinite(geotransform).all():
+                raise ValueError("missing or invalid six-value geotransform")
+    except OSError as exc:
+        raise ValueError(f"cannot open EMIT reflectance cache {candidate}: {exc}") from exc
+    return candidate
+
+
 def _ortho_window(geotransform: np.ndarray, bbox: list[float], shape: tuple[int, int]):
     """Row/col slices of the ortho grid covering a WGS84 ``bbox``.
 
@@ -246,6 +306,7 @@ __all__ = [
     "rank_granules",
     "select_granule",
     "rfl_path",
+    "validate_emit_reflectance_file",
     "load_emit_reflectance",
     "footprint_bbox",
     "box",  # re-export for callers building footprints

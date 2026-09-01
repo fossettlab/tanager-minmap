@@ -1,6 +1,6 @@
-# Tanager VSWIR resolves mine-waste and alteration mineralogy that multispectral sensors cannot
+# Material identification from Tanager VSWIR: mine-waste and alteration mineralogy blurred by broadband sampling
 
-**Planet Tanager Open Data Competition — Track I.**
+**Planet Tanager Open Data Competition entry.**
 Alex Bradley, Department of Earth, Environmental, and Planetary Sciences,
 Washington University in St. Louis (abradley@wustl.edu).
 
@@ -10,8 +10,9 @@ Hydrothermal alteration and mine waste are recorded in a small set of minerals �
 alunite, kaolinite, jarosite, the iron oxides, gypsum, and the white micas —
 whose diagnostic absorptions fall in the shortwave infrared. Can Tanager's
 contiguous 426-band visible-to-shortwave-infrared (VSWIR) measurements resolve
-that mineralogy at a specificity multispectral sensors cannot, and what does the
-answer reveal about acid-mine-drainage hazard? This entry tests the question at
+that mineralogy at a specificity multispectral sensors cannot, and what can the
+answer support as a screening layer for acid-mine-drainage risk? This entry
+tests the question at
 two named United States sites: the Bingham Canyon / Kennecott porphyry-copper
 mine and tailings impoundment in Utah, and the Goldfield hydrothermal district
 in Nevada, adjacent to the USGS Cuprite spectral benchmark.
@@ -28,19 +29,20 @@ directly — the 2200 nm Al-OH doublet that separates alunite from kaolinite, th
 visible-to-near-infrared ferric-iron bands. A mixture-tuned matched filter
 (MTMF; Boardman 1998) then estimates per-mineral abundance against the scene's
 own background covariance, with an infeasibility score that suppresses
-spectrally implausible detections. The whole pipeline runs from one command and
-reproduces from a clean clone.
+spectrally implausible detections. The analytical stages run from one installed
+command; public dependency resolution and clean-clone verification remain
+release gates.
 
-## What Tanager resolves that Sentinel-2 cannot
+## What Sentinel-2 spectral sampling blurs
 
 The case for contiguous VSWIR is sharpest at the 2200 nm Al-OH doublet. Alunite
 and kaolinite (advanced-argillic versus argillic alteration, a distinction that
 matters for both ore characterization and acid generation) differ in the precise
-position and shape of this feature. Degrading the Tanager library spectra to
-Sentinel-2 bands through the published spectral response functions collapses
-their separability: the alunite-kaolinite spectral angle falls from 5.1° to
+position and shape of this feature. Convolving the measured library spectra
+with Sentinel-2's published spectral response functions reduces their
+separability: the alunite-kaolinite spectral angle falls from 5.1° to
 2.6°, a 50% loss, because a single broad Sentinel-2 band (B12) spans the entire
-doublet (Figure 2). The loss is specific to the shortwave infrared, not
+doublet (Figure 1). The loss is specific to the shortwave infrared, not
 universal; the visible-to-near-infrared jarosite-goethite contrast survives
 degradation, which is the control showing the effect is the doublet itself and
 not coarse resampling.
@@ -51,29 +53,34 @@ At Goldfield the maps were tested against the USGS ASTER alteration map of the
 district (Rockwell and Bonham 2017), an independent remote-sensing product with
 no shared calibration or acquisition. The Tanager scores separate the published
 alteration zones at the alteration-group level: the Al-OH band depth and the
-gypsum-carbonate band depth each reach a rank-AUC of 0.78, the alunite MTMF
-abundance 0.71, and the muscovite (sericite) MTMF 0.69, with alunite peaking in
+gypsum-carbonate band depth each reach a descriptive pixelwise rank-AUC of
+0.78, while alunite and muscovite MTMF each reach 0.70, with alunite peaking in
 the advanced-argillic zone at Cuprite and muscovite in the surrounding sericite
-(Figure 1). The Fe-oxide and kaolinite layers do not separate as cleanly; the
+(Figure 2). The Fe-oxide and kaolinite layers do not separate as cleanly; the
 published categorical classes subdivide these phases differently than the
 spectral library groups them, and that disagreement is reported rather than
-tuned away. Bingham validates more weakly, by design and by geology: a porphyry
+tuned away. Bingham agrees more weakly with the regional alteration map, by
+design and by geology: a porphyry
 system whose pervasive sericite does not partition into the published
 acid-sulfate zones. That contrast is itself informative about where the method's
 discrimination is strong.
 
 ## Cross-sensor agreement with EMIT
 
-The identical pipeline was run on an overlapping NASA EMIT scene, the only other
-spaceborne imaging spectrometer with comparable coverage. The two sensors agree
-well: scene-mean reflectance correlates at Pearson r = 0.91 over 240 shared
-bands, and all six target minerals correlate positively in MTMF detection, from
-jarosite (r = +0.59) to muscovite (r = +0.34) (Figure 3). The agreement is
+The same library-driven pipeline was run on a pinned overlapping NASA EMIT
+scene, the only other spaceborne imaging spectrometer with comparable
+coverage. This is a cross-sensor consistency check, not independent mineral
+truth, because the code and endmembers are shared. Scene-mean reflectance
+correlates at Pearson r = 0.962 over 240 shared bands (spectral angle 3.72°),
+and all six target-mineral maps correlate positively, ranging from muscovite
+(r = +0.335) to jarosite (r = +0.584) (Figure 3). The map agreement is
 moderate rather than near-unity, as expected from the acquisition-date offset
-and Tanager's finer grain — at 30 m Tanager resolves about four times the pixel
-density of EMIT's ~60 m, and so a smaller minimum mappable feature.
+and the different delivered grids. In these products, Tanager's 30 m ortho
+pixels cover about one-quarter the area of EMIT's ~60 m pixels. This is a
+product-grid comparison, not a native-footprint or minimum-mappable-feature
+claim.
 
-## Acid-mine-drainage hazard
+## Acid-generating-potential screening
 
 The secondary minerals that record acid generation are spectrally distinct,
 which makes a hedged hazard proxy possible. Jarosite is stable only in acidic,
@@ -89,8 +96,9 @@ scene; it is a screening tool, not a substitute for sampling.
 
 ## Limits
 
-The 30 m grain resolves features larger than about one hectare; the maps are of
-surface mineralogy, not bulk chemistry or depth; the spectral library can
+The products have 30 m pixels, so isolated sub-pixel features and fine
+mine-waste structures cannot be resolved; the maps are of surface mineralogy,
+not bulk chemistry or depth; the spectral library can
 mismatch exotic phases, so the scope is held to the well-characterized
 alteration assemblage; and there is no field validation — the Goldfield test is
 against another remote-sensing product, which bounds agreement at the
@@ -100,20 +108,24 @@ absent from the regional reference map.
 
 ## Impact and the case for more scenes
 
-The end users are the state geological surveys and the federal agencies (USGS,
-BLM, EPA) that characterize critical-mineral potential and mine-waste hazard,
-for whom a reproducible, library-anchored mineral map over a named district is
-directly usable. The result also makes an archive argument: Tanager's shortwave
-infrared resolves mineralogy that the multispectral record cannot, and the
+This is material-specific screening rather than generic land-cover
+classification: each pixel receives a scene-relative score against a measured
+reference library, and the strongest supported candidate is mapped. The end
+users are the state geological surveys and the federal agencies
+(USGS, BLM, EPA) that characterize critical-mineral potential and mine-waste
+hazard, for whom a reproducible, library-anchored mineral map over a named
+district is a candidate screening layer for field follow-up. The result also
+makes an archive argument: Tanager's shortwave infrared preserves mineral
+structure that broadband multispectral sampling blurs, and the
 public benefit of that capability is largest over mining districts — the scenes
-the open archive should grow. The pipeline ships as an open tool
-(`tanager-minmap`), reproduces from a clean clone, and deposits its derivative
-maps with a citable DOI.
+the open archive should grow. The pipeline is prepared as an open tool
+(`tanager-minmap`); clean-clone reproduction and the citable derivative-map
+archive remain explicit release gates rather than completed claims.
 
 ---
 
-*Figures.* (1) Goldfield/Cuprite dominant-alteration-mineral map. (2) Tanager
-vs Sentinel-2 band-ablation at the 2200 nm Al-OH doublet. (3) Tanager–EMIT
+*Figures.* (1) Tanager vs Sentinel-2 band-ablation at the 2200 nm Al-OH
+doublet. (2) Goldfield/Cuprite alteration-group validation. (3) Tanager–EMIT
 cross-sensor comparison. (4) Bingham acid-generating-potential proxy.
 
 *References.* Boardman (1998), 7th JPL Airborne Earth Science Workshop. Clark

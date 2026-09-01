@@ -1,0 +1,483 @@
+{
+  "schema": {
+    "description": "Deterministic, pre-result, fail-closed source/checkpoint/license ledger. It is not an execution configuration, source manifest, approval record, or result artifact.",
+    "evidence_vocabulary": [
+      "local_verified",
+      "live_primary",
+      "unresolved",
+      "operator_gate"
+    ],
+    "name": "tanager-rocks.m3-comparator-source-ledger",
+    "required_comparator_fields": [
+      "adapter",
+      "checkpoint",
+      "environment",
+      "id",
+      "license",
+      "overall_status",
+      "parity_tests",
+      "pilot_gate",
+      "source"
+    ],
+    "status_vocabulary": [
+      "blocked",
+      "not_applicable",
+      "not_run",
+      "partial_metadata_only",
+      "pass"
+    ],
+    "version": "1.0.0"
+  },
+  "comparators": [
+    {
+      "adapter": {
+        "combined_source_adapter_sha256": null,
+        "expected_driver_path": "scripts/run_elmm_comparator.py",
+        "identity": "Project-local float64 Python port admitted only after parity with the byte-pinned author MATLAB toolbox; additions are limited to I/O, QA-mask translation, provenance logging, and metric export.",
+        "local_driver_present": false,
+        "manifest_sha256": null,
+        "source_paths": [],
+        "status": "blocked"
+      },
+      "checkpoint": {
+        "expected_sha256": null,
+        "hash_status": "not_applicable",
+        "identifier": null,
+        "reason": "ELMM is a solver/formulation comparator with no preregistered pretrained model or weight checkpoint.",
+        "status": "not_applicable"
+      },
+      "environment": {
+        "oracle": {
+          "blas_identity": null,
+          "hardware_identity": null,
+          "operating_system": null,
+          "runtime": "MATLAB author toolbox on CPU",
+          "runtime_version": null,
+          "status": "blocked"
+        },
+        "precision": "float64",
+        "production": {
+          "blas_identity": null,
+          "hardware_identity": null,
+          "numpy_version": "2.4.6",
+          "operating_system": null,
+          "python_constraint": ">=3.11",
+          "python_exact_build": null,
+          "scipy_version": "1.17.1",
+          "status": "blocked",
+          "uv_lock_path": "uv.lock",
+          "uv_lock_sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359"
+        },
+        "status": "blocked"
+      },
+      "id": "elmm",
+      "license": {
+        "artifact_scope": null,
+        "byte_length": null,
+        "license_file_path": null,
+        "license_sha256": null,
+        "redistribution_status": "blocked_not_authorized",
+        "spdx": null,
+        "status": "blocked"
+      },
+      "overall_status": "blocked",
+      "parity_tests": [
+        {
+          "id": "elmm-source-transcription-and-callgraph",
+          "status": "not_run"
+        },
+        {
+          "id": "elmm-cuprite-route-parameter-confirmation",
+          "status": "not_run"
+        },
+        {
+          "id": "elmm-author-toolbox-dense-periodic-parity",
+          "status": "not_run",
+          "tolerance_default": {
+            "atol": "1e-10",
+            "rtol": "1e-8"
+          }
+        },
+        {
+          "fixture_classes": [
+            "interior_one_pixel_hole",
+            "multi_pixel_hole",
+            "border_touching_gaps_each_border",
+            "disconnected_gap",
+            "unequal_disconnected_components",
+            "singleton_alone",
+            "singleton_beside_larger_component"
+          ],
+          "id": "elmm-masked-dense-oracle-parity",
+          "status": "not_run",
+          "tolerance": {
+            "atol": "1e-10",
+            "rtol": "1e-10"
+          }
+        },
+        {
+          "id": "elmm-cold-process-determinism",
+          "status": "not_run"
+        }
+      ],
+      "pilot_gate": {
+        "admission_status": "blocked",
+        "pilot_type": "engineering_only_non_promotable_cpu_one_L_block",
+        "preconditions": [
+          {
+            "id": "elmm-exact-archive-bytes-hashes-license",
+            "status": "blocked"
+          },
+          {
+            "id": "elmm-source-equation-stopping-reconciliation-packet",
+            "status": "blocked"
+          },
+          {
+            "id": "elmm-independent-source-review",
+            "status": "blocked"
+          },
+          {
+            "id": "elmm-required-preregistration-amendments",
+            "status": "blocked"
+          },
+          {
+            "id": "elmm-explicit-operator-approval",
+            "status": "blocked"
+          },
+          {
+            "id": "elmm-immutable-adapter-and-environments",
+            "status": "blocked"
+          },
+          {
+            "id": "elmm-complete-dense-and-masked-parity",
+            "status": "blocked"
+          },
+          {
+            "id": "elmm-frozen-input-hash-recheck",
+            "status": "blocked"
+          },
+          {
+            "id": "elmm-geometry-only-pilot-block-declaration",
+            "status": "blocked"
+          }
+        ],
+        "prohibited_rescues": [
+          "smaller_grid",
+          "changed_solver",
+          "mixed_precision",
+          "tiling",
+          "alternate_initialization",
+          "alternate_implementation"
+        ],
+        "runtime_stop_conditions": [
+          "out_of_memory",
+          "nonconvergence",
+          "nonfinite_values",
+          "constraint_failure",
+          "parity_failure",
+          "cold_repeat_disagreement_beyond_admitted_tolerance",
+          "missing_provenance"
+        ],
+        "post_pilot_full_scene_admission": {
+          "admission_status": "blocked",
+          "candidate_order": "serial",
+          "fixed_ceilings": {
+            "durable_bytes_per_candidate": "32 GiB",
+            "peak_resident_ram": "128 GiB",
+            "scratch_bytes_per_candidate": "96 GiB",
+            "wall_time_per_candidate": "168 h"
+          },
+          "full_scene_S_tensor_accounting": "19.7 GiB included in RAM and scratch",
+          "projection_reserve_factor": 2,
+          "projection_scale": "max(N_f / N_p, E_f / E_p)",
+          "projection_status": "not_run",
+          "requires_successful_two_cold_process_pilot": true
+        },
+        "prerequisite_baseline_gate": {
+          "required_artifacts": [
+            "operational_mtmf",
+            "strict_inductive_mtmf"
+          ],
+          "status": "blocked"
+        }
+      },
+      "source": {
+        "archive_byte_length": 12921648,
+        "archive_byte_length_evidence": "live_primary_content_length_header_only_not_local_byte_count",
+        "archive_byte_serving_url": "https://openremotesensing.net/wp-content/uploads/2016/12/ELMM_toolbox.zip",
+        "archive_url_immutability": "unresolved",
+        "archive_sha256": null,
+        "artifact_file_type": ".zip",
+        "artifact_label": "TIP.2016.2579259_toolbox",
+        "distribution_kind": "author_hosted_archive",
+        "evidence": [
+          "local_verified",
+          "live_primary"
+        ],
+        "intended_commit": null,
+        "intended_tag": null,
+        "landing_url": "https://openremotesensing.net/knowledgebase/spectral-variability-and-extended-linear-mixing-model/",
+        "local_materialized": false,
+        "method_doi": "10.1109/TIP.2016.2579259",
+        "status": "blocked",
+        "unpacked_manifest_sha256": null
+      }
+    },
+    {
+      "adapter": {
+        "combined_source_adapter_sha256": null,
+        "expected_driver_path": "scripts/run_hyperfree_comparator.py",
+        "identity": "Project adapter around the pinned fine-tuning-free target-detection route; exposes one fold-specific native-grid pre-threshold cosine score M[q,t,b], uses a training-only raw-callable reflectance anchor, preserves official dtype/grid/resize/mask ordering, and retains the literal binary/dilated output only as a fidelity control.",
+        "local_driver_present": false,
+        "manifest_sha256": null,
+        "official_route": "Fine-tuning-free-manner/hyperspectral_target_detection",
+        "source_paths": [],
+        "status": "blocked"
+      },
+      "checkpoint": {
+        "expected_object_sha256": "bf207bf0d6a64e5a5e939cffbb850b0c72e29dda894ef9eda8950958688664c3",
+        "hash_status": "live_metadata_only_object_not_locally_recomputed",
+        "identifier": "Ckpt/HyperFree-b.pth",
+        "lfs_pointer_sha256": null,
+        "lfs_pointer_size_bytes": 134,
+        "local_object_present": false,
+        "local_pointer_present": false,
+        "model_name": "HyperFree-b / ViT-b",
+        "object_size_bytes": 615520591,
+        "repository_file_oid": "ea4d5c58aaa53e70e9011d1f363cd3e1590ab0a0",
+        "source_file_last_commit": "44db79b5c8a39faf3bfc3e5f3578ea49acd6ccec",
+        "status": "blocked",
+        "xet_hash": "729f4b71ee0be61a0d9cf0f792df8ae6f3bfd5a5614b3a34a10674874d31b063"
+      },
+      "environment": {
+        "container_base_digest": null,
+        "cuda_build_route": "11.7",
+        "cudnn_identity": null,
+        "device": "one H100",
+        "driver_identity": null,
+        "final_image_digest": null,
+        "gpu_uuid": null,
+        "official_requirements": [
+          "GDAL==3.0.2",
+          "matplotlib==3.5.1",
+          "numpy==1.21.6",
+          "opencv_contrib_python==3.4.2.17",
+          "opencv_python==4.8.0.76",
+          "opencv_python_headless==4.5.5.64",
+          "pycocotools==2.0.7",
+          "scikit_learn==1.0.2",
+          "scipy==1.7.3",
+          "seaborn==0.11.2",
+          "torch==1.13.0",
+          "torchvision==0.14.0"
+        ],
+        "package_lock_sha256": null,
+        "precision": "float32_model_tensors_no_autocast_or_mixed_precision",
+        "python_version": "3.8",
+        "seed": 42,
+        "status": "blocked"
+      },
+      "id": "hyperfree",
+      "license": {
+        "code": {
+          "artifact_scope": "official GitHub software repository",
+          "license_file_url": "https://raw.githubusercontent.com/Jingtao-Li-CVer/HyperFree/966f3e3c7deb0fbcff54874924174faaabdf182a/LICENSE",
+          "license_sha256": null,
+          "redistribution_status": "upstream_mit_permission_project_vendoring_blocked_pending_byte_pin_review",
+          "spdx": "MIT",
+          "status": "partial_metadata_only"
+        },
+        "model": {
+          "artifact_scope": null,
+          "declaration_source": "exact-revision Hugging Face model-card metadata",
+          "license_file_path": null,
+          "license_sha256": null,
+          "redistribution_status": "blocked_not_authorized",
+          "spdx_declaration": "Apache-2.0",
+          "standalone_license_file_present": false,
+          "status": "blocked"
+        },
+        "status": "blocked"
+      },
+      "overall_status": "blocked",
+      "parity_tests": [
+        {
+          "id": "hyperfree-source-callchain-anchor-stage-audit",
+          "status": "not_run"
+        },
+        {
+          "id": "hyperfree-base-model-load-and-wavelength-order",
+          "status": "not_run"
+        },
+        {
+          "id": "hyperfree-source-literal-confirmation",
+          "status": "not_run"
+        },
+        {
+          "id": "hyperfree-unrestricted-anchor-binary-bit-parity",
+          "status": "not_run"
+        },
+        {
+          "id": "hyperfree-branch-count-index-wavelength-bank",
+          "status": "not_run"
+        },
+        {
+          "id": "hyperfree-cuda-11-7-hopper-ptx-smoke",
+          "status": "not_run"
+        },
+        {
+          "id": "hyperfree-two-cold-process-determinism",
+          "status": "not_run"
+        }
+      ],
+      "pilot_gate": {
+        "admission_status": "blocked",
+        "pilot_type": "engineering_only_non_promotable_H100_one_L_block",
+        "preconditions": [
+          {
+            "id": "hyperfree-local-code-tree-and-file-hashes",
+            "status": "blocked"
+          },
+          {
+            "id": "hyperfree-local-checkpoint-pointer-and-object-hashes",
+            "status": "blocked"
+          },
+          {
+            "id": "hyperfree-complete-code-model-license-bytes-and-scope",
+            "status": "blocked"
+          },
+          {
+            "id": "hyperfree-source-adapter-packet-independent-review",
+            "status": "blocked"
+          },
+          {
+            "id": "hyperfree-prerequisite-baseline-bundles",
+            "status": "blocked"
+          },
+          {
+            "id": "hyperfree-explicit-operator-approval",
+            "status": "blocked"
+          },
+          {
+            "id": "hyperfree-isolated-hash-bound-environment",
+            "status": "blocked"
+          },
+          {
+            "id": "hyperfree-model-source-wavelength-adapter-ptx-determinism-fixtures",
+            "status": "blocked"
+          },
+          {
+            "id": "hyperfree-geometry-only-pilot-block-resize-gsd-declaration",
+            "status": "blocked"
+          },
+          {
+            "id": "hyperfree-pretelemetry-work-ledger-and-six-resource-ceilings",
+            "status": "blocked"
+          }
+        ],
+        "prohibited_rescues": [
+          "tiling",
+          "mixed_precision",
+          "fewer_bands",
+          "alternate_model_or_checkpoint",
+          "changed_masks",
+          "modernized_dependency_stack"
+        ],
+        "runtime_stop_conditions": [
+          "out_of_memory",
+          "source_or_weight_mismatch",
+          "missing_ptx",
+          "import_failure",
+          "nonfinite_tensors",
+          "empty_masks",
+          "shape_or_georegistration_mismatch",
+          "unexpected_dtype_or_range",
+          "cold_repeat_disagreement",
+          "missing_provenance"
+        ]
+      },
+      "source": {
+        "code_commit": "966f3e3c7deb0fbcff54874924174faaabdf182a",
+        "code_commit_verified_by_github": true,
+        "code_git_tree": "104a95d191939a15398f47a3b3bce4531859a3ae",
+        "code_repository_url": "https://github.com/Jingtao-Li-CVer/HyperFree",
+        "evidence": [
+          "local_verified",
+          "live_primary"
+        ],
+        "intended_tag": null,
+        "local_code_checkout_present": false,
+        "model_repository_gated": false,
+        "model_repository_revision": "69fb1d0bfa05f928ae77730c8277ecda5a0fbfd8",
+        "model_repository_url": "https://huggingface.co/JingtaoLi/HyperFree",
+        "status": "partial_metadata_only"
+      }
+    }
+  ],
+  "evidence_as_of_utc": "2026-08-11T04:14:03Z",
+  "governing_snapshot": {
+    "documents": [
+      {
+        "path": "docs/m3_elmm_preregistration.md",
+        "sha256": "c996f3204effc87ff5782cd9753f5f91fa8f0d6d0f7d872c3a8ac39a814546c7"
+      },
+      {
+        "path": "docs/m3_hyperfree_preregistration.md",
+        "sha256": "a9dd23d007f3d3b0369ae40e8f5d1bd304b5b07f5a003841c7f1b95e0f02936b"
+      },
+      {
+        "path": "docs/m3_external_validation_execution_plan.md",
+        "sha256": "8454c0134a9a71c1f7d0d12b178fba5d581d08d493c032de1405c7f5e39ede4c"
+      },
+      {
+        "path": "docs/m3_source_gate_audit_2026-08-09.md",
+        "sha256": "2840b02fb10ceae8358c6d46a14f49036940a5303879d376083c1e48261b3e13"
+      },
+      {
+        "path": "docs/execution_master_plan.md",
+        "sha256": "549de79b73e94815f9cfe7d4fed0e9333dfc5573de8b7bcbe6b16037ca9fe964"
+      },
+      {
+        "path": "docs/submission_critical_path_2026-08-10.md",
+        "sha256": "2707792ad9f7bb28f5e4d03def9e064c2d0dae7467dd934de154757d1c305d64"
+      },
+      {
+        "path": "docs/scientific_plan_goal_backward_review_2026-08-10.md",
+        "sha256": "410c26a7585ca82cb4a81b5a2fa0e97f5d3d4b567b92079f9cce3383782d68f9"
+      },
+      {
+        "path": "uv.lock",
+        "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359"
+      },
+      {
+        "path": "pyproject.toml",
+        "sha256": "83572da9b5ff5c891479370e58cb8bf7d6dbb0d0a7966735825e787d5416f31d"
+      }
+    ],
+    "git_head": "e06143909af7651eaec0ecbe8e84b191970c2398",
+    "working_tree_state": "dirty_before_packet_creation"
+  },
+  "packet": {
+    "date_local": "2026-08-10",
+    "document_path": "docs/m3_comparator_source_packet_2026-08-10.md",
+    "document_sha256": "207068267e09c50f508b4beb32138811ac0d74a1ba29490bf85b169fc88ec4c9",
+    "operator_approval": false,
+    "overall_status": "blocked",
+    "owned_paths": [
+      "docs/m3_comparator_source_packet_2026-08-10.md",
+      "experiments/m3_comparator_sources.json"
+    ]
+  },
+  "verification_boundary": {
+    "checkpoint_or_model_downloaded": false,
+    "code_or_model_executed": false,
+    "external_checkout_created": false,
+    "external_source_archive_downloaded": false,
+    "local_search_scopes": [
+      "/Users/abradley/Documents/Projects/Geospatial_projects/Tanager",
+      "/Users/abradley/.cache/huggingface/hub"
+    ],
+    "scientific_endpoint_opened": false,
+    "upstream_text_or_metadata_read_only": true
+  }
+}

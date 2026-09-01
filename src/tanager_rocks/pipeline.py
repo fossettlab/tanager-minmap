@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import csv
 import logging
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -43,9 +44,11 @@ from .emit import (
     rank_granules,
     rfl_path,
     select_granule,
+    validate_emit_reflectance_file,
 )
 from .features import build_feature_defs, diagnostic_feature_maps
 from .hazard import AGP_LABELS, acid_generating_potential
+from .quality import mask_tanager_scene
 from .reference import FEATURE_TO_ROCKWELL, MINERAL_TO_ROCKWELL, align_reference
 from .speclib import load_library, select_endmembers
 from .unmix import mtmf, sam_classify, spectral_angle
@@ -87,6 +90,14 @@ ABLATION_HEADLINE = ("alunite", "kaolinite")
 COMPARE_MINERALS = ("alunite", "kaolinite", "muscovite", "jarosite", "hematite", "goethite")
 COMPARE_HEADLINE = "alunite"
 COMPARE_TANAGER_DEG = 0.00027
+
+# Exact granule selected by the documented overlap/cloud-ranking procedure for
+# the current Goldfield comparison. Pinning the selected input lets a cached
+# reproduction run without repeating a mutable catalog query. If it is absent,
+# the authenticated query below must still recover this same granule.
+EMIT_GRANULE_URS: dict[str, str] = {
+    "goldfield": "EMIT_L2A_RFL_001_20230804T191650_2321613_007",
+}
 
 
 @dataclass(frozen=True)
@@ -145,13 +156,21 @@ class PipelinePaths:
 
 def _scene_path(site: SiteSpec, paths: PipelinePaths) -> Path:
     """Path to the site's lead-scene SR HDF5."""
-    return paths.raw_dir / f"{site.scene_ids[0]}_{TANAGER_SR_ASSET}.h5"
+    path = paths.raw_dir / f"{site.scene_ids[0]}_{TANAGER_SR_ASSET}.h5"
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Tanager scene {path} is missing — run "
+            f"`uv run python scripts/download_scenes.py --site {site.site_id}` first"
+        )
+    return path
 
 
 def _load_masked_cube(site: SiteSpec, paths: PipelinePaths) -> tuple[xr.DataArray, np.ndarray]:
-    """Load the lead scene's SR cube and mask the O2/H2O absorption bands."""
-    cube, wl = load_tanager_sr_hdf5(_scene_path(site, paths))
-    return mask_absorption_bands(cube, wl), wl
+    """Load the lead scene and apply the authoritative Tanager quality policy."""
+    path = _scene_path(site, paths)
+    cube, wl = load_tanager_sr_hdf5(path)
+    masked, _ = mask_tanager_scene(cube, wl, path)
+    return masked, wl
 
 
 def _endmembers(wl: np.ndarray, paths: PipelinePaths):
@@ -322,6 +341,15 @@ def run_amd(
         TIER_NODATA
     ).rio.to_raster(paths.maps_dir / f"{site.site_id}_{scene_id}_amd_agp.tif")
 
+    counts_path = paths.stage_tables("amd") / f"amd_counts_{site.site_id}_{scene_id}.csv"
+    _write_amd_counts_csv(
+        counts_path,
+        result.counts,
+        in_scene_pixels=int(result.domain.sum()),
+        max_infeas=max_infeas,
+        quantile=quantile,
+    )
+
     fig = amd_map(
         result.tiers,
         title=f"{site.name} — acid-generating-potential proxy (Tanager MTMF assemblage)",
@@ -336,6 +364,40 @@ def run_amd(
         {AGP_LABELS[c]: result.counts[c] for c in result.counts},
     )
     return out
+
+
+def _write_amd_counts_csv(
+    path: Path,
+    counts: dict[int, int],
+    *,
+    in_scene_pixels: int,
+    max_infeas: float,
+    quantile: float,
+) -> None:
+    """Write the exact tier counts and analytical gates behind an AMD raster."""
+    with open(path, "w", newline="") as fh:
+        writer = csv.writer(fh)
+        writer.writerow(
+            [
+                "tier_code",
+                "tier_label",
+                "pixel_count",
+                "in_scene_pixels",
+                "max_infeas",
+                "detection_quantile",
+            ]
+        )
+        for code in sorted(counts):
+            writer.writerow(
+                [
+                    code,
+                    AGP_LABELS[code],
+                    counts[code],
+                    in_scene_pixels,
+                    max_infeas,
+                    quantile,
+                ]
+            )
 
 
 def run_hero(
@@ -365,13 +427,41 @@ def run_hero(
     return out
 
 
-def _ensure_emit_granule(bbox: list[float], emit_dir: Path) -> Path:
+def _ensure_emit_granule(
+    bbox: list[float],
+    emit_dir: Path,
+    *,
+    expected_granule_ur: str | None = None,
+) -> Path:
     """Return a local EMIT RFL path for ``bbox``, downloading the best scene once.
 
     Needs NASA Earthdata credentials in the environment
     (``EARTHDATA_USERNAME`` / ``EARTHDATA_PASSWORD``); earthaccess is imported
     lazily so the rest of the pipeline does not depend on network access.
     """
+    if expected_granule_ur is not None:
+        expected = rfl_path(emit_dir, expected_granule_ur)
+        if expected.exists():
+            try:
+                validate_emit_reflectance_file(expected)
+            except (OSError, ValueError) as exc:
+                raise RuntimeError(
+                    f"cached EMIT reflectance {expected} is incomplete or invalid; "
+                    "move it aside and rerun the command to download a clean copy"
+                ) from exc
+            logger.info("using pinned cached EMIT reflectance: %s", expected.name)
+            return expected
+
+    has_password_login = bool(
+        os.environ.get("EARTHDATA_USERNAME") and os.environ.get("EARTHDATA_PASSWORD")
+    )
+    if not (os.environ.get("EARTHDATA_TOKEN") or has_password_login):
+        raise RuntimeError(
+            "EMIT cache is absent and Earthdata credentials are not configured; "
+            "run under `doppler run --project mac --config dev -- ...` with "
+            "EARTHDATA_USERNAME/EARTHDATA_PASSWORD or EARTHDATA_TOKEN"
+        )
+
     import earthaccess
 
     earthaccess.login(strategy="environment")
@@ -379,16 +469,42 @@ def _ensure_emit_granule(bbox: list[float], emit_dir: Path) -> Path:
         short_name=EMIT_L2A_SHORT_NAME, bounding_box=tuple(bbox), count=100
     )
     chosen = select_granule(rank_granules(results, box(*bbox)))
+    if expected_granule_ur is not None and chosen.granule_ur != expected_granule_ur:
+        raise RuntimeError(
+            "current EMIT catalog ranking selected "
+            f"{chosen.granule_ur}, expected pinned {expected_granule_ur}"
+        )
     dest = rfl_path(emit_dir, chosen.granule_ur)
-    if dest.exists() and dest.stat().st_size > 0:
+    if dest.exists():
+        try:
+            validate_emit_reflectance_file(dest)
+        except (OSError, ValueError) as exc:
+            raise RuntimeError(
+                f"cached EMIT reflectance {dest} is incomplete or invalid; "
+                "move it aside and rerun the command to download a clean copy"
+            ) from exc
         logger.info("EMIT reflectance already present: %s", dest.name)
         return dest
     emit_dir.mkdir(parents=True, exist_ok=True)
     rfl_links = [u for u in chosen.data_links if u.endswith(".nc") and "_RFLUNCERT_" not in u]
     rfl_only = [u for u in rfl_links if "_RFL_" in u and "_MASK_" not in u]
+    if len(rfl_only) != 1:
+        raise RuntimeError(
+            f"expected exactly one EMIT L2A reflectance link for {chosen.granule_ur}; "
+            f"found {len(rfl_only)}"
+        )
     logger.info("downloading EMIT reflectance for %s", chosen.granule_ur)
-    earthaccess.download(rfl_only, str(emit_dir))
-    return dest
+    downloaded = earthaccess.download(rfl_only, str(emit_dir))
+    if len(downloaded) != 1:
+        raise RuntimeError(
+            f"Earthdata returned {len(downloaded)} paths for one requested reflectance file"
+        )
+    actual = Path(downloaded[0])
+    if not actual.is_absolute():
+        actual = emit_dir / actual
+    actual = validate_emit_reflectance_file(actual)
+    logger.info("validated downloaded EMIT reflectance: %s", actual.name)
+    return actual
 
 
 def _map_for_compare(cube, wl, speclib_dir: Path):
@@ -418,10 +534,16 @@ def run_emit(site: SiteSpec, paths: PipelinePaths) -> Path:
     paths.ensure_outputs()
     setup_style()
     scene_id = site.scene_ids[0]
-    tan_cube, tan_wl = load_tanager_sr_hdf5(_scene_path(site, paths))
+    tan_path = _scene_path(site, paths)
+    tan_cube, tan_wl = load_tanager_sr_hdf5(tan_path)
     bbox = footprint_bbox(tan_cube)
+    tan_cube, _ = mask_tanager_scene(tan_cube, tan_wl, tan_path)
 
-    emit_path = _ensure_emit_granule(bbox, paths.emit_dir)
+    emit_path = _ensure_emit_granule(
+        bbox,
+        paths.emit_dir,
+        expected_granule_ur=EMIT_GRANULE_URS.get(site.site_id),
+    )
     emit_cube_raw, emit_wl = load_emit_reflectance(emit_path, bbox=bbox)
     tan_masked, tan_mf = _map_for_compare(tan_cube, tan_wl, paths.speclib_dir)
     emit_masked, emit_mf = _map_for_compare(emit_cube_raw, emit_wl, paths.speclib_dir)

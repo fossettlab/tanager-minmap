@@ -3,20 +3,25 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 import rioxarray  # noqa: F401  (registers the .rio accessor)
 import xarray as xr
 from rasterio.crs import CRS
 from rasterio.transform import Affine
 
+import tanager_rocks.pairs as pairs_module
 from tanager_rocks.pairs import (
     Patch,
     continuum_removed,
     pooled_rgb_percentiles,
+    promote_staged_dataset,
     rgb_ambiguity_clusters,
     rgb_ambiguous_pairs,
     stretch_to_uint8,
     swir_separable_pairs,
     tile_and_label,
+    validate_chip_dataset,
+    write_chip_checksum_manifest,
     write_chip_geotiff,
 )
 from tanager_rocks.speclib import pairwise_spectral_angle
@@ -43,7 +48,7 @@ def test_tile_and_label_discard_reasons_and_survivor():
     #   (0,0): uniform code 0 -> labeled "alunite", purity 1.0
     #   (0,1): uniform code -1 -> no_detection
     #   (1,0): two 0s / two 1s, tie broken to the lower code (0) -> purity 0.5 < floor -> low_purity
-    #   (1,1): uniform code 0 but one invalid pixel -> nodata
+    #   (1,1): uniform code 0 but one invalid pixel -> invalid
     dominant_code = np.array(
         [
             [0, 0, -1, -1],
@@ -71,7 +76,13 @@ def test_tile_and_label_discard_reasons_and_survivor():
         purity_floor=0.70,
     )
 
-    assert counts == {"total": 4, "nodata": 1, "no_detection": 1, "low_purity": 1, "labeled": 1}
+    assert counts == {
+        "total": 4,
+        "invalid": 1,
+        "no_detection": 1,
+        "low_purity": 1,
+        "labeled": 1,
+    }
     assert len(patches) == 1
     p = patches[0]
     assert p.label == "alunite"
@@ -243,3 +254,109 @@ def test_rgb_ambiguity_clusters_finds_components_and_drops_isolated_nodes():
 def test_rgb_ambiguity_clusters_empty_candidates_yields_no_clusters():
     patches = [_patch("A", [0, 0, 0], [0, 0, 0], [0.0]), _patch("B", [0, 0, 0], [0, 0, 0], [0.0])]
     assert rgb_ambiguity_clusters(patches, []) == []
+
+
+def _fake_chip_dataset(tmp_path):
+    dataset_dir = tmp_path / "dataset"
+    scene_dir = dataset_dir / "chips" / "scene"
+    scene_dir.mkdir(parents=True)
+    (scene_dir / "b.tif").write_bytes(b"second chip")
+    (scene_dir / "a.tif").write_bytes(b"first chip")
+    patch_rows = [
+        {"patch_id": "b", "chip_path": "chips/scene/b.tif"},
+        {"patch_id": "a", "chip_path": "chips/scene/a.tif"},
+    ]
+    return dataset_dir, patch_rows
+
+
+def test_chip_checksum_manifest_is_sorted_deterministic_and_validated(tmp_path):
+    dataset_dir, patch_rows = _fake_chip_dataset(tmp_path)
+
+    manifest_path = write_chip_checksum_manifest(dataset_dir, patch_rows)
+    first_bytes = manifest_path.read_bytes()
+    report = validate_chip_dataset(dataset_dir, patch_rows)
+    write_chip_checksum_manifest(dataset_dir, patch_rows)
+
+    assert manifest_path.read_bytes() == first_bytes
+    assert [line.split("  ", 1)[1] for line in manifest_path.read_text().splitlines()] == [
+        "chips/scene/a.tif",
+        "chips/scene/b.tif",
+    ]
+    assert report.n_chips == 2
+    assert report.total_bytes == len(b"first chip") + len(b"second chip")
+    assert len(report.checksum_manifest_sha256) == 64
+
+
+def test_chip_validation_rejects_unreferenced_stale_file(tmp_path):
+    dataset_dir, patch_rows = _fake_chip_dataset(tmp_path)
+    write_chip_checksum_manifest(dataset_dir, patch_rows)
+    (dataset_dir / "chips" / "scene" / "stale.tif").write_bytes(b"legacy")
+
+    with pytest.raises(ValueError, match="chip set does not match patches.csv"):
+        validate_chip_dataset(dataset_dir, patch_rows)
+
+
+def test_chip_validation_rejects_post_manifest_modification(tmp_path):
+    dataset_dir, patch_rows = _fake_chip_dataset(tmp_path)
+    write_chip_checksum_manifest(dataset_dir, patch_rows)
+    (dataset_dir / "chips" / "scene" / "a.tif").write_bytes(b"changed")
+
+    with pytest.raises(ValueError, match="chip checksum mismatch"):
+        validate_chip_dataset(dataset_dir, patch_rows)
+
+
+def test_chip_validation_rejects_symlinked_chip(tmp_path):
+    dataset_dir = tmp_path / "dataset"
+    scene_dir = dataset_dir / "chips" / "scene"
+    scene_dir.mkdir(parents=True)
+    source = tmp_path / "outside.tif"
+    source.write_bytes(b"outside")
+    (scene_dir / "linked.tif").symlink_to(source)
+    rows = [{"patch_id": "linked", "chip_path": "chips/scene/linked.tif"}]
+
+    with pytest.raises(ValueError, match="symlink"):
+        write_chip_checksum_manifest(dataset_dir, rows)
+
+
+def test_promote_staged_dataset_replaces_target_and_removes_backup(tmp_path):
+    target = tmp_path / "hard_pairs_dataset"
+    target.mkdir()
+    (target / "old.txt").write_text("old")
+    staged = tmp_path / ".hard_pairs_dataset.staging-test"
+    staged.mkdir()
+    (staged / "new.txt").write_text("new")
+
+    promote_staged_dataset(staged, target)
+
+    assert not staged.exists()
+    assert not (tmp_path / ".hard_pairs_dataset.previous").exists()
+    assert not (target / "old.txt").exists()
+    assert (target / "new.txt").read_text() == "new"
+
+
+def test_promote_staged_dataset_restores_target_when_promotion_fails(tmp_path, monkeypatch):
+    target = tmp_path / "hard_pairs_dataset"
+    target.mkdir()
+    (target / "old.txt").write_text("old")
+    staged = tmp_path / ".hard_pairs_dataset.staging-test"
+    staged.mkdir()
+    (staged / "new.txt").write_text("new")
+    real_replace = pairs_module.os.replace
+    call_count = 0
+
+    def fail_second_replace(source, destination):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 2:
+            raise OSError("synthetic promotion failure")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(pairs_module.os, "replace", fail_second_replace)
+
+    with pytest.raises(OSError, match="synthetic promotion failure"):
+        promote_staged_dataset(staged, target)
+
+    assert staged.is_dir()
+    assert (staged / "new.txt").read_text() == "new"
+    assert (target / "old.txt").read_text() == "old"
+    assert not (tmp_path / ".hard_pairs_dataset.previous").exists()

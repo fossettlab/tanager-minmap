@@ -69,7 +69,7 @@ Thumbs.db
 .env
 *.env
 
-# Claude Code
+# Local tool state
 .claude/
 
 # Plan artifacts
@@ -96,3 +96,76 @@ scripts/video/
 output/
 CHANGELOG.md
 .gstack/
+
+# Public lightweight video source. Generated media, provider evidence, working
+# captures, QC output, and final renders remain external release assets.
+!scripts/video/
+scripts/video/*
+!scripts/video/anim_03_spectra.py
+!scripts/video/anim_04_ablation.py
+!scripts/video/anim_06b_emit.py
+!scripts/video/assemble.py
+!scripts/video/audio.py
+!scripts/video/beats.py
+!scripts/video/captions.py
+!scripts/video/common.py
+!scripts/video/overlays.py
+!scripts/video/qc.py
+!scripts/video/release.py
+!scripts/video/render_v2.py
+!scripts/video/stills_05_07.py
+!scripts/video/test_release.py
+
+!video/
+video/*
+!video/README.md
+!video/CREDITS.md
+!video/narration_script_v2.md
+
+!video/segments_v2/
+video/segments_v2/*
+!video/segments_v2/00_title.txt
+!video/segments_v2/01_hook.txt
+!video/segments_v2/02_stakes.txt
+!video/segments_v2/03_data.txt
+!video/segments_v2/04_ablation.txt
+!video/segments_v2/05_livemap.txt
+!video/segments_v2/06_validation.txt
+!video/segments_v2/07_amd.txt
+!video/segments_v2/08_close.txt
+
+!video/build/
+video/build/*
+!video/build/render_motif.py
+!video/build/music_v2_composition_plan.json
+
+!video/manifests/
+video/manifests/*
+!video/manifests/README.md
+!video/manifests/doi_evidence.template.json
+!video/manifests/music.template.json
+!video/manifests/release_contract.schema.json
+!video/manifests/release_contract.template.json
+!video/manifests/render_manifest.schema.json
+!video/manifests/tts.template.jsonl
+
+!docs/storyboard.md
+!docs/edit_plan.md
+
+# Internal planning, audit, and experiment-registry material — not part of the public archive
+scripts/build_public_candidate.py
+tests/test_public_candidate.py
+
+# Public evidence files carved out of the internal docs/ and experiments/ trees
+!docs/
+docs/*
+!docs/tanager_quality_mask_policy.md
+!docs/input_manifest.json
+!docs/claim_ledger.yaml
+!docs/reviewer_quickstart.md
+!docs/m2_spatial_validation_preregistration.md
+!docs/video_reproduction.md
+!experiments/
+experiments/*
+!experiments/registry.yaml
+!experiments/m3_comparator_sources.json

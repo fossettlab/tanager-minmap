@@ -27,11 +27,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tanager_spec.bands import indices_in_windows
 from tanager_spec.io import load_tanager_sr_hdf5
-from tanager_spec.mask import mask_absorption_bands
 
 from tanager_rocks.config import DIAGNOSTIC_NM, SITES, TANAGER_SR_ASSET
 from tanager_rocks.figures import RGB_NM, _nearest
 from tanager_rocks.pairs import SWIR_WINDOW_NM, continuum_removed, stretch_to_uint8
+from tanager_rocks.quality import mask_tanager_scene
 from tanager_rocks.viz import MINERAL_COLORS, setup_style
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -49,12 +49,13 @@ def _load_pairs_csv(path: Path) -> list[dict[str, str]]:
 
 
 def _load_site_cube(site_id: str):
-    """Raw + absorption-masked cube and wavelength axis for one site's lead scene."""
+    """Quality-masked cube and wavelength axis for one site's lead scene."""
     site = SITES[site_id]
     scene_id = site.scene_ids[0]
-    cube_raw, wl = load_tanager_sr_hdf5(RAW_DIR / f"{scene_id}_{TANAGER_SR_ASSET}.h5")
-    cube_masked = mask_absorption_bands(cube_raw, wl)
-    return cube_raw, cube_masked, wl
+    path = RAW_DIR / f"{scene_id}_{TANAGER_SR_ASSET}.h5"
+    cube_raw, wl = load_tanager_sr_hdf5(path)
+    cube_masked, _ = mask_tanager_scene(cube_raw, wl, path)
+    return cube_masked, cube_masked, wl
 
 
 def _patch_slice(row: int, col: int, patch_size: int) -> tuple[slice, slice]:

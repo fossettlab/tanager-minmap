@@ -1,0 +1,1 @@
+Two complementary checks. The Tanager alunite map shows alteration-group agreement with a published USGS ASTER map — not field truth. Applying the same library-driven method to NASA's EMIT over the same ground also gives positive map consistency: alunite at zero point five five, jarosite at zero point five eight.

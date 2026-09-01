@@ -82,45 +82,208 @@ def sam_classify(angles: xr.Dataset, max_angle_rad: float) -> tuple[xr.DataArray
     return classes, minerals
 
 
-@dataclass
-class _Background:
-    """Shared background statistics for matched filtering on a cube's valid data.
+@dataclass(frozen=True)
+class MtmfBackground:
+    """One fitted MTMF background shared by every frozen endmember."""
 
-    The full-band VSWIR covariance is ill-conditioned (collinear adjacent bands),
-    so ``cov_inv`` is the inverse of the diagonally-loaded covariance.
-    """
-
-    valid_b: np.ndarray  # (n_band,) bool — bands used
-    px_valid: np.ndarray  # (ny*nx,) bool — finite pixels
-    centered: np.ndarray  # (n_px, n_valid_band) — pixels minus background mean
-    mu: np.ndarray  # (n_valid_band,) background mean
-    cov_inv: np.ndarray  # (n_valid_band, n_valid_band) inverse loaded covariance
-    ny: int
-    nx: int
+    valid_bands: np.ndarray
+    mean: np.ndarray
+    covariance_inverse: np.ndarray
+    sample_count: int
+    ridge: float
 
 
-def _background(cube: xr.DataArray, endmembers: dict[str, Endmember], ridge: float) -> _Background:
+def _spatial_mask(
+    mask: np.ndarray | xr.DataArray | None,
+    shape: tuple[int, int],
+    *,
+    name: str,
+) -> np.ndarray:
+    if mask is None:
+        return np.ones(shape, dtype=bool)
+    values = np.asarray(mask, dtype=bool)
+    if values.shape != shape:
+        raise ValueError(f"{name} shape {values.shape} does not match cube shape {shape}")
+    return values
+
+
+def _validate_mtmf_inputs(
+    cube: xr.DataArray,
+    endmembers: dict[str, Endmember],
+) -> tuple[np.ndarray, tuple[int, int]]:
+    if not endmembers:
+        raise ValueError("at least one endmember is required")
     data = cube.transpose("band", "y", "x").values
-    n_band, ny, nx = data.shape
-    flat = data.reshape(n_band, ny * nx)
-
-    band_has_data = np.isfinite(flat).any(axis=1)
-    em_finite = np.all([np.isfinite(e.reflectance) for e in endmembers.values()], axis=0)
-    valid_b = band_has_data & em_finite
-    px_valid = np.isfinite(flat[valid_b]).all(axis=0)
-
-    samples = flat[valid_b][:, px_valid].T  # (n_px, n_valid_band)
-    mu = samples.mean(axis=0)
-    centered = samples - mu
-    cov = centered.T @ centered / (samples.shape[0] - 1)
-    cov += ridge * np.trace(cov) / cov.shape[0] * np.eye(cov.shape[0])  # diagonal loading
-    return _Background(valid_b, px_valid, centered, mu, np.linalg.inv(cov), ny, nx)
+    shape = (data.shape[1], data.shape[2])
+    for mineral, endmember in endmembers.items():
+        if np.asarray(endmember.reflectance).shape != (data.shape[0],):
+            raise ValueError(f"{mineral} endmember length does not match the cube band count")
+    return data, shape
 
 
-def _to_map(values: np.ndarray, bg: _Background, coords: dict) -> xr.DataArray:
-    full = np.full(bg.ny * bg.nx, np.nan)
-    full[bg.px_valid] = values
-    return xr.DataArray(full.reshape(bg.ny, bg.nx), dims=("y", "x"), coords=coords)
+def fit_mtmf_background(
+    cube: xr.DataArray,
+    endmembers: dict[str, Endmember],
+    ridge: float = 1e-2,
+    *,
+    fit_mask: np.ndarray | xr.DataArray | None = None,
+    batch_size: int = 65_536,
+) -> MtmfBackground:
+    """Fit the MTMF mean and loaded covariance on explicitly selected pixels.
+
+    ``fit_mask`` is applied before band support, the mean, or covariance is
+    calculated. Consequently, values outside the mask cannot influence any
+    fitted background quantity. Moments are accumulated in deterministic
+    row-major batches to avoid materialising a full pixel-by-band copy.
+    """
+    if not np.isfinite(ridge) or ridge < 0:
+        raise ValueError("ridge must be finite and non-negative")
+    if batch_size <= 0:
+        raise ValueError("batch_size must be positive")
+    data, shape = _validate_mtmf_inputs(cube, endmembers)
+    selected = _spatial_mask(fit_mask, shape, name="fit_mask").reshape(-1)
+    if not np.any(selected):
+        raise ValueError("fit_mask selects no pixels")
+    flat = data.reshape(data.shape[0], -1)
+    endmember_finite = np.logical_and.reduce(
+        [np.isfinite(endmember.reflectance) for endmember in endmembers.values()]
+    )
+    band_has_training_data = np.asarray(
+        [np.any(np.isfinite(flat[index, selected])) for index in range(flat.shape[0])]
+    )
+    valid_bands = endmember_finite & band_has_training_data
+    if not np.any(valid_bands):
+        raise ValueError("no bands are finite in both the training pixels and all endmembers")
+
+    finite_pixels = selected.copy()
+    for index in np.flatnonzero(valid_bands):
+        finite_pixels &= np.isfinite(flat[index])
+    sample_indices = np.flatnonzero(finite_pixels)
+    if sample_indices.size < 2:
+        raise ValueError("at least two pairwise-complete training pixels are required")
+
+    n_dimensions = int(np.count_nonzero(valid_bands))
+    band_indices = np.flatnonzero(valid_bands)
+    count = 0
+    mean = np.zeros(n_dimensions, dtype=float)
+    sum_squares = np.zeros((n_dimensions, n_dimensions), dtype=float)
+    for start in range(0, sample_indices.size, batch_size):
+        indices = sample_indices[start : start + batch_size]
+        batch = flat[np.ix_(band_indices, indices)].T
+        batch_count = batch.shape[0]
+        batch_mean = batch.mean(axis=0)
+        batch_centered = batch - batch_mean
+        batch_sum_squares = batch_centered.T @ batch_centered
+        if count == 0:
+            mean = batch_mean
+            sum_squares = batch_sum_squares
+            count = batch_count
+            continue
+        delta = batch_mean - mean
+        combined = count + batch_count
+        sum_squares += batch_sum_squares + np.outer(delta, delta) * (count * batch_count / combined)
+        mean += delta * (batch_count / combined)
+        count = combined
+
+    covariance = sum_squares / (count - 1)
+    loading_scale = float(np.trace(covariance) / covariance.shape[0])
+    if not np.isfinite(loading_scale) or loading_scale <= 0:
+        raise ValueError("training covariance has non-positive or non-finite mean variance")
+    loaded = covariance + ridge * loading_scale * np.eye(covariance.shape[0])
+    try:
+        covariance_inverse = np.linalg.inv(loaded)
+    except np.linalg.LinAlgError as error:
+        raise ValueError("loaded training covariance is singular") from error
+    return MtmfBackground(
+        valid_bands=valid_bands,
+        mean=mean,
+        covariance_inverse=covariance_inverse,
+        sample_count=count,
+        ridge=float(ridge),
+    )
+
+
+def _score_with_background(
+    cube: xr.DataArray,
+    endmembers: dict[str, Endmember],
+    background: MtmfBackground,
+    *,
+    score_mask: np.ndarray | xr.DataArray | None,
+    include_infeasibility: bool,
+    batch_size: int,
+) -> xr.Dataset:
+    if batch_size <= 0:
+        raise ValueError("batch_size must be positive")
+    data, shape = _validate_mtmf_inputs(cube, endmembers)
+    if background.valid_bands.shape != (data.shape[0],):
+        raise ValueError("background band mask does not match the cube")
+    if int(np.count_nonzero(background.valid_bands)) != background.mean.size:
+        raise ValueError("background dimensions are internally inconsistent")
+    selected = _spatial_mask(score_mask, shape, name="score_mask").reshape(-1)
+    flat = data.reshape(data.shape[0], -1)
+    band_indices = np.flatnonzero(background.valid_bands)
+    finite_pixels = selected.copy()
+    for index in band_indices:
+        finite_pixels &= np.isfinite(flat[index])
+    score_indices = np.flatnonzero(finite_pixels)
+
+    minerals = tuple(endmembers)
+    weights: dict[str, np.ndarray] = {}
+    eta: dict[str, float] = {}
+    for mineral, endmember in endmembers.items():
+        direction = endmember.reflectance[background.valid_bands] - background.mean
+        weight = background.covariance_inverse @ direction
+        denominator = float(direction @ weight)
+        if not np.isfinite(denominator) or denominator <= 0:
+            raise ValueError(f"{mineral} has a degenerate MTMF target direction")
+        weights[mineral] = weight
+        eta[mineral] = denominator
+
+    values = {
+        f"{mineral}_{suffix}": np.full(flat.shape[1], np.nan, dtype=float)
+        for mineral in minerals
+        for suffix in (("mf", "infeas") if include_infeasibility else ("mf",))
+    }
+    normalizer = np.sqrt(max(background.mean.size - 1, 1))
+    for start in range(0, score_indices.size, batch_size):
+        indices = score_indices[start : start + batch_size]
+        centered = flat[np.ix_(band_indices, indices)].T - background.mean
+        if include_infeasibility:
+            whitened = centered @ background.covariance_inverse
+            rx = np.einsum("ij,ij->i", whitened, centered)
+        for mineral in minerals:
+            alpha = centered @ weights[mineral] / eta[mineral]
+            values[f"{mineral}_mf"][indices] = alpha
+            if include_infeasibility:
+                residual = np.clip(rx - alpha**2 * eta[mineral], 0.0, None)
+                values[f"{mineral}_infeas"][indices] = np.sqrt(residual) / normalizer
+
+    coords = {"y": cube.y, "x": cube.x}
+    return xr.Dataset(
+        {
+            name: xr.DataArray(array.reshape(shape), dims=("y", "x"), coords=coords)
+            for name, array in values.items()
+        }
+    )
+
+
+def score_mtmf_background(
+    cube: xr.DataArray,
+    endmembers: dict[str, Endmember],
+    background: MtmfBackground,
+    *,
+    score_mask: np.ndarray | xr.DataArray | None = None,
+    batch_size: int = 65_536,
+) -> xr.Dataset:
+    """Score MTMF abundance and infeasibility from one pre-fitted background."""
+    return _score_with_background(
+        cube,
+        endmembers,
+        background,
+        score_mask=score_mask,
+        include_infeasibility=True,
+        batch_size=batch_size,
+    )
 
 
 def matched_filter_maps(
@@ -155,15 +318,16 @@ def matched_filter_maps(
     xr.Dataset
         One matched-filter abundance variable per mineral.
     """
-    bg = _background(cube, endmembers, ridge)
-    coords = {"y": cube.y, "x": cube.x}
-    out: dict[str, xr.DataArray] = {}
-    for mineral, em in endmembers.items():
-        d = em.reflectance[bg.valid_b] - bg.mu
-        weight = bg.cov_inv @ d
-        alpha = bg.centered @ weight / float(d @ weight)  # =1 at target, 0 at background
-        out[mineral] = _to_map(alpha, bg, coords)
-    return xr.Dataset(out)
+    background = fit_mtmf_background(cube, endmembers, ridge)
+    scored = _score_with_background(
+        cube,
+        endmembers,
+        background,
+        score_mask=None,
+        include_infeasibility=False,
+        batch_size=65_536,
+    )
+    return xr.Dataset({mineral: scored[f"{mineral}_mf"] for mineral in endmembers})
 
 
 def mtmf(
@@ -207,21 +371,5 @@ def mtmf(
     xr.Dataset
         ``<mineral>_mf`` (abundance) and ``<mineral>_infeas`` per mineral.
     """
-    bg = _background(cube, endmembers, ridge)
-    coords = {"y": cube.y, "x": cube.x}
-    n_dim = int(bg.valid_b.sum())
-    # RX anomaly score (x-mu)^T C^-1 (x-mu), computed once for all endmembers.
-    whitened = bg.centered @ bg.cov_inv  # (n_px, n_band)
-    rx = np.einsum("ij,ij->i", whitened, bg.centered)
-    norm = np.sqrt(max(n_dim - 1, 1))
-
-    out: dict[str, xr.DataArray] = {}
-    for mineral, em in endmembers.items():
-        d = em.reflectance[bg.valid_b] - bg.mu
-        weight = bg.cov_inv @ d
-        eta = float(d @ weight)
-        alpha = bg.centered @ weight / eta
-        infeas = np.sqrt(np.clip(rx - alpha**2 * eta, 0.0, None)) / norm
-        out[f"{mineral}_mf"] = _to_map(alpha, bg, coords)
-        out[f"{mineral}_infeas"] = _to_map(infeas, bg, coords)
-    return xr.Dataset(out)
+    background = fit_mtmf_background(cube, endmembers, ridge)
+    return score_mtmf_background(cube, endmembers, background)

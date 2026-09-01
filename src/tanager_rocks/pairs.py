@@ -18,10 +18,16 @@ full derivation writeup.
 
 from __future__ import annotations
 
+import hashlib
+import os
+import re
+import shutil
 from collections import defaultdict
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from itertools import combinations
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+from tempfile import NamedTemporaryFile
 
 import numpy as np
 
@@ -227,7 +233,7 @@ def tile_and_label(
     minerals : list of str
         Class-code -> mineral name, in the order ``dominant_code`` uses.
     invalid_mask : np.ndarray
-        ``(ny, nx)`` bool; ``True`` = invalid (nodata / off-scene / overshoot).
+        ``(ny, nx)`` bool; ``True`` = invalid (QA, off-scene, or RGB overshoot).
     rgb_uint8 : np.ndarray
         ``(ny, nx, 3)`` post-stretch true-color image (see
         :func:`stretch_to_uint8`).
@@ -246,11 +252,11 @@ def tile_and_label(
     patches : list of Patch
         Surviving labeled patches.
     counts : dict
-        ``{"total", "nodata", "no_detection", "low_purity", "labeled"}``.
+        ``{"total", "invalid", "no_detection", "low_purity", "labeled"}``.
     """
     ny, nx = dominant_code.shape
     n_rows, n_cols = ny // patch_size, nx // patch_size
-    counts = {"total": 0, "nodata": 0, "no_detection": 0, "low_purity": 0, "labeled": 0}
+    counts = {"total": 0, "invalid": 0, "no_detection": 0, "low_purity": 0, "labeled": 0}
     patches: list[Patch] = []
 
     for row in range(n_rows):
@@ -260,7 +266,7 @@ def tile_and_label(
             counts["total"] += 1
 
             if invalid_mask[ys, xs].any():
-                counts["nodata"] += 1
+                counts["invalid"] += 1
                 continue
 
             block = dominant_code[ys, xs].ravel()
@@ -331,6 +337,225 @@ def write_chip_geotiff(cube, y0: int, x0: int, size: int, out_path: str | Path) 
     patch = cube.isel(y=slice(y0, y0 + size), x=slice(x0, x0 + size))
     patch.rio.write_crs(cube.rio.crs, inplace=True)
     patch.rio.to_raster(out_path, compress="LZW")
+
+
+@dataclass(frozen=True)
+class ChipSetValidation:
+    """Summary of a manifest-bound chip-set validation."""
+
+    n_chips: int
+    total_bytes: int
+    checksum_manifest_sha256: str
+
+
+_SHA256_LINE = re.compile(r"^([0-9a-f]{64})  (.+)$")
+
+
+def sha256_file(path: str | Path, *, chunk_size: int = 1024 * 1024) -> str:
+    """Return the SHA-256 digest of a regular, non-symlink file."""
+    path = Path(path)
+    if path.is_symlink() or not path.is_file():
+        raise ValueError(f"checksum target is not a regular non-symlink file: {path}")
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(chunk_size), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _manifest_chip_paths(
+    patch_rows: Iterable[Mapping[str, object]],
+) -> list[PurePosixPath]:
+    paths: list[PurePosixPath] = []
+    seen: set[PurePosixPath] = set()
+    for row_number, row in enumerate(patch_rows, start=2):
+        raw = str(row.get("chip_path", ""))
+        rel = PurePosixPath(raw)
+        if (
+            not raw
+            or "\\" in raw
+            or rel.is_absolute()
+            or raw != rel.as_posix()
+            or ".." in rel.parts
+            or len(rel.parts) < 2
+            or rel.parts[0] != "chips"
+            or rel.suffix.lower() != ".tif"
+        ):
+            raise ValueError(f"invalid chip_path on patches.csv row {row_number}: {raw!r}")
+        if rel in seen:
+            raise ValueError(f"duplicate chip_path in patches.csv: {raw}")
+        seen.add(rel)
+        paths.append(rel)
+    if not paths:
+        raise ValueError("patches.csv contains no chip rows")
+    return sorted(paths, key=lambda path: path.as_posix())
+
+
+def _chip_file(dataset_dir: Path, rel: PurePosixPath) -> Path:
+    current = dataset_dir
+    for part in rel.parts:
+        current = current / part
+        if current.is_symlink():
+            raise ValueError(f"chip path contains a symlink: {rel.as_posix()}")
+    if not current.is_file():
+        raise ValueError(f"manifest-referenced chip is missing: {rel.as_posix()}")
+    return current
+
+
+def _validate_exact_chip_set(
+    dataset_dir: Path, patch_rows: Iterable[Mapping[str, object]]
+) -> list[PurePosixPath]:
+    dataset_dir = Path(dataset_dir)
+    if dataset_dir.is_symlink() or not dataset_dir.is_dir():
+        raise ValueError(f"dataset directory is not a regular directory: {dataset_dir}")
+    expected = _manifest_chip_paths(patch_rows)
+    chips_dir = dataset_dir / "chips"
+    if chips_dir.is_symlink() or not chips_dir.is_dir():
+        raise ValueError(f"chips directory is not a regular directory: {chips_dir}")
+
+    actual: list[PurePosixPath] = []
+    for path in sorted(chips_dir.rglob("*")):
+        rel = PurePosixPath(path.relative_to(dataset_dir).as_posix())
+        if path.is_symlink():
+            raise ValueError(f"chip tree contains a symlink: {rel.as_posix()}")
+        if path.is_file():
+            actual.append(rel)
+        elif not path.is_dir():
+            raise ValueError(f"chip tree contains a non-regular entry: {rel.as_posix()}")
+
+    expected_set = set(expected)
+    actual_set = set(actual)
+    if expected_set != actual_set:
+        missing = sorted(path.as_posix() for path in expected_set - actual_set)
+        extra = sorted(path.as_posix() for path in actual_set - expected_set)
+        raise ValueError(f"chip set does not match patches.csv; missing={missing}, extra={extra}")
+    for rel in expected:
+        _chip_file(dataset_dir, rel)
+    return expected
+
+
+def write_chip_checksum_manifest(
+    dataset_dir: str | Path,
+    patch_rows: Iterable[Mapping[str, object]],
+    *,
+    filename: str = "chips.sha256",
+) -> Path:
+    """Atomically write a sorted SHA-256 manifest for the exact chip set."""
+    dataset_dir = Path(dataset_dir)
+    rows = list(patch_rows)
+    expected = _validate_exact_chip_set(dataset_dir, rows)
+    manifest_path = dataset_dir / filename
+    if manifest_path.parent != dataset_dir or manifest_path.name != filename:
+        raise ValueError(f"checksum filename must be a dataset-root basename: {filename!r}")
+
+    temporary_path: Path | None = None
+    try:
+        with NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            newline="\n",
+            dir=dataset_dir,
+            prefix=".chips.sha256.",
+            delete=False,
+        ) as fh:
+            temporary_path = Path(fh.name)
+            for rel in expected:
+                fh.write(f"{sha256_file(_chip_file(dataset_dir, rel))}  {rel.as_posix()}\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(temporary_path, manifest_path)
+    finally:
+        if temporary_path is not None and temporary_path.exists():
+            temporary_path.unlink()
+    return manifest_path
+
+
+def validate_chip_dataset(
+    dataset_dir: str | Path,
+    patch_rows: Iterable[Mapping[str, object]],
+    *,
+    checksum_filename: str = "chips.sha256",
+) -> ChipSetValidation:
+    """Fail closed unless chips, patch rows, and recorded SHA-256 values agree."""
+    dataset_dir = Path(dataset_dir)
+    rows = list(patch_rows)
+    expected = _validate_exact_chip_set(dataset_dir, rows)
+    checksum_path = dataset_dir / checksum_filename
+    if checksum_path.parent != dataset_dir or checksum_path.name != checksum_filename:
+        raise ValueError(
+            f"checksum filename must be a dataset-root basename: {checksum_filename!r}"
+        )
+    if checksum_path.is_symlink() or not checksum_path.is_file():
+        raise ValueError(f"checksum manifest is missing or is not a regular file: {checksum_path}")
+
+    recorded_paths: list[PurePosixPath] = []
+    recorded_hashes: dict[PurePosixPath, str] = {}
+    with checksum_path.open(encoding="utf-8", newline="") as fh:
+        for line_number, line in enumerate(fh, start=1):
+            match = _SHA256_LINE.fullmatch(line.rstrip("\n"))
+            if match is None:
+                raise ValueError(f"malformed checksum line {line_number}: {line.rstrip()!r}")
+            digest, raw = match.groups()
+            rel = PurePosixPath(raw)
+            if raw != rel.as_posix() or rel in recorded_hashes:
+                raise ValueError(
+                    f"non-canonical or duplicate checksum path on line {line_number}: {raw!r}"
+                )
+            recorded_paths.append(rel)
+            recorded_hashes[rel] = digest
+
+    if recorded_paths != expected:
+        raise ValueError("chips.sha256 paths are not the sorted, exact patches.csv chip set")
+
+    total_bytes = 0
+    for rel in expected:
+        path = _chip_file(dataset_dir, rel)
+        observed = sha256_file(path)
+        if observed != recorded_hashes[rel]:
+            raise ValueError(
+                f"chip checksum mismatch for {rel.as_posix()}: "
+                f"recorded={recorded_hashes[rel]}, observed={observed}"
+            )
+        total_bytes += path.stat().st_size
+
+    return ChipSetValidation(
+        n_chips=len(expected),
+        total_bytes=total_bytes,
+        checksum_manifest_sha256=sha256_file(checksum_path),
+    )
+
+
+def promote_staged_dataset(staged_dir: str | Path, target_dir: str | Path) -> None:
+    """Promote a validated sibling directory with rollback on rename failure."""
+    staged_dir = Path(staged_dir)
+    target_dir = Path(target_dir)
+    if staged_dir.parent.resolve() != target_dir.parent.resolve():
+        raise ValueError("staging and target directories must share a parent filesystem directory")
+    if staged_dir.resolve() == target_dir.resolve():
+        raise ValueError("staging and target directories must be different paths")
+    if staged_dir.is_symlink() or not staged_dir.is_dir():
+        raise ValueError(f"staging path is not a regular directory: {staged_dir}")
+    if target_dir.is_symlink() or (target_dir.exists() and not target_dir.is_dir()):
+        raise ValueError(f"target path is not a regular directory: {target_dir}")
+
+    backup_dir = target_dir.with_name(f".{target_dir.name}.previous")
+    if backup_dir.exists() or backup_dir.is_symlink():
+        raise RuntimeError(
+            f"refusing promotion because a previous-build backup exists: {backup_dir}"
+        )
+
+    moved_target = False
+    if target_dir.exists():
+        os.replace(target_dir, backup_dir)
+        moved_target = True
+    try:
+        os.replace(staged_dir, target_dir)
+    except BaseException:
+        if moved_target and backup_dir.exists() and not target_dir.exists():
+            os.replace(backup_dir, target_dir)
+        raise
+    if backup_dir.exists():
+        shutil.rmtree(backup_dir)
 
 
 def rgb_ambiguous_pairs(

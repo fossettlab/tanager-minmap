@@ -22,7 +22,6 @@ import numpy as np
 import rioxarray  # noqa: F401  (registers the .rio accessor; used via open_rasterio)
 import xarray as xr
 from tanager_spec.io import load_tanager_sr_hdf5
-from tanager_spec.mask import mask_absorption_bands
 
 from tanager_rocks.config import SITES, TANAGER_SR_ASSET
 from tanager_rocks.figures import (
@@ -33,7 +32,15 @@ from tanager_rocks.figures import (
 )
 from tanager_rocks.hazard import acid_generating_potential
 from tanager_rocks.interactive import class_rgba, reproject_classes_4326, story_map
-from tanager_rocks.pipeline import PipelinePaths, run_ablate, run_amd, run_emit, run_hero
+from tanager_rocks.pipeline import (
+    EMIT_GRANULE_URS,
+    PipelinePaths,
+    run_ablate,
+    run_amd,
+    run_emit,
+    run_hero,
+)
+from tanager_rocks.quality import mask_tanager_scene
 from tanager_rocks.reference import MINERAL_TO_ROCKWELL, ROCKWELL_EXCLUDED, align_reference
 from tanager_rocks.speclib import load_library, select_endmembers
 from tanager_rocks.unmix import mtmf
@@ -62,8 +69,10 @@ ABSORPTIONS = {
 def _load(site_id: str):
     site = SITES[site_id]
     scene_id = site.scene_ids[0]
-    cube_raw, wl = load_tanager_sr_hdf5(RAW_DIR / f"{scene_id}_{TANAGER_SR_ASSET}.h5")
-    return site, scene_id, cube_raw, wl
+    path = RAW_DIR / f"{scene_id}_{TANAGER_SR_ASSET}.h5"
+    cube_raw, wl = load_tanager_sr_hdf5(path)
+    cube, _ = mask_tanager_scene(cube_raw, wl, path)
+    return site, scene_id, cube, wl
 
 
 def _save(fig, name: str) -> None:
@@ -103,10 +112,9 @@ def main() -> None:
     FIG_DIR.mkdir(parents=True, exist_ok=True)
 
     # Goldfield (showcase): RGB + spectra + validation + dominant-mineral map.
-    site, scene_id, cube_raw, wl = _load("goldfield")
-    _save(rgb_context(cube_raw, wl, title=f"{site.name} — Tanager true color"), "goldfield_rgb.png")
+    site, scene_id, cube, wl = _load("goldfield")
+    _save(rgb_context(cube, wl, title=f"{site.name} — Tanager true color"), "goldfield_rgb.png")
 
-    cube = mask_absorption_bands(cube_raw, wl)
     endmembers = select_endmembers(load_library(SPECLIB_DIR, wl))
     ds = mtmf(cube, endmembers)
 
@@ -141,10 +149,9 @@ def main() -> None:
     _mineral_map_html("goldfield", cube, ds)
 
     # Bingham (mine-waste site): RGB context + AMD interactive map.
-    site_b, _, bingham_raw, wl_b = _load("bingham")
-    rgb_b = rgb_context(bingham_raw, wl_b, title=f"{site_b.name} — Tanager true color")
+    site_b, _, cube_b, wl_b = _load("bingham")
+    rgb_b = rgb_context(cube_b, wl_b, title=f"{site_b.name} — Tanager true color")
     _save(rgb_b, "bingham_rgb.png")
-    cube_b = mask_absorption_bands(bingham_raw, wl_b)
     ds_b = mtmf(cube_b, select_endmembers(load_library(SPECLIB_DIR, wl_b)))
     _amd_map_html("bingham", cube_b, ds_b)
 
@@ -154,12 +161,12 @@ def main() -> None:
     run_ablate(SITES["bingham"], panels)  # band-ablation panel
     run_hero(SITES["goldfield"], panels)  # dominant-mineral hero map
     run_amd(SITES["bingham"], panels)  # AMD acid-generating-potential map
-    if os.environ.get("EARTHDATA_USERNAME"):
-        run_emit(SITES["goldfield"], panels)  # EMIT cross-sensor panel (needs creds)
+    emit_granule = EMIT_GRANULE_URS["goldfield"]
+    cached_emit = panels.emit_dir / f"{emit_granule}.nc"
+    if cached_emit.exists() or os.environ.get("EARTHDATA_USERNAME"):
+        run_emit(SITES["goldfield"], panels)
     else:
-        logger.warning(
-            "EMIT panel skipped (no EARTHDATA_USERNAME); run under doppler to include it"
-        )
+        logger.warning("EMIT panel skipped: pinned cache is absent and EARTHDATA_USERNAME is unset")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1 @@
+Tanager's delivered ortho product contains 426 contiguous bands, from the visible to the shortwave infrared, on a thirty-meter grid. Minerals leave narrow absorptions there: aluminum-hydroxide near 2200 nanometers, jarosite at 2265, gypsum at 2340. Measured library spectra and spectra from mapped pixels show features in those regions.

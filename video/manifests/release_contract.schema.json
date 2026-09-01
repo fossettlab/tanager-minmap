@@ -1,0 +1,364 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bradleylab/tanager-rocks/video/manifests/release_contract.schema.json",
+  "title": "Tanager Rocks video release contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "status",
+    "release",
+    "source",
+    "rights",
+    "distribution",
+    "generation_records",
+    "audio",
+    "beats",
+    "inputs"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "required": ["status"],
+        "properties": {"status": {"const": "frozen"}}
+      },
+      "then": {
+        "properties": {
+          "release": {
+            "properties": {
+              "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+              "title": {"type": "string", "minLength": 1},
+              "repository_url": {"type": "string", "pattern": "^https://"},
+              "archive_doi": {
+                "type": "string",
+                "pattern": "^https://doi\\.org/10\\.5281/zenodo\\.[1-9][0-9]*$"
+              },
+              "doi_evidence": {"$ref": "#/$defs/frozen_asset"},
+              "output_basename": {"const": "tanager-rocks-video"},
+              "bundle_name": {
+                "type": "string",
+                "pattern": "^tanager-rocks-video-[A-Za-z0-9][A-Za-z0-9._-]*$"
+              },
+              "contract_locator": {"const": "video/manifests/release_contract.json"}
+            }
+          },
+          "source": {
+            "properties": {
+              "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+              "tag": {"$ref": "#/$defs/exact_tag"},
+              "dirty": {"const": false}
+            }
+          },
+          "beats": {
+            "properties": {
+              "00": {"$ref": "#/$defs/beat_00"},
+              "01": {"$ref": "#/$defs/beat_designed"},
+              "02": {"$ref": "#/$defs/beat_designed"},
+              "03": {"$ref": "#/$defs/beat_03"},
+              "04": {"$ref": "#/$defs/beat_04"},
+              "05": {"$ref": "#/$defs/beat_05"},
+              "06a": {"$ref": "#/$defs/beat_designed"},
+              "06b": {"$ref": "#/$defs/beat_fallback"},
+              "07": {"$ref": "#/$defs/beat_07"},
+              "08": {"$ref": "#/$defs/beat_designed"}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "schema_version": {"const": 2},
+    "kind": {"const": "tanager-rocks-video-release-contract"},
+    "status": {"enum": ["template", "frozen"]},
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "repository_url",
+        "archive_doi",
+        "doi_evidence",
+        "output_basename",
+        "bundle_name",
+        "contract_locator"
+      ],
+      "properties": {
+        "id": {"type": ["string", "null"]},
+        "title": {"type": ["string", "null"]},
+        "repository_url": {"type": ["string", "null"]},
+        "archive_doi": {"type": ["string", "null"]},
+        "doi_evidence": {"$ref": "#/$defs/asset"},
+        "output_basename": {"type": ["string", "null"]},
+        "bundle_name": {"type": ["string", "null"]},
+        "contract_locator": {
+          "enum": ["video/manifests/release_contract.json", null]
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "tag", "dirty"],
+      "properties": {
+        "commit": {"type": ["string", "null"]},
+        "tag": {
+          "anyOf": [
+            {"$ref": "#/$defs/exact_tag"},
+            {"type": "null"}
+          ]
+        },
+        "dirty": {"type": ["boolean", "null"]}
+      }
+    },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claims_frozen",
+        "planet_material_reviewed",
+        "elevenlabs_narration_reviewed",
+        "elevenlabs_music_reviewed",
+        "third_party_visuals_reviewed",
+        "reviewer",
+        "reviewed_at_utc",
+        "attestation",
+        "trust_root",
+        "operator",
+        "evidence_basis",
+        "provider_account_evidence",
+        "generation_plan_evidence",
+        "legal_rights_statement"
+      ],
+      "properties": {
+        "claims_frozen": {"type": ["boolean", "null"]},
+        "planet_material_reviewed": {"type": ["boolean", "null"]},
+        "elevenlabs_narration_reviewed": {"type": ["boolean", "null"]},
+        "elevenlabs_music_reviewed": {"type": ["boolean", "null"]},
+        "third_party_visuals_reviewed": {"type": ["boolean", "null"]},
+        "reviewer": {"type": ["string", "null"]},
+        "reviewed_at_utc": {"type": ["string", "null"]},
+        "attestation": {"type": ["string", "null"]},
+        "trust_root": {"enum": ["operator-attestation", null]},
+        "operator": {"type": ["string", "null"]},
+        "evidence_basis": {
+          "enum": ["provider-account-and-generation-plan-records", null]
+        },
+        "provider_account_evidence": {
+          "enum": ["generation_records.tts+music.account_plan", null]
+        },
+        "generation_plan_evidence": {
+          "enum": ["video/build/music_v2_composition_plan.json", null]
+        },
+        "legal_rights_statement": {
+          "enum": ["operator attestation; code does not establish legal rights", null]
+        }
+      }
+    },
+    "distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include_media_masters", "master_asset_uri"],
+      "properties": {
+        "include_media_masters": {"type": ["boolean", "null"]},
+        "master_asset_uri": {"type": ["string", "null"]}
+      }
+    },
+    "generation_records": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tts", "music"],
+      "properties": {
+        "tts": {"$ref": "#/$defs/asset"},
+        "music": {"$ref": "#/$defs/asset"}
+      }
+    },
+    "audio": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["segments", "music_bed"],
+      "properties": {
+        "segments": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "00_title",
+            "01_hook",
+            "02_stakes",
+            "03_data",
+            "04_ablation",
+            "05_livemap",
+            "06_validation",
+            "07_amd",
+            "08_close"
+          ],
+          "properties": {
+            "00_title": {"type": ["string", "null"]},
+            "01_hook": {"type": ["string", "null"]},
+            "02_stakes": {"type": ["string", "null"]},
+            "03_data": {"type": ["string", "null"]},
+            "04_ablation": {"type": ["string", "null"]},
+            "05_livemap": {"type": ["string", "null"]},
+            "06_validation": {"type": ["string", "null"]},
+            "07_amd": {"type": ["string", "null"]},
+            "08_close": {"type": ["string", "null"]}
+          }
+        },
+        "music_bed": {"type": ["string", "null"]}
+      }
+    },
+    "beats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["00", "01", "02", "03", "04", "05", "06a", "06b", "07", "08"],
+      "properties": {
+        "00": {"$ref": "#/$defs/beat"},
+        "01": {"$ref": "#/$defs/beat"},
+        "02": {"$ref": "#/$defs/beat"},
+        "03": {"$ref": "#/$defs/beat"},
+        "04": {"$ref": "#/$defs/beat"},
+        "05": {"$ref": "#/$defs/beat"},
+        "06a": {"$ref": "#/$defs/beat"},
+        "06b": {"$ref": "#/$defs/beat"},
+        "07": {"$ref": "#/$defs/beat"},
+        "08": {"$ref": "#/$defs/beat"}
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/asset"}
+    }
+  },
+  "$defs": {
+    "exact_tag": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "anyOf": [
+          {"enum": ["HEAD", "FETCH_HEAD", "ORIG_HEAD"]},
+          {"pattern": "^refs/"}
+        ]
+      }
+    },
+    "frozen_asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "path", "sha256"],
+      "properties": {
+        "role": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^(?!0{64})[0-9a-f]{64}$"}
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "path", "sha256"],
+      "properties": {
+        "role": {"type": ["string", "null"]},
+        "path": {"type": ["string", "null"]},
+        "sha256": {"type": ["string", "null"]}
+      }
+    },
+    "beat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "asset_path"],
+      "properties": {
+        "tier": {"type": ["string", "null"]},
+        "asset_path": {"type": ["string", "null"]}
+      }
+    },
+    "beat_designed": {
+      "allOf": [
+        {"$ref": "#/$defs/beat"},
+        {
+          "properties": {
+            "tier": {"const": "designed"},
+            "asset_path": {"const": null}
+          }
+        }
+      ]
+    },
+    "beat_fallback": {
+      "allOf": [
+        {"$ref": "#/$defs/beat"},
+        {
+          "properties": {
+            "tier": {"const": "fallback"},
+            "asset_path": {"const": null}
+          }
+        }
+      ]
+    },
+    "beat_00": {
+      "allOf": [
+        {"$ref": "#/$defs/beat"},
+        {
+          "properties": {
+            "tier": {"const": "designed"},
+            "asset_path": {"const": "video/build/motif.mp4"}
+          }
+        }
+      ]
+    },
+    "beat_03_upgrade": {
+      "allOf": [
+        {"$ref": "#/$defs/beat"},
+        {
+          "properties": {
+            "tier": {"const": "upgrade"},
+            "asset_path": {"const": "video/build/v2/upgrades/03.mp4"}
+          }
+        }
+      ]
+    },
+    "beat_03": {
+      "oneOf": [
+        {"$ref": "#/$defs/beat_fallback"},
+        {"$ref": "#/$defs/beat_03_upgrade"}
+      ]
+    },
+    "beat_04_upgrade": {
+      "allOf": [
+        {"$ref": "#/$defs/beat"},
+        {
+          "properties": {
+            "tier": {"const": "upgrade"},
+            "asset_path": {"const": "video/build/v2/upgrades/04.mp4"}
+          }
+        }
+      ]
+    },
+    "beat_04": {
+      "oneOf": [
+        {"$ref": "#/$defs/beat_fallback"},
+        {"$ref": "#/$defs/beat_04_upgrade"}
+      ]
+    },
+    "beat_05": {
+      "allOf": [
+        {"$ref": "#/$defs/beat"},
+        {
+          "properties": {
+            "tier": {"const": "tanager-still"},
+            "asset_path": {"const": "video/build/v2/fallback_05.png"}
+          }
+        }
+      ]
+    },
+    "beat_07": {
+      "allOf": [
+        {"$ref": "#/$defs/beat"},
+        {
+          "properties": {
+            "tier": {"const": "tanager-still"},
+            "asset_path": {"const": "video/build/v2/fallback_07.png"}
+          }
+        }
+      ]
+    }
+  }
+}

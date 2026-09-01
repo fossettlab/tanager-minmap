@@ -58,10 +58,18 @@ Scene IDs are recorded in `config.SITES`.
 1. **Site + product confirmation** — confirm footprints, the `ortho_sr_hdf5`
    asset, and EMIT overlap (`tanager_spec.stac`).
 2. **Ingest + masking** — load the SR cube (`tanager_spec.io.load_tanager_sr_hdf5`,
-   downloaded by `scripts/download_scenes.py`); mask O2/H2O absorption bands
-   (`tanager_spec.mask`). Verified on the Bingham 2025-09-11 scene: 426 bands
-   over 376–2499 nm, EPSG:32612 (UTM 12N) at 30 m, reflectance in fraction
-   units (scene median 0.185); the absorption windows drop 53 of 426 bands.
+   downloaded by `scripts/download_scenes.py`) and apply the shared policy in
+   `tanager_rocks.quality.mask_tanager_scene`. A pixel is excluded through the
+   full cube if Planet's embedded `beta_cloud_mask`, `beta_cirrus_mask`, or
+   `nodata_pixels` field is nonzero, or if reflectance is non-finite. A channel
+   is excluded if the product's `good_wavelengths` flag is 0 or it falls in the
+   project's fixed O2/H2O windows. Verified on all seven local scenes by
+   `scripts/audit_tanager_quality.py`: 426 bands span 376–2499 nm; the product
+   flags 58 bands, the configured windows cover 53, and their union removes 63
+   (363 retained). No numeric reflectance clamp is used: Planet specifies that
+   surface reflectance is *typically* 0–1 rather than defining a strict range,
+   and a zero lower bound would remove a scene-dependent 0.03–33.04% of
+   otherwise QA-clear pixels. See `docs/tanager_quality_mask_policy.md`.
 3. **Diagnostic-feature mapping** — continuum-removed band depth (Clark & Roush)
    at the 2200 nm Al-OH doublet, 2265 nm jarosite, and 2340 nm gypsum/carbonate
    (`features.py`, run by `scripts/map_site.py`). Each feature's two continuum
@@ -135,6 +143,47 @@ Scene IDs are recorded in `config.SITES`.
    class does not speciate hematite vs goethite. Goldfield leads (its acid-
    sulfate alteration is the case the Rockwell method was validated on, and its
    lead scene contains Cuprite); Bingham follows.
+4c. **Spatially blocked validation and repeatability** — the confirmatory M2
+   analysis (`spatial_validation.py`, `repeatability.py`,
+   `strict_inductive.py`; run by `scripts/run_spatial_validation.py`,
+   `scripts/run_repeatability.py`, and `scripts/run_strict_inductive.py`). A
+   site-specific empirical semivariogram is fit without consulting validation
+   performance. The largest documented practical range sets the primary
+   square-block side `L`; `2L` is the fixed scale sensitivity, and the same
+   range defines the exclusion halo. Only complete geometric blocks are used;
+   a QA-failed cell remains `NaN` inside its block rather than invalidating the
+   whole block.
+
+   Rank AUC uses every pairwise-finite held-block observation and does not
+   depend on whether a threshold can be fit. Thresholded endpoints use
+   leave-one-block-out spatial cross-fitting: the held block and its halo are
+   excluded, mean block TPR minus mean block FPR is maximized over the unique
+   training scores, the highest threshold breaks ties, and that threshold is
+   applied once to the held block. Rank and thresholded positive/negative
+   denominators are recorded separately. Uncertainty uses 10,000 paired
+   complete-block bootstrap replicates (`SEED=42`). Confirmatory null tests use
+   9,999 whole-block score/reference permutations and repeat the threshold fit;
+   feature and MTMF secondary families receive separate Benjamini-Hochberg
+   correction. An interval or null component is gate-eligible only when at
+   least 95% of its scheduled replicates are finite.
+
+   The operational MTMF estimand retains one label-free covariance estimate
+   from the full QA-valid scene, matching map deployment. Its mandatory
+   strict-inductive sensitivity fits a separate MTMF mean and covariance for
+   each held block after excluding that block and its halo, then scores only
+   the held block. The two estimands are reported separately; strict-inductive
+   failure is a result, not permission to shrink blocks or retune the model.
+   For repeat acquisitions, the anchor's primary-`L` block grid is reused
+   byte-for-byte. One transfer threshold per site and layer is fit on usable
+   anchor blocks and applied unchanged to repeat scenes. Continuous fields are
+   bilinearly reprojected, categorical masks use nearest-neighbor resampling,
+   and pairwise-finite filtering occurs only after block resampling or
+   permutation so each acquisition carries its own missingness pattern.
+   Empty-versus-empty binary maps have undefined IoU and Dice. Exact block
+   permutations are enumerated when their factorial count is at most 9,999;
+   otherwise 9,999 seeded unique permutations are used. The full frozen
+   protocol and public decision gates are in
+   `docs/m2_spatial_validation_preregistration.md`.
 5. **Band ablation** — the novelty lever (`degrade.py`, run by
    `scripts/ablate_site.py`). The splib07 alteration endmembers, resampled to a
    scene's Tanager wavelength grid, are convolved to Sentinel-2's 13 bands with
@@ -160,13 +209,14 @@ classes 49/50, an unusually large fraction over this area); the scene's
 classified ground is dominated by sericite (class 5). Rank AUC of each score
 discriminating its published zone:
 
-- **Agree with the published map (AUC 0.69–0.78):** Al-OH band depth 0.78,
-  gypsum/carbonate band depth 0.78, alunite MTMF 0.71, muscovite (sericite)
-  MTMF 0.69. Alunite abundance peaks in the advanced-argillic class (3) and
+- **Agree with the published map (AUC 0.70–0.78):** Al-OH band depth 0.784,
+  gypsum/carbonate band depth 0.779, alunite MTMF 0.701, muscovite (sericite)
+  MTMF 0.695. Alunite abundance peaks in the advanced-argillic class (3) and
   muscovite in the dominant sericite class (5) — Tanager's alteration mapping
   matches the independent USGS product where the assemblage is well represented.
-- **Do not discriminate (AUC 0.46–0.56):** kaolinite/dickite MTMF (0.47),
-  hematite MTMF (0.46), goethite (0.56), Fe-oxide band depth (0.37). These are
+- **Do not discriminate (AUC 0.37–0.58):** kaolinite/dickite MTMF
+  (0.472/0.479), hematite MTMF (0.457), goethite (0.576), Fe-oxide band depth
+  (0.365). These are
   reported, not suppressed. A score-by-class cross-tab grounds the cause: the
   Fe-oxide signal concentrates in the ferric-iron-*bearing alteration* classes
   (3, 4, 11, 12) rather than Rockwell's standalone, clay-free "ferric iron"
@@ -176,12 +226,13 @@ discriminating its published zone:
   entanglement with alunite (the very Al-OH proximity the band-ablation result
   exploits). The a-priori positive-class mappings were not adjusted to raise
   these AUCs.
-- **Not interpretable:** jarosite (n+=6; the jarosite class is essentially
+- **Not interpretable:** jarosite (n+=4; the jarosite class is essentially
   absent at Goldfield).
 
-The per-layer Youden-J thresholds (e.g. alunite MTMF 0.0010, Al-OH band depth
-0.0289) calibrate detection for the layers that discriminate; full numbers in
-`data/intermediate/validation/validation_goldfield_*.csv`.
+The current per-layer Youden-J thresholds (e.g. alunite MTMF 0.01085, Al-OH
+band depth 0.03036) are in-sample descriptive values, not held-out calibration.
+M2 replaces them with spatially cross-fitted thresholds; full current numbers
+are in `data/intermediate/validation/validation_goldfield_*.csv`.
 
 ### Validation results (Bingham lead scene)
 
@@ -194,28 +245,23 @@ labels its near-surface alteration as pervasive sericite (classes 5/10/12/16,
 that drove the Goldfield agreement is sparse here, so most of the discriminating
 power that validated at Cuprite has little signal to act on.
 
-- **Strongest interpretable agreement:** gypsum/carbonate band depth AUC 0.66,
+- **Strongest interpretable agreement:** gypsum/carbonate band depth AUC 0.615,
   consistent with detectable propylitic carbonate. Al-OH band depth is only
-  weakly discriminating (0.54) because the Al-OH feature is shared across the
+  weakly discriminating (0.550) because the Al-OH feature is shared across the
   whole pervasive clay–mica halo rather than concentrated in one zone.
 - **MTMF scores do not separate Rockwell's sericite-vs-argillic-vs-ferrous
-  splits** (alunite 0.52, kaolinite/dickite 0.56, muscovite 0.44). A
-  score-by-class cross-tab grounds the muscovite result, which falls below 0.5:
-  the muscovite matched filter actually peaks in the *small argillic and
-  advanced-argillic* classes (class 4 median +0.00089, class 3 +0.00042) rather
-  than the large sericite classes it is mapped to (class 5 −0.00011, class 12
-  −0.00041), and the dominant ferrous class 21 carries a higher muscovite score
-  (+0.00022) than the sericite positives. The 2200 nm Al-OH absorption is shared
+  splits** (alunite 0.521, kaolinite/dickite 0.567/0.563, muscovite 0.448).
+  The 2200 nm Al-OH absorption is shared
   across the muscovite/sericite/illite/kaolinite family, so the filter responds
   to the entire pervasive Al-OH halo, not the specific sericite zones — a
   class-taxonomy-granularity mismatch, the same family of explanation as the
   Goldfield Fe-oxide and kaolinite results. The a-priori mappings were not
   adjusted.
-- **Same Fe-oxide anti-pattern as Goldfield:** Fe-oxide band depth 0.37,
-  goethite/hematite MTMF 0.37/0.48 — the Fe signal sits in the ferric-iron-
+- **Same Fe-oxide anti-pattern as Goldfield:** Fe-oxide band depth 0.397,
+  goethite/hematite MTMF 0.338/0.479 — the Fe signal sits in the ferric-iron-
   *bearing alteration* classes, not Rockwell's standalone clay-free ferric
   classes (1, 2) used as positives.
-- **Not interpretable:** jarosite (n+=5; the class is essentially absent).
+- **Not interpretable:** jarosite (n+=2; the class is essentially absent).
 
 Full numbers in `data/intermediate/validation/validation_bingham_*.csv`. The
 contrast between sites is itself informative: Tanager's continuous alteration
@@ -234,9 +280,12 @@ spectral family (Bingham porphyry sericite/argillic).
 
 EMIT is the only other spaceborne imaging spectrometer with comparable VSWIR
 coverage (285 bands, 381-2493 nm, ~60 m), so re-running the *same* pipeline on
-an EMIT scene over the shared site is an external check on Tanager's maps with
-no shared code, calibration, or acquisition. The clearest fully-overlapping
-EMIT L2A granule was selected programmatically (`EMIT_L2A_RFL_001_20230804T1916`,
+an EMIT scene over the shared site is a cross-sensor consistency check. It is
+independent in instrument and acquisition, but deliberately shares this
+project's code and spectral library and is therefore not independent mineral
+ground truth. The clearest fully-overlapping EMIT L2A granule was selected
+programmatically and is now pinned for reproducibility
+(`EMIT_L2A_RFL_001_20230804T191650_2321613_007`,
 2023-08-04, 4 % cloud, 100 % footprint coverage; queried via the NASA Earthdata
 STAC, downloaded with `earthaccess`), orthorectified from its raw
 `(downtrack, crosstrack)` array with the granule's geometry lookup table
@@ -247,20 +296,23 @@ mineralogy is computed the same way on both sensors. Acquisition dates differ
 static surface mineralogy; this is stated as a caveat, not hidden.
 
 - **Spectral agreement** (scene-mean reflectance, resampled to EMIT's 240
-  shared finite bands): Pearson r = 0.91, spectral angle 5.7° — the two
+  shared finite bands): Pearson r = 0.962, spectral angle 3.72° — the two
   spectrometers see the same reflectance shape over the shared ground.
 - **Mineral-detection agreement** (per-mineral MTMF map, Tanager reprojected
-  onto the EMIT grid, Pearson r over ~198k common pixels): **all six minerals
-  are positively correlated** — jarosite +0.59, goethite +0.55, alunite +0.55,
-  kaolinite +0.47, hematite +0.43, muscovite +0.34. Two independent sensors
+  onto the EMIT grid, Pearson r over 192,427 common pixels): **all six minerals
+  are positively correlated** — jarosite +0.584, goethite +0.542, alunite
+  +0.550, kaolinite +0.456, hematite +0.453, muscovite +0.335. Two sensors
   light up the same ground for each mineral. Correlations are moderate rather
-  than near-unity, as expected from the date offset, the 2× resolution
-  difference (resampling), and the fact that MTMF abundance is not absolutely
-  calibrated across differing band sets — the figure therefore uses a per-map
-  color stretch and lets the correlation carry the quantitative claim.
-- **Spatial detail.** Tanager's 30 m GSD is 2× finer than EMIT's ~60 m (4× the
-  pixel density), so Tanager resolves a smaller minimum mappable feature; the
-  comparison figure shows the same alunite distribution at both resolutions.
+  than near-unity, as expected from the date offset, the different delivered
+  grid-cell sizes and reprojection, and the fact that MTMF abundance is not
+  absolutely calibrated across differing band sets — the figure therefore
+  uses a per-map color stretch and lets the correlation carry the quantitative
+  claim.
+- **Delivered product grids.** The Tanager ortho product uses a 30 m grid and
+  the EMIT comparison product is on an approximately 60 m grid, so a Tanager
+  grid cell covers about one-quarter the area of an EMIT grid cell. This is a
+  product-grid comparison, not a claim about native sensor footprint,
+  resolving power, or minimum mappable feature.
 
 Numbers in `data/intermediate/emit/emit_comparison_goldfield_*.csv`; figure
 `figures/goldfield_*_emit_comparison.png`.
@@ -269,19 +321,30 @@ Numbers in `data/intermediate/emit/emit_comparison_goldfield_*.csv`; figure
 
 The submission hero is the **Goldfield/Cuprite** dominant-alteration-mineral map
 (`scripts/hero_map.py` → `viz.mineral_map`). Goldfield is used rather than
-Bingham because it is the site whose maps validate cleanly against the Rockwell
-ASTER reference (step 4b): its acid-sulfate system gives a distinct, mappable
-assemblage, whereas Bingham's pervasive porphyry sericite does not separate into
-the published categorical zones. The map composites the infeasibility-gated MTMF
+Bingham because it gives the stronger alteration-group agreement with the
+Rockwell ASTER reference (step 4b), whereas Bingham's pervasive porphyry
+sericite does not separate into the published categorical zones. The map
+composites the infeasibility-gated MTMF
 abundance layers into a single dominant-mineral image: each mineral is gated to
 its own upper-decile abundance (so the pervasive low-level soil signal does not
 wash the map) and normalised by that threshold so the layers are comparable
 despite differing matched-filter scales; the per-pixel dominant mineral is the
 one most strongly expressed relative to its own detection floor, with opacity
-scaled by that strength. The result recovers the expected zoning — a
-sericite/phyllic core, an alunite advanced-argillic centre and NE lineament at
-Cuprite, with kaolinite, jarosite, and Fe-oxides distributed around them.
-Figure `figures/goldfield_*_hero_mineral_map.png`.
+scaled by that strength. The map shows scene-relative library matches that are
+consistent with parts of the published alteration context: a muscovite-rich
+core and an alunite-rich centre and lineament at Cuprite. Kaolinite and
+iron-oxide agreement is weaker and is evaluated explicitly against the
+independent map rather than treated as confirmed zoning. Figure
+`figures/goldfield_*_hero_mineral_map.png`.
+
+The repository-authored submission composites are generated by
+`tanager_rocks.figures` from these same analytical rasters, spectra, masks,
+and palettes. The interactive products are generated by
+`tanager_rocks.interactive`, which converts the categorical or ordinal arrays
+to georeferenced RGBA overlays for Folium without recomputing mineral scores.
+`scripts/build_submission.py` assembles the story-page figures and maps from
+those modules. These are presentation layers over the governed outputs, not
+additional analytical estimators.
 
 ### AMD-hazard proxy (acid-generating-potential)
 
@@ -311,7 +374,7 @@ pit/tailings ground rather than spreading uniformly. Tier rasters are written to
 jarosite was absent from the Rockwell *regional alteration* reference (step 4b),
 so the AGP layer there is an unvalidated spectral indicator over the waste, not a
 map checked against an independent acidity product; at Goldfield jarosite has the
-strongest cross-sensor support (EMIT detection r +0.59).
+strongest cross-sensor support (corrected EMIT detection r +0.584).
 
 ### Hard-pair probe (RGB-ambiguous, SWIR-separable patch pairs)
 
@@ -330,19 +393,19 @@ spectral-angle separability check in place of a NIR-mean-difference threshold.
 Both sites' lead scenes are tiled into non-overlapping 11×11 px patches (330 m
 footprint at Tanager's 30 m GSD — the closer integer to the blog's 320 m / 10 m
 Sentinel-2 patch: 11 px is +3.1%, 10 px is −6.25%). A patch is discarded if any
-pixel is invalid (nodata / off-nadir fill or the RGB display's valid-range
-overshoot, `figures.RGB_VALID_RANGE`; zero-tolerance, mirroring the blog's
+pixel is invalid under the shared Tanager cloud/cirrus/no-data policy or the
+RGB display's valid-range rule (`figures.RGB_VALID_RANGE`; zero-tolerance, mirroring the blog's
 "discard windows with any cloud/shadow pixel" rule), if its modal dominant-
 mineral class (the mode of the hero map's per-pixel class code, gated
 identically — infeasibility < 1.0, per-mineral 90th-percentile abundance floor)
 is "no detection," or if that modal class's purity is below 70% (the blog's
 WorldCover purity rule, used unmodified: this project's population of
-confidently-labeled patches at that floor — 333 across both scenes — was ample
+confidently-labeled patches at that floor — 268 across both scenes — was ample
 and did not require relaxing it). Discard accounting: of 7,290 candidate
-patches at Bingham, 2,625 were dropped for nodata, 4,390 for no dominant
-detection, and 218 for sub-70%-purity, leaving 57 labeled; of 7,480 at
-Goldfield, 2,330 / 4,330 / 544 were dropped in the same order, leaving 276
-labeled (333 total).
+patches at Bingham, 4,781 were dropped because at least one pixel failed the
+shared validity policy, 2,420 for no dominant detection, and 76 for
+sub-70%-purity, leaving 13 labeled; of 7,480 at Goldfield, 2,555 / 4,201 /
+469 were dropped in the same order, leaving 255 labeled (268 total).
 
 Each labeled patch's true-color statistics are computed in a shared
 post-stretch uint8 space: the 2nd–98th percentile per-channel reflectance
@@ -352,9 +415,9 @@ cross-scene DN distances sit on one absolute scale. This is the one deliberate
 divergence from the repo's existing true-color convention, needed because this
 probe compares patches across sites. Candidate cross-label pairs are those
 whose RGB-mean-vector AND RGB-std-vector Euclidean distances both fall in the
-bottom decile of the pooled cross-label distance distribution (from 46,448
-cross-label patch pairs: mean-distance threshold 14.83 DN, std-distance
-threshold 1.81 DN), yielding 743 RGB-ambiguous candidates.
+bottom decile of the pooled cross-label distance distribution (from 30,414
+cross-label patch pairs: mean-distance threshold 26.58 DN, std-distance
+threshold 3.30 DN), yielding 415 RGB-ambiguous candidates.
 
 SWIR separability is then checked with the project's own pairwise
 spectral-angle metric (`speclib.pairwise_spectral_angle`) on each patch's mean
@@ -364,28 +427,30 @@ three fixed SWIR diagnostic centers this project already maps
 2340 nm) with margin, and consistent with the band-ablation finding (above)
 that Sentinel-2's entire SWIR collapses to one broad band spanning roughly this
 same range. Rather than an invented degree cutoff, the separability bar is
-calibrated from the dataset's own same-mineral patch pairs (8,830 pairs,
-spectral-angle range 0.08–8.74°): a candidate is called "separable" only if its
+calibrated from the dataset's own same-mineral patch pairs (5,364 pairs,
+spectral-angle range 0.08–8.27°): a candidate is called "separable" only if its
 cross-label angle exceeds the 95th percentile of that same-label null
-distribution (5.68°) — i.e., it differs in the SWIR more than 95% of pairs that
-legitimately share the same dominant mineral differ from each other. 29 of the
-743 RGB-ambiguous candidates clear that bar; `data/processed/hard_pairs/pairs.csv`
-lists all 29, ranked by spectral angle, and
+distribution (5.45°) — i.e., it differs in the SWIR more than 95% of pairs that
+legitimately share the same dominant mineral differ from each other. 18 of the
+415 RGB-ambiguous candidates clear that bar; `data/processed/hard_pairs/pairs.csv`
+lists all 18, ranked by spectral angle, and
 `data/processed/hard_pairs/summary.json` records every threshold and discard
 count above.
 
 `figures/hard_pairs.png` (`scripts/plot_hard_pairs.py`) renders the top five
-pairs by spectral angle (7.71°–6.46°): the two patches' true-color chips (same
+pairs by spectral angle (8.17°–6.43°): the two patches' true-color chips (same
 pooled stretch) beside their overlaid SWIR spectra, continuum-removed for
 display only (a linear two-point continuum anchored at the 2000/2450 nm window
 endpoints, `pairs.continuum_removed` — the same Clark & Roush convention as
 `features.band_depth`, generalised to the whole display window rather than one
 absorption's local shoulders; the SWIR-separability decision above uses raw
 reflectance, not this transform). All five top pairs set hematite against an
-Al-OH- or sulfate-bearing mineral (jarosite ×2, muscovite ×2, goethite ×1) —
-an honest, unforced pattern from ranking by spectral angle, not a curated
-selection: hematite's own diagnostic absorption is the VNIR Fe³⁺ band, not a
-SWIR one, so its SWIR reflectance is close to featureless, making it the
+Al-OH- or sulfate-bearing mineral (jarosite ×3, goethite ×2) — an honest,
+unforced pattern from ranking by spectral angle, not a curated selection. The
+highest-ranked pair is the only cross-site hard pair (Bingham jarosite versus
+Goldfield hematite). Hematite's own diagnostic absorption is the VNIR Fe³⁺
+band, not a SWIR one, so its SWIR reflectance is close to featureless, making
+it the
 partner most likely to LOOK like any other dark, iron-stained ground in RGB
 while showing the least SWIR structure. The figure's spectra bear this out —
 hematite's continuum-removed curve stays comparatively flat through the
@@ -399,11 +464,12 @@ As with the blog's WorldCover labels, the mineral labels here are model
 output, not ground truth: they are the hero map's own MTMF classification, so
 a "hard pair" documents where this pipeline's SWIR-based mineral call
 disagrees with what true color alone would suggest, not an independently
-verified mineral identity. The Rockwell ASTER validation (step 4b) is the
-project's ground-truth check on the labels themselves; this probe is
-downstream of that, not a substitute for it.
+verified mineral identity. The Rockwell ASTER comparison (step 4b) is an
+independent remote-sensing agreement check at the alteration-group level; it
+is not field ground truth. This probe is downstream of that comparison, not a
+substitute for it.
 
-The 333 labeled patches (not just the 29 hard pairs) are also exported as a
+The 268 labeled patches (not just the 18 hard pairs) are also exported as a
 standalone, local, evaluation-only dataset
 (`scripts/build_hard_pairs_dataset.py` → `data/processed/hard_pairs_dataset/`:
 a full-band GeoTIFF chip per patch under `chips/<scene_id>/`, self-contained
@@ -415,12 +481,12 @@ definition, and limitations writeup) for band-reliance probing of pretrained
 hyperspectral models. The build re-derives the RGB-ambiguity graph from
 `patches.csv` alone (no cube reload, no re-running MTMF) and round-trip
 verifies one seeded-random chip's pixels against its source scene exactly on
-every run. Publishing it anywhere is a separate decision from building it,
-and is additionally blocked on an open licensing question — the competition's
-terms tie derivative rights to "the Creative Commons license applicable to"
-each Tanager STAC asset without naming the variant, so `DATASET_CARD.md`
-records a TBD license pending operator review rather than assuming one (see
-its "Licensing" section for the exact clauses).
+every run. Publishing it anywhere is a separate decision from building it.
+The live Planet Open STAC `energy-mining` collection identifies the source
+imagery as CC BY 4.0 and its catalog root supplies the required
+adapted-material attribution; `DATASET_CARD.md` records both sources and the
+exact attribution. The current release still excludes the chips pending a
+separate operator publication decision.
 
 ## Key parameters
 
@@ -460,7 +526,7 @@ its "Licensing" section for the exact clauses).
   nearest the Similar-but-Different blog's 320 m Sentinel-2 patch at Tanager's
   30 m GSD.
 - **Hard-pair label purity floor.** `pairs.PURITY_FLOOR` = 0.70 — the blog's
-  WorldCover rule, reused unmodified (333 patches cleared it across both
+  WorldCover rule, reused unmodified (268 patches cleared it across both
   sites, so no relaxation was needed).
 - **Hard-pair SWIR window.** `pairs.SWIR_WINDOW_NM` = (2000, 2450) nm —
   brackets `config.DIAGNOSTIC_NM`'s three fixed SWIR centers with margin;
@@ -480,11 +546,14 @@ its "Licensing" section for the exact clauses).
 
 Python ≥ 3.11. Dependencies and exact versions are pinned in `uv.lock`;
 direct dependencies are declared in `pyproject.toml`. The shared data layer is
-`tanager-spec`, consumed as an editable path dependency.
+the exact `tanager-spec==0.1.0` release, with an editable sibling override only
+in the development workspace.
 
 ## Known caveats
 
-- 30 m GSD resolves features larger than roughly 1 ha.
+- The delivered Tanager ortho maps use 30 m grid cells. Grid spacing alone does
+  not establish native resolving power or a minimum mappable feature, and
+  isolated subpixel features cannot be resolved.
 - Surface mineralogy only — not bulk chemistry and not depth.
 - Spectral-library mismatch is possible at exotic phases; scope is held to the
   well-characterised alteration assemblage.
@@ -495,20 +564,24 @@ direct dependencies are declared in `pyproject.toml`. The shared data layer is
   abundance, and only where the published assemblage is well represented (it
   validates the alunite/sericite/Al-OH/carbonate signal at Goldfield but not the
   Fe-oxide or kaolinite/dickite layers; see Validation results above). Numbers
-  come from `scripts/validate_site.py`; both sites have been validated.
+  come from `scripts/validate_site.py`. Goldfield supplies the compatible
+  alteration-zone comparison; Bingham reference overlap is retained as a
+  support diagnostic and does not validate the AMD layer.
 - The AMD layer is a spectral indicator, not a measured pH or flux, and its
   tiers are relative within a scene (per-mineral upper-tail presence), not an
   absolute acidity scale.
-- The L2A reflectance carries physically out-of-range values (the Bingham
-  scene spans −1.9 to 14.6 about a 0.185 median) from cloud/shadow and
-  atmospheric-correction overshoot, and ~33 % of pixels are off-nadir
-  nodata fill. A valid-range clamp and the invalid-pixel mask
-  (`tanager_spec.mask.invalid_pixel_mask`) are applied before analysis.
+- The L2A reflectance contains negative retrieval estimates and rare values
+  above 1 even after product QA. The primary method applies Planet's embedded
+  cloud/cirrus/no-data masks, non-finite exclusion, `good_wavelengths`, and the
+  fixed atmospheric windows, but no unsourced numeric clamp. Across the seven
+  scenes, QA excludes 29.68–42.17% of spatial pixels; upper-bound exclusions at
+  1.0 and 1.5 are reserved for the declared sensitivity analysis. See
+  `docs/tanager_quality_mask_policy.md` and the generated JSON audit.
 - The hard-pair probe's mineral labels are this pipeline's own MTMF output,
   not ground truth (the same caveat the Similar-but-Different blog states for
   its WorldCover labels); it documents where the pipeline's SWIR call
-  disagrees with true color, not an independently verified identity. All 29
-  mined pairs (and all five plotted) came from Goldfield — Bingham
-  contributed labeled patches (57) but none of its cross-label RGB-ambiguous
-  candidates cleared the SWIR-separability bar, an outcome of the ranking,
+  disagrees with true color, not an independently verified identity. After the
+  authoritative QA correction, 17 of 18 mined pairs are Goldfield–Goldfield
+  and one is cross-site; Bingham contributes 13 labeled patches. The
+  Goldfield-heavy result is an outcome of the fixed ranking and thresholds,
   not a filter applied to exclude Bingham.

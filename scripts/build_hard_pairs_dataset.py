@@ -8,13 +8,15 @@ exports:
 
 - one full-spectral GeoTIFF chip per labeled patch (``chips/<scene_id>/<patch_id>.tif``)
 - ``patches.csv`` -- the full labeled-patch manifest, self-contained
-- ``pairs.csv`` -- the 29 SWIR-separable hard pairs, joined to chip patch_ids
+- ``pairs.csv`` -- the frozen SWIR-separable hard pairs, joined to chip patch_ids
 - ``clusters.csv`` -- connected components of the RGB-ambiguity graph
   spanning >=2 labels (the blog's "hard clusters" analog), re-derived
   deterministically from ``patches.csv``'s own RGB statistics -- no cube
   reload needed for this step
 - ``wavelengths.csv`` -- per-scene band-center wavelengths (the two scenes'
   axes differ by up to 0.22 nm; recorded separately, never assumed shared)
+- ``chips.sha256`` -- one sorted SHA-256 entry for every and only every chip
+  referenced by ``patches.csv``
 - ``DATASET_CARD.md`` -- written by hand alongside this script (not
   regenerated here); this script's docstring and METHODS.md both point to it
 
@@ -28,15 +30,25 @@ caught immediately rather than discovered downstream.
 Run::
 
     uv run python scripts/build_hard_pairs_dataset.py
+    uv run python scripts/build_hard_pairs_dataset.py --check
+
+The build is fail-closed: it writes a sibling staging directory, checks the
+frozen row-count contract, exact manifest-to-chip set, and every chip digest,
+then promotes the validated directory with same-filesystem renames. The
+``--check`` path performs the same structural and checksum checks without
+writing or deleting anything.
 """
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import logging
 import random
+import shutil
 from pathlib import Path
+from tempfile import mkdtemp
 
 import numpy as np
 import pyproj
@@ -46,8 +58,11 @@ from tanager_spec.io import load_tanager_sr_hdf5
 from tanager_rocks.config import SEED, SITES, TANAGER_SR_ASSET
 from tanager_rocks.pairs import (
     Patch,
+    promote_staged_dataset,
     rgb_ambiguity_clusters,
     rgb_ambiguous_pairs,
+    validate_chip_dataset,
+    write_chip_checksum_manifest,
     write_chip_geotiff,
 )
 
@@ -58,7 +73,15 @@ ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "data" / "raw"
 HARD_PAIRS_DIR = ROOT / "data" / "processed" / "hard_pairs"
 OUT_DIR = ROOT / "data" / "processed" / "hard_pairs_dataset"
-CHIPS_DIR = OUT_DIR / "chips"
+CHECKSUM_FILENAME = "chips.sha256"
+
+# Frozen release contract from the governed upstream hard-pair selection.
+# Updating these counts requires a separately approved scientific rebuild;
+# this packaging script must never silently accept selection drift.
+EXPECTED_N_PATCHES = 268
+EXPECTED_N_PAIRS = 18
+EXPECTED_N_CLUSTERS = 14
+EXPECTED_N_CLUSTER_MEMBERSHIPS = 175
 
 
 def _read_csv(path: Path) -> list[dict[str, str]]:
@@ -111,7 +134,7 @@ def _write_wavelengths_csv(path: Path, wl_by_site: dict[str, np.ndarray]) -> Non
 
 
 def _export_chips_and_manifest(
-    patch_rows: list[dict[str, str]], patch_size: int
+    patch_rows: list[dict[str, str]], patch_size: int, output_dir: Path
 ) -> tuple[list[dict[str, str]], dict[str, np.ndarray], dict[tuple[str, int, int], str]]:
     """Write every patch's GeoTIFF chip and build the self-contained manifest rows."""
     wgs84 = pyproj.CRS.from_epsg(4326)
@@ -132,14 +155,16 @@ def _export_chips_and_manifest(
         cube_raw, wl = load_tanager_sr_hdf5(RAW_DIR / f"{scene_id}_{TANAGER_SR_ASSET}.h5")
         wl_by_site[site_id] = wl
         to_wgs84 = pyproj.Transformer.from_crs(cube_raw.rio.crs, wgs84, always_xy=True)
-        (CHIPS_DIR / scene_id).mkdir(parents=True, exist_ok=True)
+        (output_dir / "chips" / scene_id).mkdir(parents=True, exist_ok=True)
 
         for r in rows:
             row_i, col_i, y0, x0 = int(r["row"]), int(r["col"]), int(r["y0"]), int(r["x0"])
             patch_id = _patch_id(site_id, row_i, col_i)
+            if (site_id, row_i, col_i) in id_lookup:
+                raise RuntimeError(f"duplicate patch identity in upstream manifest: {patch_id}")
             id_lookup[(site_id, row_i, col_i)] = patch_id
             chip_rel = Path("chips") / scene_id / f"{patch_id}.tif"
-            write_chip_geotiff(cube_raw, y0, x0, patch_size, OUT_DIR / chip_rel)
+            write_chip_geotiff(cube_raw, y0, x0, patch_size, output_dir / chip_rel)
             lon, lat = _centroid_lonlat(cube_raw, y0, x0, patch_size, to_wgs84)
 
             manifest_rows.append(
@@ -211,7 +236,7 @@ def _write_clusters_csv(path: Path, patches: list[Patch], candidates, id_lookup)
     return clusters
 
 
-def _verify_round_trip(row: dict[str, str]) -> bool:
+def _verify_round_trip(row: dict[str, str], output_dir: Path) -> bool:
     """Re-load the source scene and confirm one chip round-trips exactly.
 
     Checks band count, CRS, and bit-exact pixel values (NaN-aware) against
@@ -224,7 +249,7 @@ def _verify_round_trip(row: dict[str, str]) -> bool:
     y0, x0, size = int(row["y0"]), int(row["x0"]), int(row["patch_size_px"])
     expected = cube_raw.isel(y=slice(y0, y0 + size), x=slice(x0, x0 + size)).values
 
-    written = rioxarray.open_rasterio(OUT_DIR / row["chip_path"])
+    written = rioxarray.open_rasterio(output_dir / row["chip_path"])
     band_ok = written.shape[0] == len(wl) == expected.shape[0]
     crs_ok = str(written.rio.crs) == str(cube_raw.rio.crs)
     values_ok = bool(np.array_equal(written.values, expected, equal_nan=True))
@@ -242,7 +267,50 @@ def _verify_round_trip(row: dict[str, str]) -> bool:
     return band_ok and crs_ok and values_ok
 
 
-def main() -> None:
+def _validate_contract(
+    patch_rows: list[dict[str, str]],
+    pair_rows: list[dict[str, str]],
+    cluster_rows: list[dict[str, str]],
+) -> None:
+    """Reject structural drift from the frozen release manifest contract."""
+    cluster_ids = {row["cluster_id"] for row in cluster_rows}
+    actual = {
+        "patches": len(patch_rows),
+        "pairs": len(pair_rows),
+        "clusters": len(cluster_ids),
+        "cluster_memberships": len(cluster_rows),
+    }
+    expected = {
+        "patches": EXPECTED_N_PATCHES,
+        "pairs": EXPECTED_N_PAIRS,
+        "clusters": EXPECTED_N_CLUSTERS,
+        "cluster_memberships": EXPECTED_N_CLUSTER_MEMBERSHIPS,
+    }
+    if actual != expected:
+        raise RuntimeError(
+            f"hard-pairs release contract drifted: expected={expected}, actual={actual}"
+        )
+
+    patch_ids = [row["patch_id"] for row in patch_rows]
+    if len(set(patch_ids)) != len(patch_ids):
+        raise RuntimeError("patches.csv contains duplicate patch_id values")
+    known = set(patch_ids)
+    for row in pair_rows:
+        for field in ("patch_id_a", "patch_id_b"):
+            if row[field] not in known:
+                raise RuntimeError(f"pairs.csv references unknown {field}: {row[field]}")
+    memberships: set[tuple[str, str]] = set()
+    for row in cluster_rows:
+        patch_id = row["patch_id"]
+        if patch_id not in known:
+            raise RuntimeError(f"clusters.csv references unknown patch_id: {patch_id}")
+        membership = (row["cluster_id"], patch_id)
+        if membership in memberships:
+            raise RuntimeError(f"clusters.csv contains duplicate membership: {membership}")
+        memberships.add(membership)
+
+
+def _read_source_inputs() -> tuple[list[dict[str, str]], list[dict[str, str]], dict]:
     patch_rows = _read_csv(HARD_PAIRS_DIR / "patches.csv")
     hard_pairs_rows = _read_csv(HARD_PAIRS_DIR / "pairs.csv")
     if not patch_rows:
@@ -251,52 +319,103 @@ def main() -> None:
         )
     with open(HARD_PAIRS_DIR / "summary.json") as fh:
         summary = json.load(fh)
+    if len(patch_rows) != EXPECTED_N_PATCHES or len(hard_pairs_rows) != EXPECTED_N_PAIRS:
+        raise RuntimeError(
+            "governed hard-pair inputs do not match the frozen release contract: "
+            f"patches={len(patch_rows)} (expected {EXPECTED_N_PATCHES}), "
+            f"pairs={len(hard_pairs_rows)} (expected {EXPECTED_N_PAIRS})"
+        )
+    return patch_rows, hard_pairs_rows, summary
+
+
+def _build_dataset() -> None:
+    patch_rows, hard_pairs_rows, summary = _read_source_inputs()
     patch_size = int(summary["patch_size_px"])
 
-    CHIPS_DIR.mkdir(parents=True, exist_ok=True)
-
-    manifest_rows, wl_by_site, id_lookup = _export_chips_and_manifest(patch_rows, patch_size)
-    with open(OUT_DIR / "patches.csv", "w", newline="") as fh:
-        writer = csv.DictWriter(fh, fieldnames=list(manifest_rows[0].keys()))
-        writer.writeheader()
-        writer.writerows(manifest_rows)
-
-    n_pairs = _write_pairs_csv(OUT_DIR / "pairs.csv", hard_pairs_rows, id_lookup)
-
-    # Re-derive the RGB-ambiguity candidate graph from patches.csv's own RGB
-    # stats -- deterministic, no cube reload, no MTMF re-run. Cross-checked
-    # against task 8's cached thresholds as a cheap consistency guard.
-    patches = [_patch_from_row(r) for r in manifest_rows]
-    rgb_result = rgb_ambiguous_pairs(patches, quantile=summary["rgb_quantile"])
-    if not np.isclose(rgb_result.mean_threshold, summary["rgb_mean_threshold"], rtol=1e-6):
-        raise AssertionError(
-            f"re-derived RGB mean threshold {rgb_result.mean_threshold} != "
-            f"cached {summary['rgb_mean_threshold']} -- patches.csv may be stale"
+    if not (OUT_DIR / "DATASET_CARD.md").is_file():
+        raise RuntimeError(f"tracked dataset card is missing: {OUT_DIR / 'DATASET_CARD.md'}")
+    OUT_DIR.parent.mkdir(parents=True, exist_ok=True)
+    staging_dir = Path(mkdtemp(prefix=f".{OUT_DIR.name}.staging-", dir=OUT_DIR.parent))
+    try:
+        shutil.copy2(OUT_DIR / "DATASET_CARD.md", staging_dir / "DATASET_CARD.md")
+        manifest_rows, wl_by_site, id_lookup = _export_chips_and_manifest(
+            patch_rows, patch_size, staging_dir
         )
-    clusters = _write_clusters_csv(
-        OUT_DIR / "clusters.csv", patches, rgb_result.candidates, id_lookup
-    )
+        with open(staging_dir / "patches.csv", "w", newline="") as fh:
+            writer = csv.DictWriter(fh, fieldnames=list(manifest_rows[0].keys()))
+            writer.writeheader()
+            writer.writerows(manifest_rows)
 
-    _write_wavelengths_csv(OUT_DIR / "wavelengths.csv", wl_by_site)
+        _write_pairs_csv(staging_dir / "pairs.csv", hard_pairs_rows, id_lookup)
 
-    total_chip_bytes = sum(f.stat().st_size for f in CHIPS_DIR.rglob("*.tif"))
+        # Re-derive only the already-governed RGB graph from the persisted
+        # full-precision statistics. Thresholds and labels are unchanged.
+        patches = [_patch_from_row(row) for row in manifest_rows]
+        rgb_result = rgb_ambiguous_pairs(patches, quantile=summary["rgb_quantile"])
+        if not np.isclose(rgb_result.mean_threshold, summary["rgb_mean_threshold"], rtol=1e-6):
+            raise AssertionError(
+                f"re-derived RGB mean threshold {rgb_result.mean_threshold} != "
+                f"cached {summary['rgb_mean_threshold']} -- patches.csv may be stale"
+            )
+        _write_clusters_csv(staging_dir / "clusters.csv", patches, rgb_result.candidates, id_lookup)
+        _write_wavelengths_csv(staging_dir / "wavelengths.csv", wl_by_site)
+
+        staged_patches = _read_csv(staging_dir / "patches.csv")
+        staged_pairs = _read_csv(staging_dir / "pairs.csv")
+        staged_clusters = _read_csv(staging_dir / "clusters.csv")
+        _validate_contract(staged_patches, staged_pairs, staged_clusters)
+        write_chip_checksum_manifest(staging_dir, staged_patches, filename=CHECKSUM_FILENAME)
+        report = validate_chip_dataset(
+            staging_dir, staged_patches, checksum_filename=CHECKSUM_FILENAME
+        )
+
+        verify_row = random.Random(SEED).choice(staged_patches)
+        if not _verify_round_trip(verify_row, staging_dir):
+            raise RuntimeError(f"round-trip verification FAILED for {verify_row['patch_id']}")
+
+        promote_staged_dataset(staging_dir, OUT_DIR)
+        logger.info(
+            "promoted validated dataset: %d chips (%.1f MB), %d pairs, "
+            "%d clusters/%d memberships; chips.sha256 digest %s",
+            report.n_chips,
+            report.total_bytes / 1e6,
+            len(staged_pairs),
+            len({row["cluster_id"] for row in staged_clusters}),
+            len(staged_clusters),
+            report.checksum_manifest_sha256,
+        )
+        logger.info("round-trip verification PASSED for %s", verify_row["patch_id"])
+    finally:
+        if staging_dir.exists():
+            shutil.rmtree(staging_dir)
+
+
+def _check_dataset() -> None:
+    patch_rows = _read_csv(OUT_DIR / "patches.csv")
+    pair_rows = _read_csv(OUT_DIR / "pairs.csv")
+    cluster_rows = _read_csv(OUT_DIR / "clusters.csv")
+    _validate_contract(patch_rows, pair_rows, cluster_rows)
+    report = validate_chip_dataset(OUT_DIR, patch_rows, checksum_filename=CHECKSUM_FILENAME)
     logger.info(
-        "wrote %d chips (%.1f MB), patches.csv (%d rows), pairs.csv (%d rows), "
-        "clusters.csv (%d clusters, %d member rows), wavelengths.csv to %s",
-        len(manifest_rows),
-        total_chip_bytes / 1e6,
-        len(manifest_rows),
-        n_pairs,
-        len(clusters),
-        sum(c.size for c in clusters),
-        OUT_DIR,
+        "dataset check PASSED: %d manifest-bound chips (%.1f MB); chips.sha256 digest %s",
+        report.n_chips,
+        report.total_bytes / 1e6,
+        report.checksum_manifest_sha256,
     )
 
-    verify_row = random.Random(SEED).choice(manifest_rows)
-    ok = _verify_round_trip(verify_row)
-    if not ok:
-        raise RuntimeError(f"round-trip verification FAILED for {verify_row['patch_id']}")
-    logger.info("round-trip verification PASSED for %s", verify_row["patch_id"])
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="validate the existing dataset without writing or deleting files",
+    )
+    args = parser.parse_args()
+    if args.check:
+        _check_dataset()
+    else:
+        _build_dataset()
 
 
 if __name__ == "__main__":

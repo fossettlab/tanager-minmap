@@ -33,7 +33,7 @@ import rioxarray
 import xarray as xr
 from tanager_spec.bands import indices_in_windows
 from tanager_spec.io import load_tanager_sr_hdf5
-from tanager_spec.mask import invalid_pixel_mask, mask_absorption_bands
+from tanager_spec.mask import invalid_pixel_mask
 
 from tanager_rocks.config import SITES, TANAGER_SR_ASSET, TARGET_MINERALS
 from tanager_rocks.figures import RGB_NM, RGB_VALID_RANGE, _nearest
@@ -50,6 +50,7 @@ from tanager_rocks.pairs import (
     swir_separable_pairs,
     tile_and_label,
 )
+from tanager_rocks.quality import mask_tanager_scene
 from tanager_rocks.viz import dominant_mineral_class
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -97,14 +98,15 @@ def _site_products(site_id: str, max_infeas: float, quantile: float):
     """
     site = SITES[site_id]
     scene_id = site.scene_ids[0]
-    cube_raw, wl = load_tanager_sr_hdf5(RAW_DIR / f"{scene_id}_{TANAGER_SR_ASSET}.h5")
+    path = RAW_DIR / f"{scene_id}_{TANAGER_SR_ASSET}.h5"
+    cube_raw, wl = load_tanager_sr_hdf5(path)
+    cube_masked, _ = mask_tanager_scene(cube_raw, wl, path)
 
     rgb_idx = [_nearest(wl, t) for t in RGB_NM]
-    rgb_sub = cube_raw.isel(band=rgb_idx)
+    rgb_sub = cube_masked.isel(band=rgb_idx)
     invalid = invalid_pixel_mask(rgb_sub, valid_range=RGB_VALID_RANGE).values
     rgb_raw = rgb_sub.values.astype(float)  # (3, ny, nx)
 
-    cube_masked = mask_absorption_bands(cube_raw, wl)
     win_idx = indices_in_windows(wl, [SWIR_WINDOW_NM])
     swir_cube = cube_masked.isel(band=np.flatnonzero(win_idx)).values  # (n_win, ny, nx)
     logger.info(

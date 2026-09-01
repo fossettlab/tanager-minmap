@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "hash_algorithm": "sha256",
+  "scope": "Scientific source inputs used by the current Tanager Rocks study",
+  "inputs": [
+    {
+      "id": "dependency-lock",
+      "logical_path": "uv.lock",
+      "size_bytes": 580091,
+      "sha256": "4c36c0458f41d3ea99f6a4cfc8b3984707fa96266305284b5d2171fdbb6e7359"
+    },
+    {
+      "id": "emit-goldfield-rfl",
+      "logical_path": "data/raw/emit/EMIT_L2A_RFL_001_20230804T191650_2321613_007.nc",
+      "size_bytes": 1851040410,
+      "sha256": "08e824241ed4a2c25f2655e318ba4fcaaaeafbdbeac50ec0997d9b3a7f634176"
+    },
+    {
+      "id": "rockwell-aster-ige",
+      "logical_path": "data/reference/raw/aster_southwest_aa61_v8_1-17-17.ige",
+      "size_bytes": 3066037755,
+      "sha256": "5f79ab016834ee1c9c5b06749ef3bfbd3919a6e9984ded86932efe554b6a29fc"
+    },
+    {
+      "id": "rockwell-aster-img",
+      "logical_path": "data/reference/raw/aster_southwest_aa61_v8_1-17-17.img",
+      "size_bytes": 55187,
+      "sha256": "9a99261042ea46cb7b05e0ce2cba5976f12128c49d011a84a1d3cb0d9e2af817"
+    },
+    {
+      "id": "tanager-bingham-1",
+      "logical_path": "data/raw/20250911_191523_58_4001_ortho_sr_hdf5.h5",
+      "size_bytes": 1390423557,
+      "sha256": "fc15137a7277ae5021c64c82f4701f3587fb2cc60e8d6523f96d94ff8f89789f"
+    },
+    {
+      "id": "tanager-bingham-2",
+      "logical_path": "data/raw/20250911_191547_88_4001_ortho_sr_hdf5.h5",
+      "size_bytes": 1384249906,
+      "sha256": "e5c37368c153f6ae84fdec4b27a9b3a91ddab92bc322c856db1762b8e1b0f93b"
+    },
+    {
+      "id": "tanager-goldfield-1",
+      "logical_path": "data/raw/20240925_185504_87_4001_ortho_sr_hdf5.h5",
+      "size_bytes": 1176641872,
+      "sha256": "1f17e0ce5de44bfaf3177b0e0d626315ba8ef566d6ecbc1b02b864727ffba831"
+    },
+    {
+      "id": "tanager-goldfield-2",
+      "logical_path": "data/raw/20240925_185509_74_4001_ortho_sr_hdf5.h5",
+      "size_bytes": 1175113585,
+      "sha256": "723e53905bb9fc7171e468519bea229ff26840606d5250b0a7e29b103503eec5"
+    },
+    {
+      "id": "tanager-goldfield-3",
+      "logical_path": "data/raw/20250222_190233_00_4001_ortho_sr_hdf5.h5",
+      "size_bytes": 892887615,
+      "sha256": "b0da876ae6169cc14200ea113c5b099b9c314851c79f293a051ffcdb3534487a"
+    },
+    {
+      "id": "tanager-goldfield-4",
+      "logical_path": "data/raw/20250222_190237_16_4001_ortho_sr_hdf5.h5",
+      "size_bytes": 886162146,
+      "sha256": "63b92fd47442ee3629c7276c706df89181f5090640957237b8f33de3e8ae9247"
+    },
+    {
+      "id": "tanager-goldfield-5",
+      "logical_path": "data/raw/20250222_190241_32_4001_ortho_sr_hdf5.h5",
+      "size_bytes": 885984413,
+      "sha256": "e8324d9a768fc0638d359338479ad2d9f4f7899540e6700a02acf932740ca255"
+    },
+    {
+      "id": "tanager-spec-s2a-srf",
+      "logical_path": "package:tanager_spec/data/S2A_SRF.csv",
+      "size_bytes": 136924,
+      "sha256": "8d97ca51ef945003bc26fd2f8ac58f1e1d308e06ad95974953c920aa608820cb"
+    },
+    {
+      "id": "tanager-spec-s2b-srf",
+      "logical_path": "package:tanager_spec/data/S2B_SRF.csv",
+      "size_bytes": 136835,
+      "sha256": "edd9b8b6f2b2d749716ae70dab89dc28a09bfc47a41fc99c2593b63e40c22f6a"
+    },
+    {
+      "id": "usgs-splib07a-archive",
+      "logical_path": "data/speclib/ASCIIdata_splib07a.zip",
+      "size_bytes": 21812828,
+      "sha256": "d232645740869a82aafcad5839448c50b1dc72965ce042d1374f29b7a798a91c"
+    }
+  ]
+}

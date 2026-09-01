@@ -86,6 +86,11 @@ def band_depth(
     lo_i = _nearest_band(wl, feature.lo_shoulder_nm)
     hi_i = _nearest_band(wl, feature.hi_shoulder_nm)
     c_i = _nearest_band(wl, feature.center_nm)
+    if len({lo_i, c_i, hi_i}) != 3:
+        raise ValueError(
+            f"feature {feature.name!r} maps its center/shoulders to fewer than "
+            "three distinct sensor bands"
+        )
 
     r_lo = cube.isel(band=lo_i)
     r_hi = cube.isel(band=hi_i)

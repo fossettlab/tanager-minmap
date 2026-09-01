@@ -1,0 +1,886 @@
+{
+  "schema_version": "1.0",
+  "snapshot_date": "2026-08-09",
+  "scope": "Quantitative scientific and reproducibility claims on the tracked release surfaces README.md, REPRODUCIBILITY.md, submission/memo.md, submission/index.html, the v2 narration/captions, and the current video. Administrative dates, citation years and identifiers, HTML/CSS values, media timecodes, and the explicitly local-only hard-pairs DATASET_CARD.md are excluded. A destination path records where a claim appears in the release candidate; it is not evidence that the path is externally published.",
+  "_schema": {
+    "description": "One record per distinct quantitative claim. Rounded public forms remain separate from exact source values, and known gaps or correction requirements are explicit.",
+    "document_format": "JSON-compatible YAML, parsed by scripts/validate_repro_metadata.py with the Python standard library.",
+    "status_definitions": {
+      "current": "The current source artifact supports the value and no correction gate is documented for the quantitative claim.",
+      "needs_reconfirmation": "The current artifact matches the public value, but the master plan requires a mask-aware or submission-commit rerun.",
+      "needs_correction": "The numeric source exists, but at least one public destination gives the experiment an unsupported interpretation or incompatible scope.",
+      "source_gap": "The release surface contains the value, but no machine-readable generating artifact was found."
+    },
+    "destination_state": "tracked_release_surface means present in a candidate public artifact, not verified public deployment.",
+    "digest_policy": "Recorded SHA-256 values identify evidence snapshots. The validator checks digest form and source-path existence, not byte identity, because analytical outputs may change concurrently; final byte matching belongs at the freeze gate.",
+    "source_path_policy": "Source and destination paths are repository-relative and must exist unless a source_gap claim explicitly uses a null source path.",
+    "required_claim_fields": [
+      "id",
+      "claim_text",
+      "metric",
+      "source_artifact",
+      "generating_command",
+      "public_destinations",
+      "status",
+      "notes"
+    ],
+    "field_descriptions": {
+      "metric": "name, exact source value, public reported forms, and unit; source values may be structured when one sentence reports a set.",
+      "source_artifact": "Repository path, row/field selector, and SHA-256 when recorded; needs_reconfirmation hashes may preserve the prior supporting snapshot.",
+      "generating_command": "Exact command when discoverable; null is allowed only when notes explain that the claim is static or unsourced.",
+      "public_destinations": "Every tracked release surface carrying the claim, with a human-readable locator.",
+      "notes": "Scope limitation, provenance gap, rounding explanation, or required follow-up."
+    }
+  },
+  "claims": [
+    {
+      "id": "study-scope-two-sites",
+      "claim_text": "The current study covers two named United States sites: Bingham Canyon and Goldfield.",
+      "metric": {
+        "name": "study_site_count",
+        "source_value": 2,
+        "reported_values": ["two named US mine sites", "at two sites"],
+        "unit": "sites"
+      },
+      "source_artifact": {
+        "path": "src/tanager_rocks/config.py",
+        "selector": "SITES contains exactly bingham and goldfield",
+        "sha256": "9a7537791bf2af5c6ec2bdcddbb0bf329019a13b9d9d6d7f31a3c00ea77c5f22"
+      },
+      "generating_command": null,
+      "public_destinations": [
+        {
+          "path": "README.md",
+          "locator": "opening description",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/memo.md",
+          "locator": "The question",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "section 1, Two named sites",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "video/segments_v2/02_stakes.txt",
+          "locator": "two-site narration",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "output/draft_v4.srt",
+          "locator": "caption cue 7",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "This is a static study-design count from project configuration, so there is no generating command."
+    },
+    {
+      "id": "tanager-band-count",
+      "claim_text": "The two lead Tanager surface-reflectance scenes each contain 426 spectral bands.",
+      "metric": {
+        "name": "spectral_band_count",
+        "source_value": {
+          "bingham": 426,
+          "goldfield": 426
+        },
+        "reported_values": ["426-band", "426 contiguous bands", "four hundred and twenty-six colors"],
+        "unit": "bands per scene"
+      },
+      "source_artifact": {
+        "path": "data/processed/hard_pairs_dataset/wavelengths.csv",
+        "selector": "426 band_index rows for each of bingham and goldfield",
+        "sha256": "f7d92723babee9fe182b2c93000f65c48589957cf1ec72718ddbf099a0d4c5af"
+      },
+      "generating_command": "uv run python scripts/build_hard_pairs_dataset.py",
+      "public_destinations": [
+        {
+          "path": "README.md",
+          "locator": "opening description and The question",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "pyproject.toml",
+          "locator": "project description",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/memo.md",
+          "locator": "The question",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "opening question",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "video/segments_v2/00_title.txt",
+          "locator": "title narration",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "video/segments_v2/03_data.txt",
+          "locator": "data narration",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "output/draft_v4.srt",
+          "locator": "caption cues 1 and 8",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "output/draft_v4.mp4",
+          "locator": "title, data beat, and end-card text",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The generated wavelength table records 852 rows total, exactly 426 for each site; no nominal 425-band model convention is used here."
+    },
+    {
+      "id": "tanager-wavelength-span",
+      "claim_text": "The current lead-scene wavelength axes span approximately 376 to 2499 nm.",
+      "metric": {
+        "name": "wavelength_span",
+        "source_value": {
+          "bingham_nm": [376.44, 2499.0],
+          "goldfield_nm": [376.62, 2499.1599]
+        },
+        "reported_values": ["376-2499 nm"],
+        "unit": "nanometers"
+      },
+      "source_artifact": {
+        "path": "data/processed/hard_pairs_dataset/wavelengths.csv",
+        "selector": "first and last wavelength_nm within each site_id",
+        "sha256": "f7d92723babee9fe182b2c93000f65c48589957cf1ec72718ddbf099a0d4c5af"
+      },
+      "generating_command": "uv run python scripts/build_hard_pairs_dataset.py",
+      "public_destinations": [
+        {
+          "path": "output/draft_v4.mp4",
+          "locator": "title-card wavelength span",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The video rounds both per-scene axes to whole nanometers; the ledger preserves both exact generated endpoints."
+    },
+    {
+      "id": "tanager-ground-sample-distance",
+      "claim_text": "The current headline branch uses delivered ortho surface-reflectance grids with 30 m pixels; the paired native/basic assets have scene-specific STAC spatial-resolution values of 40.86 m at Goldfield and 34.47 m at Bingham.",
+      "metric": {
+        "name": "product_branch_spatial_resolution",
+        "source_value": {
+          "goldfield_ortho_m": 30,
+          "bingham_ortho_m": 30,
+          "goldfield_basic_m": 40.86,
+          "bingham_basic_m": 34.47
+        },
+        "reported_values": ["delivered 30 m ortho grids", "thirty-meter grid"],
+        "unit": "meters"
+      },
+      "source_artifact": {
+        "path": "docs/basic_ortho_acquisition_manifest.json",
+        "selector": "assets[].stac_raster_spatial_resolution_m and paired_ortho_raster_spatial_resolution_m",
+        "sha256": "6257ebb9a0c520df75be5cc2dd43cb0540c28b8df11f9ebd387246347b29a930"
+      },
+      "generating_command": null,
+      "public_destinations": [
+        {
+          "path": "submission/memo.md",
+          "locator": "Cross-sensor agreement and Limits",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "Cross-checked with EMIT and Limits",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "video/segments_v2/03_data.txt",
+          "locator": "data narration",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "output/draft_v4.srt",
+          "locator": "caption cue 8",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "output/draft_v4.mp4",
+          "locator": "data beat and end-card text",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "needs_correction",
+      "notes": "Thirty metres is the delivered projected ortho grid spacing, not a universal native spectral-sample footprint. Public surfaces must name the ortho branch or use approximate sensor wording until the preregistered basic-versus-ortho sensitivity is complete."
+    },
+    {
+      "id": "diagnostic-absorption-centers",
+      "claim_text": "The public narrative identifies diagnostic regions at 2200 nm for Al-OH, 2265 nm for jarosite, and 2340 nm for gypsum-carbonate.",
+      "metric": {
+        "name": "diagnostic_wavelength_centers",
+        "source_value": {
+          "al_oh_doublet": 2200.0,
+          "jarosite": 2265.0,
+          "gypsum_carbonate": 2340.0
+        },
+        "reported_values": ["2200 nm", "2265 nm", "2340 nm"],
+        "unit": "nanometers"
+      },
+      "source_artifact": {
+        "path": "src/tanager_rocks/config.py",
+        "selector": "DIAGNOSTIC_NM",
+        "sha256": "9a7537791bf2af5c6ec2bdcddbb0bf329019a13b9d9d6d7f31a3c00ea77c5f22"
+      },
+      "generating_command": null,
+      "public_destinations": [
+        {
+          "path": "submission/memo.md",
+          "locator": "Approach and Sentinel-2 comparison",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "sections 2 and 3",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "video/segments_v2/03_data.txt",
+          "locator": "data narration",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "output/draft_v4.srt",
+          "locator": "caption cue 9",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "These are named configuration constants rather than generated results, so there is no generating command."
+    },
+    {
+      "id": "ablation-alunite-kaolinite-angle-loss",
+      "claim_text": "For the measured alunite-kaolinite endmembers, Sentinel-2 SRF degradation reduces spectral-angle separability from 5.138 degrees to 2.578 degrees, a 49.8 percent loss.",
+      "metric": {
+        "name": "alunite_kaolinite_spectral_angle_loss",
+        "source_value": {
+          "tanager_angle_deg": 5.138,
+          "sentinel2_angle_deg": 2.578,
+          "loss_percent": 49.8
+        },
+        "reported_values": ["5.138° to 2.578° (49.8% loss)", "5.14° to 2.58° (50% loss)", "5.1° to 2.6°, a 50% loss"],
+        "unit": "degrees and percent"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/ablation/ablation_bingham_20250911_191523_58_4001.csv",
+        "selector": "pair=alunite-kaolinite",
+        "sha256": "dc75f47c2337b87153e9b8be0d33a5b4f50b15b616987a4d625dcba9f8cf83b5"
+      },
+      "generating_command": "uv run python scripts/ablate_site.py --site bingham",
+      "public_destinations": [
+        {
+          "path": "REPRODUCIBILITY.md",
+          "locator": "Verified reproduction, ablate row",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/memo.md",
+          "locator": "What Tanager resolves that Sentinel-2 cannot",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "headline evidence card and section 3",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/figures/bingham_20250911_191523_58_4001_band_ablation.png",
+          "locator": "spectral-angle annotation",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "video/segments_v2/04_ablation.txt",
+          "locator": "central-result narration associated with the figure",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "output/draft_v4.mp4",
+          "locator": "ablation beat and on-screen figure",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "needs_correction",
+      "notes": "The number is supported by the current CSV. Video beat 04 incorrectly says an identical classifier was run and that three minerals collapsed into one class; the release checklist requires replacement with the endmember spectral-angle result and jarosite-goethite control."
+    },
+    {
+      "id": "goldfield-al-oh-rank-auc",
+      "claim_text": "The corrected Goldfield Al-OH doublet descriptive pixelwise rank-AUC is 0.7840, reported publicly as 0.78.",
+      "metric": {
+        "name": "goldfield_al_oh_rank_auc",
+        "source_value": 0.784,
+        "reported_values": ["0.7840", "0.78"],
+        "unit": "rank-AUC"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/validation/validation_goldfield_20240925_185504_87_4001.csv",
+        "selector": "kind=feature, layer=al_oh_doublet, auc",
+        "sha256": "1d4a0f19fb9ef160449a9b8dc9ad0f14ac85a8e6616bf6b3465f6dd49e9f5a72"
+      },
+      "generating_command": "uv run python scripts/validate_site.py --site goldfield",
+      "public_destinations": [
+        {
+          "path": "REPRODUCIBILITY.md",
+          "locator": "Verified reproduction, validate row",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/memo.md",
+          "locator": "Validation against an independent map",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "headline evidence card and section 6",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The exact reproduction table and rounded memo/story values agree with the corrected CSV. This remains explicitly descriptive pixelwise evidence pending M2 block-aware inference."
+    },
+    {
+      "id": "goldfield-gypsum-carbonate-rank-auc",
+      "claim_text": "The corrected Goldfield gypsum-carbonate band-depth descriptive pixelwise rank-AUC is 0.7785, reported publicly as 0.78.",
+      "metric": {
+        "name": "goldfield_gypsum_carbonate_rank_auc",
+        "source_value": 0.7785,
+        "reported_values": ["0.78"],
+        "unit": "rank-AUC"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/validation/validation_goldfield_20240925_185504_87_4001.csv",
+        "selector": "kind=feature, layer=gypsum_carbonate, auc",
+        "sha256": "1d4a0f19fb9ef160449a9b8dc9ad0f14ac85a8e6616bf6b3465f6dd49e9f5a72"
+      },
+      "generating_command": "uv run python scripts/validate_site.py --site goldfield",
+      "public_destinations": [
+        {
+          "path": "submission/memo.md",
+          "locator": "Validation against an independent map",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "headline evidence card and section 6",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The rounded memo/story value agrees with the corrected CSV. This remains explicitly descriptive pixelwise evidence pending M2 block-aware inference."
+    },
+    {
+      "id": "goldfield-alunite-mtmf-rank-auc",
+      "claim_text": "The corrected Goldfield alunite MTMF descriptive pixelwise rank-AUC is 0.7013, reported publicly as 0.70.",
+      "metric": {
+        "name": "goldfield_alunite_mtmf_rank_auc",
+        "source_value": 0.7013,
+        "reported_values": ["0.7013", "0.70"],
+        "unit": "rank-AUC"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/validation/validation_goldfield_20240925_185504_87_4001.csv",
+        "selector": "kind=mtmf, layer=alunite, auc",
+        "sha256": "1d4a0f19fb9ef160449a9b8dc9ad0f14ac85a8e6616bf6b3465f6dd49e9f5a72"
+      },
+      "generating_command": "uv run python scripts/validate_site.py --site goldfield",
+      "public_destinations": [
+        {
+          "path": "REPRODUCIBILITY.md",
+          "locator": "Verified reproduction, validate row",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/memo.md",
+          "locator": "Validation against an independent map",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "section 6",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The exact reproduction table and rounded memo/story values agree with the corrected CSV. This remains descriptive pixelwise evidence pending M2."
+    },
+    {
+      "id": "goldfield-muscovite-mtmf-rank-auc",
+      "claim_text": "The corrected Goldfield muscovite MTMF descriptive pixelwise rank-AUC is 0.6950, reported publicly as 0.70.",
+      "metric": {
+        "name": "goldfield_muscovite_mtmf_rank_auc",
+        "source_value": 0.695,
+        "reported_values": ["0.70"],
+        "unit": "rank-AUC"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/validation/validation_goldfield_20240925_185504_87_4001.csv",
+        "selector": "kind=mtmf, layer=muscovite, auc",
+        "sha256": "1d4a0f19fb9ef160449a9b8dc9ad0f14ac85a8e6616bf6b3465f6dd49e9f5a72"
+      },
+      "generating_command": "uv run python scripts/validate_site.py --site goldfield",
+      "public_destinations": [
+        {
+          "path": "submission/memo.md",
+          "locator": "Validation against an independent map",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "section 6",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The rounded memo/story value agrees with the corrected CSV. This remains descriptive pixelwise evidence pending M2."
+    },
+    {
+      "id": "emit-scene-mean-spectral-correlation",
+      "claim_text": "The corrected Goldfield Tanager and EMIT scene-mean spectra have Pearson r 0.9622 over 240 shared bands.",
+      "metric": {
+        "name": "tanager_emit_scene_mean_pearson_r",
+        "source_value": {
+          "pearson_r": 0.9622,
+          "shared_bands": 240
+        },
+        "reported_values": ["r = 0.9622 over 240 shared bands", "r = 0.962 over 240 shared bands"],
+        "unit": "Pearson r and bands"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/emit/emit_comparison_goldfield_20240925_185504_87_4001.csv",
+        "selector": "metric=spectral_pearson_r, value and n",
+        "sha256": "77dd7fc97da996b924796289fb9c884cfeef8eaef4e299017909be2c445b9790"
+      },
+      "generating_command": "doppler run --project mac --config dev -- uv run python scripts/compare_emit.py --site goldfield",
+      "public_destinations": [
+        {
+          "path": "REPRODUCIBILITY.md",
+          "locator": "Verified reproduction, emit row",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/memo.md",
+          "locator": "Cross-sensor agreement with EMIT",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "section 7",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/figures/goldfield_20240925_185504_87_4001_emit_comparison.png",
+          "locator": "scene-mean correlation annotation",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The corrected table, figure, reproduction table, memo, and story agree. This remains consistency, not independent mineral truth."
+    },
+    {
+      "id": "emit-scene-mean-spectral-angle",
+      "claim_text": "The corrected Goldfield Tanager-EMIT scene-mean spectral angle is 3.7202 degrees over 240 shared bands.",
+      "metric": {
+        "name": "tanager_emit_scene_mean_spectral_angle",
+        "source_value": {
+          "angle_deg": 3.7202,
+          "shared_bands": 240
+        },
+        "reported_values": ["3.7202°", "3.72°"],
+        "unit": "degrees and bands"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/emit/emit_comparison_goldfield_20240925_185504_87_4001.csv",
+        "selector": "metric=spectral_angle_deg, value and n",
+        "sha256": "77dd7fc97da996b924796289fb9c884cfeef8eaef4e299017909be2c445b9790"
+      },
+      "generating_command": "doppler run --project mac --config dev -- uv run python scripts/compare_emit.py --site goldfield",
+      "public_destinations": [
+        {
+          "path": "REPRODUCIBILITY.md",
+          "locator": "Verified reproduction, emit row",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The corrected CSV and current reproduction table agree. The input bytes are recorded in docs/input_manifest.json."
+    },
+    {
+      "id": "emit-alunite-detection-correlation",
+      "claim_text": "The corrected Goldfield Tanager-EMIT alunite MTMF detection correlation is 0.5501.",
+      "metric": {
+        "name": "tanager_emit_alunite_detection_pearson_r",
+        "source_value": 0.5501,
+        "reported_values": ["0.55", "zero point five five"],
+        "unit": "Pearson r"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/emit/emit_comparison_goldfield_20240925_185504_87_4001.csv",
+        "selector": "metric=detection_pearson_r, mineral=alunite, value",
+        "sha256": "77dd7fc97da996b924796289fb9c884cfeef8eaef4e299017909be2c445b9790"
+      },
+      "generating_command": "doppler run --project mac --config dev -- uv run python scripts/compare_emit.py --site goldfield",
+      "public_destinations": [
+        {
+          "path": "video/segments_v2/06_validation.txt",
+          "locator": "EMIT narration",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "output/draft_v4.srt",
+          "locator": "caption cue 21",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "output/draft_v4.mp4",
+          "locator": "EMIT beat caption and narration",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The corrected value rounds to the existing 0.55 public form. This is cross-sensor consistency, not independent accuracy."
+    },
+    {
+      "id": "emit-jarosite-detection-correlation",
+      "claim_text": "The corrected Goldfield Tanager-EMIT jarosite MTMF detection correlation is 0.5838; the memo and story are corrected, while the current rendered video still says 0.59.",
+      "metric": {
+        "name": "tanager_emit_jarosite_detection_pearson_r",
+        "source_value": 0.5838,
+        "reported_values": ["+0.584", "0.5838", "zero point five eight", "stale video: zero point five nine"],
+        "unit": "Pearson r"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/emit/emit_comparison_goldfield_20240925_185504_87_4001.csv",
+        "selector": "metric=detection_pearson_r, mineral=jarosite, value",
+        "sha256": "77dd7fc97da996b924796289fb9c884cfeef8eaef4e299017909be2c445b9790"
+      },
+      "generating_command": "doppler run --project mac --config dev -- uv run python scripts/compare_emit.py --site goldfield",
+      "public_destinations": [
+        {
+          "path": "REPRODUCIBILITY.md",
+          "locator": "Verified reproduction, emit row",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/memo.md",
+          "locator": "Cross-sensor agreement with EMIT",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "section 7",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "video/segments_v2/06_validation.txt",
+          "locator": "EMIT narration",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "output/draft_v4.srt",
+          "locator": "caption cue 21",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "output/draft_v4.mp4",
+          "locator": "EMIT beat caption and narration",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "needs_correction",
+      "notes": "The corrected value rounds to 0.58. Memo, story, and narration source are corrected; the final audio, captions, and video must be regenerated after the science freeze."
+    },
+    {
+      "id": "emit-muscovite-detection-correlation",
+      "claim_text": "The corrected Goldfield Tanager-EMIT muscovite MTMF detection correlation is 0.3353.",
+      "metric": {
+        "name": "tanager_emit_muscovite_detection_pearson_r",
+        "source_value": 0.3353,
+        "reported_values": ["+0.335", "+0.3353"],
+        "unit": "Pearson r"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/emit/emit_comparison_goldfield_20240925_185504_87_4001.csv",
+        "selector": "metric=detection_pearson_r, mineral=muscovite, value",
+        "sha256": "77dd7fc97da996b924796289fb9c884cfeef8eaef4e299017909be2c445b9790"
+      },
+      "generating_command": "doppler run --project mac --config dev -- uv run python scripts/compare_emit.py --site goldfield",
+      "public_destinations": [
+        {
+          "path": "submission/memo.md",
+          "locator": "Cross-sensor agreement with EMIT",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "section 7",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The corrected value agrees with the current memo and story."
+    },
+    {
+      "id": "emit-positive-mineral-correlation-count",
+      "claim_text": "All six reported Goldfield mineral-detection correlations between Tanager and EMIT are positive in the current table.",
+      "metric": {
+        "name": "positive_detection_correlation_count",
+        "source_value": {
+          "positive": 6,
+          "reported": 6
+        },
+        "reported_values": ["all six target minerals correlate positively"],
+        "unit": "minerals"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/emit/emit_comparison_goldfield_20240925_185504_87_4001.csv",
+        "selector": "all six rows with metric=detection_pearson_r have value greater than zero",
+        "sha256": "77dd7fc97da996b924796289fb9c884cfeef8eaef4e299017909be2c445b9790"
+      },
+      "generating_command": "doppler run --project mac --config dev -- uv run python scripts/compare_emit.py --site goldfield",
+      "public_destinations": [
+        {
+          "path": "submission/memo.md",
+          "locator": "Cross-sensor agreement with EMIT",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "headline evidence card and section 7",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The corrected table still has six positive mineral rows. The comparison shares the library-driven method and remains a consistency check."
+    },
+    {
+      "id": "tanager-emit-spatial-resolution-comparison",
+      "claim_text": "The release surfaces compare the delivered Tanager 30 m ortho grid with the approximately 60 m EMIT grid; a Tanager grid cell covers about one-quarter the area of an EMIT grid cell. This is not a native sensor-footprint claim.",
+      "metric": {
+        "name": "cross_sensor_spatial_resolution",
+        "source_value": {
+          "tanager_m": 30,
+          "emit_m_approx": 60,
+          "areal_pixel_density_ratio_approx": 4
+        },
+        "reported_values": ["delivered 30 m ortho grid", "~60 m", "about one-quarter the pixel area"],
+        "unit": "meters and areal pixel-density ratio"
+      },
+      "source_artifact": {
+        "path": "submission/figures/goldfield_20240925_185504_87_4001_emit_comparison.png",
+        "selector": "Tanager 30 m and EMIT 60 m panel labels",
+        "sha256": "d6345da8543aa7817303498aedc6dfab9827c1c74a8beb2b337203a011819157"
+      },
+      "generating_command": "doppler run --project mac --config dev -- uv run python scripts/compare_emit.py --site goldfield",
+      "public_destinations": [
+        {
+          "path": "submission/memo.md",
+          "locator": "Cross-sensor agreement with EMIT",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "section 7",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/figures/goldfield_20240925_185504_87_4001_emit_comparison.png",
+          "locator": "cross-sensor map panels",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The figure carries the delivered-grid labels. The public comparison is restricted to product grid-cell area and does not assert native sensor footprint, resolving power, or minimum mappable feature."
+    },
+    {
+      "id": "bingham-agp-tier-counts",
+      "claim_text": "The corrected Bingham run contains 22536 high, 30678 moderate, 12949 low, and 448099 background AGP-tier pixels.",
+      "metric": {
+        "name": "bingham_agp_tier_pixel_counts",
+        "source_value": {
+          "high": 22536,
+          "moderate": 30678,
+          "low": 12949,
+          "background": 448099
+        },
+        "reported_values": ["22,536 / 30,678 / 12,949 / 448,099"],
+        "unit": "pixels"
+      },
+      "source_artifact": {
+        "path": "data/intermediate/amd/amd_counts_bingham_20250911_191523_58_4001.csv",
+        "selector": "tier codes and labels high, moderate, low, and background",
+        "sha256": "c0ed7bd16401eab9d1d0073dcbe3c714e7017c4ef2efa22eb0ce233ff478d832"
+      },
+      "generating_command": "uv run python scripts/amd_site.py --site bingham",
+      "public_destinations": [
+        {
+          "path": "REPRODUCIBILITY.md",
+          "locator": "Verified reproduction, amd row",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The corrected count CSV and current reproduction table agree. The older d36046b values remain separately labeled as historical; AMD remains a relative screening proxy."
+    },
+    {
+      "id": "test-suite-counts",
+      "claim_text": "REPRODUCIBILITY.md reports 59 tests at commit d36046b and 79 tests in the later current suite.",
+      "metric": {
+        "name": "pytest_test_count",
+        "source_value": {
+          "d36046b": 59,
+          "later_documented_suite": 79
+        },
+        "reported_values": ["59 tests at that commit", "79 tests"],
+        "unit": "tests"
+      },
+      "source_artifact": {
+        "path": "REPRODUCIBILITY.md",
+        "selector": "Setup and Verified reproduction prose; no current machine-readable collection report is committed",
+        "sha256": null
+      },
+      "generating_command": "uv run pytest -q",
+      "public_destinations": [
+        {
+          "path": "REPRODUCIBILITY.md",
+          "locator": "Setup and Verified reproduction",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "needs_reconfirmation",
+      "notes": "This task runs only the focused metadata test requested by acceptance, so it does not silently relabel 79 as currently reconfirmed."
+    },
+    {
+      "id": "cli-subcommand-count",
+      "claim_text": "The prior reproduction record reports seven registered tanager-minmap CLI subcommands.",
+      "metric": {
+        "name": "registered_cli_subcommands",
+        "source_value": 7,
+        "reported_values": ["all seven CLI subcommands", "seven-stage tanager-minmap CLI"],
+        "unit": "subcommands"
+      },
+      "source_artifact": {
+        "path": "REPRODUCIBILITY.md",
+        "selector": "Verified reproduction prose",
+        "sha256": null
+      },
+      "generating_command": "uv run tanager-minmap --help",
+      "public_destinations": [
+        {
+          "path": "REPRODUCIBILITY.md",
+          "locator": "Verified reproduction",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/index.html",
+          "locator": "section 9, Reproduce and open tooling",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The installed CLI help was run on 2026-08-09 and lists exactly map, unmix, ablate, amd, hero, emit, and validate."
+    },
+    {
+      "id": "documented-input-download-sizes",
+      "claim_text": "The current input manifest records 21.812828 MB for the USGS archive, 7.791736853 GB for seven Tanager scenes, and 3.066092942 GB for the Rockwell IMG/IGE pair.",
+      "metric": {
+        "name": "documented_download_size_estimates",
+        "source_value": {
+          "usgs_splib07a_mb": 21.812828,
+          "tanager_scenes_gb": 7.791736853,
+          "rockwell_reference_gb": 3.066092942
+        },
+        "reported_values": ["21.8 MB", "7.79 GB", "3.07 GB"],
+        "unit": "decimal file sizes"
+      },
+      "source_artifact": {
+        "path": "docs/input_manifest.json",
+        "selector": "size_bytes summed by the usgs-splib07a, tanager scene, and rockwell input IDs",
+        "sha256": "50c2473ab34cd47440fb6cd583736463df17abced98da8002bb0f5c4e418e3f3"
+      },
+      "generating_command": "uv run python scripts/build_input_manifest.py",
+      "public_destinations": [
+        {
+          "path": "REPRODUCIBILITY.md",
+          "locator": "Acquire the public inputs and Scope of this pass",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "These are exact local file-byte totals converted with decimal MB/GB, not promises about compressed transfer size."
+    },
+    {
+      "id": "hard-pairs-screening-counts",
+      "claim_text": "The deterministic hard-pair screen retained 268 weakly labelled patches; 415 cross-label pairs met the RGB-ambiguity criterion, and 18 of those exceeded the 95th-percentile same-label SWIR spectral-angle threshold.",
+      "metric": {
+        "name": "hard_pair_screen_counts",
+        "source_value": {
+          "retained_patches": 268,
+          "rgb_ambiguous_cross_label_pairs": 415,
+          "swir_separable_pairs": 18,
+          "swir_null_quantile": 0.95
+        },
+        "reported_values": [268, 415, 18, "95th percentile"],
+        "unit": "patches, patch pairs, and null-distribution quantile"
+      },
+      "source_artifact": {
+        "path": "data/processed/hard_pairs/summary.json",
+        "selector": "total_labeled_patches, rgb_ambiguous_candidates, swir_separable_pairs, and swir_null_quantile",
+        "sha256": "5eee9f95511c3d199b67695d82344a4f54a18fd7e49bd4867fbf1892f330781d"
+      },
+      "generating_command": "uv run python scripts/find_hard_pairs.py",
+      "public_destinations": [
+        {
+          "path": "submission/index.html",
+          "locator": "section 4, Similar in RGB, separable in SWIR",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "Labels are derived from the corrected MTMF maps. This is a deterministic difficult-case screen for spectral information, not an independent mineral-accuracy estimate."
+    },
+    {
+      "id": "hard-pairs-story-top-three",
+      "claim_text": "The hard-pair story figure shows the first three pairs in the mechanically ranked SWIR spectral-angle table, without manual selection.",
+      "metric": {
+        "name": "hard_pair_story_ranked_angles",
+        "source_value": [8.168, 7.113, 6.46],
+        "reported_values": ["first three pairs ranked mechanically by SWIR spectral angle"],
+        "unit": "degrees"
+      },
+      "source_artifact": {
+        "path": "data/processed/hard_pairs/pairs.csv",
+        "selector": "rows with rank 1 through 3, column swir_angle_deg",
+        "sha256": "665af5e10de86ad9e6c31021680ed953fb0808bec75ddf37659acf9d1ab68abf"
+      },
+      "generating_command": "uv run python scripts/plot_hard_pairs.py --top-n 3 --out submission/figures/hard_pairs_story.png",
+      "public_destinations": [
+        {
+          "path": "submission/index.html",
+          "locator": "section 4 figure and caption",
+          "state": "tracked_release_surface"
+        },
+        {
+          "path": "submission/figures/hard_pairs_story.png",
+          "locator": "all three rows",
+          "state": "tracked_release_surface"
+        }
+      ],
+      "status": "current",
+      "notes": "The rows are the strict first three entries by rank. The mineral names are pipeline-derived weak labels, and the figure is not an independent accuracy benchmark."
+    }
+  ]
+}
