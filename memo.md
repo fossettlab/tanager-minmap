@@ -77,7 +77,7 @@ and the different delivered grids. Tanager's delivered 30 m pixels cover about
 one-quarter the area of EMIT's ~60 m pixels; we compare the delivered
 products, not native instrument footprints.
 
-## Surface-mineralogical screening for acidic mine-waste conditions
+## Screening for acidic mine-waste conditions
 
 Acid-generating mine waste leaves mineralogical clues at the surface, and those
 minerals are spectrally distinct. Jarosite forms under acidic, oxidizing,
@@ -109,10 +109,11 @@ is absent from the regional reference map.
 This is material identification against measured reference spectra —
 material-specific screening, not generic land-cover classification: each pixel receives a scene-relative score against a measured
 reference library, and the strongest supported candidate is mapped. The end
-users are the state geological surveys and the federal agencies
-(USGS, BLM, EPA) that characterize critical-mineral potential and mine-waste
-hazard, for whom a reproducible, library-anchored mineral map over a named
-district is a candidate screening layer for field follow-up. The result also
+users for this kind of product would be the state geological surveys and
+federal agencies (USGS, BLM, EPA) that characterize critical-mineral potential
+and mine-waste hazard; for them, a reproducible, library-anchored mineral map
+over a named district could serve as a candidate screening layer for field
+follow-up. The result also
 makes an archive argument: the public benefit of shortwave-infrared mineral
 mapping is largest over mining districts — the scenes the open archive should
 grow. The pipeline ships as an open tool
