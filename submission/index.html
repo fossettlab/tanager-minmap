@@ -57,6 +57,16 @@
   footer a { color:var(--accent); }
   code { background:#eef1f1; padding:1px 6px; border-radius:4px; font-size:13.5px; }
   .links { display:flex; flex-wrap:wrap; gap:10px 26px; margin:10px 0 18px; font-size:15px; }
+  .materials {
+    display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center;
+    margin:20px 0 6px; font-size:14.5px;
+  }
+  .materials a {
+    background:#fff; border:1px solid var(--line); border-radius:20px;
+    color:var(--ink); padding:7px 16px; text-decoration:none;
+  }
+  .materials a b { color:var(--accent); }
+  .materials a:hover, .materials a:focus { border-color:var(--accent); outline:none; }
 </style>
 </head>
 <body>
@@ -86,6 +96,12 @@
     <span class="scope">Tests cross-sensor consistency, not mineral accuracy.</span>
   </a>
 </section>
+
+<nav class="materials" aria-label="Materials">
+  <a href="tanager_rocks_memo.pdf"><b>Memo</b> — PDF, 3 pages</a>
+  <a href="tanager_rocks_deck.pptx"><b>Slide deck</b> — PPTX, 9 slides</a>
+  <a href="https://github.com/fossettlab/tanager-rocks"><b>Code</b> — GitHub, MIT</a>
+</nav>
 
 <div class="impact">
   <h2>Why this matters</h2>
@@ -180,7 +196,8 @@
   <p><b>Alex Bradley</b> · Department of Earth, Environmental, and Planetary Sciences, Washington University in St.&nbsp;Louis · <a href="mailto:abradley@wustl.edu">abradley@wustl.edu</a></p>
   <div class="links">
     <a href="https://github.com/fossettlab/tanager-rocks">GitHub repository</a>
-    <a href="memo.md">Technical memo</a>
+    <a href="tanager_rocks_memo.pdf">Technical memo (PDF)</a>
+    <a href="tanager_rocks_deck.pptx">Slide deck (PPTX)</a>
     <span>Zenodo DOI: <em>deposit pending</em></span>
   </div>
   <p>Data: Planet Tanager Open STAC (CC&nbsp;BY&nbsp;4.0); NASA EMIT L2A (LP&nbsp;DAAC); USGS splib07a and Rockwell &amp; Bonham (2017) ASTER alteration map (doi:10.5066/F7CR5RK7). Basemap tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community. Code under the MIT license.</p>
