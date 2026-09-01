@@ -118,8 +118,8 @@ makes an archive argument: the public benefit of shortwave-infrared mineral
 mapping is largest over mining districts — the scenes the open archive should
 grow. The pipeline ships as an open tool
 (`tanager-minmap`, MIT) with its shared data layer at a tagged public
-release; the citable derivative-map archive is the one release step still
-open.
+release, and the code and derivative mineral maps are archived at
+doi:10.5281/zenodo.22218608.
 
 ---
 
