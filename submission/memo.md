@@ -30,8 +30,7 @@ visible-to-near-infrared ferric-iron bands. A mixture-tuned matched filter
 (MTMF; Boardman 1998) then estimates per-mineral abundance against the scene's
 own background covariance, with an infeasibility score that suppresses
 spectrally implausible detections. The analytical stages run from one installed
-command; public dependency resolution and clean-clone verification remain
-release gates.
+command, and the code and its shared data layer are public.
 
 ## What Sentinel-2 spectral sampling blurs
 
@@ -74,7 +73,7 @@ truth, because the code and endmembers are shared. Scene-mean reflectance
 correlates at Pearson r = 0.962 over 240 shared bands (spectral angle 3.72°),
 and all six target-mineral maps correlate positively, ranging from muscovite
 (r = +0.335) to jarosite (r = +0.584) (Figure 3). The map agreement is
-moderate rather than near-unity, as expected from the acquisition-date offset
+moderate, not near-unity, as expected from the acquisition-date offset
 and the different delivered grids. In these products, Tanager's 30 m ortho
 pixels cover about one-quarter the area of EMIT's ~60 m pixels. This is a
 product-grid comparison, not a native-footprint or minimum-mappable-feature
@@ -102,13 +101,13 @@ not bulk chemistry or depth; the spectral library can
 mismatch exotic phases, so the scope is held to the well-characterized
 alteration assemblage; and there is no field validation — the Goldfield test is
 against another remote-sensing product, which bounds agreement at the
-alteration-group level rather than per-mineral abundance. The
+alteration-group level, not per-mineral abundance. The
 acid-generating-potential layer is unvalidated at Bingham, where jarosite is
 absent from the regional reference map.
 
 ## Impact and the case for more scenes
 
-This is material-specific screening rather than generic land-cover
+This is material-specific screening, not generic land-cover
 classification: each pixel receives a scene-relative score against a measured
 reference library, and the strongest supported candidate is mapped. The end
 users are the state geological surveys and the federal agencies
@@ -118,9 +117,10 @@ district is a candidate screening layer for field follow-up. The result also
 makes an archive argument: Tanager's shortwave infrared preserves mineral
 structure that broadband multispectral sampling blurs, and the
 public benefit of that capability is largest over mining districts — the scenes
-the open archive should grow. The pipeline is prepared as an open tool
-(`tanager-minmap`); clean-clone reproduction and the citable derivative-map
-archive remain explicit release gates rather than completed claims.
+the open archive should grow. The pipeline ships as an open tool
+(`tanager-minmap`, MIT) with its shared data layer released at a pinned
+version; the citable derivative-map archive is the one release step still
+open.
 
 ---
 
