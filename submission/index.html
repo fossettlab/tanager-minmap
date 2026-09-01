@@ -64,100 +64,120 @@
 
 <header>
   <div class="kicker">Planet Tanager Open Data Competition</div>
-  <h1>Material identification from Tanager VSWIR: mine-waste and alteration mineralogy blurred by broadband sampling</h1>
-  <p class="byline">Alex Bradley · Department of Earth, Environmental, and Planetary Sciences, Washington University in St.&nbsp;Louis · <a href="mailto:abradley@wustl.edu">abradley@wustl.edu</a></p>
+  <h1>Tanager VSWIR reveals mine-waste and alteration minerals that broadband satellites miss</h1>
 </header>
 
-<p class="question">How much diagnostic alteration- and mine-waste mineral structure does Tanager's contiguous 426-band VSWIR preserve relative to Sentinel-2's broad bands, and what can that support as a screening product for acid-generating potential?</p>
+<p class="question">What can Tanager's 426-band spectra tell us about mine waste that broadband satellite imagery cannot? We test whether Tanager preserves diagnostic mineral signatures that Sentinel-2 blurs, and whether those signatures can help screen for potentially acid-generating mine waste.</p>
 
 <section class="evidence-grid" aria-label="Three headline results">
   <a class="evidence-card" href="#spectral-ablation">
     <span class="metric">49.8% loss</span>
-    <span class="meaning">Alunite–kaolinite spectral-angle separability after Sentinel-2 SRF degradation.</span>
+    <span class="meaning">in alunite–kaolinite separability. Degrading measured mineral spectra to Sentinel-2 bands reduces their spectral-angle separation from 5.14° to 2.58°.</span>
     <span class="scope">Measured library endmembers: 5.138° → 2.578°.</span>
   </a>
   <a class="evidence-card" href="#independent-map">
     <span class="metric">0.78 AUC</span>
-    <span class="meaning">Goldfield Al-OH and gypsum-carbonate scores against independent ASTER alteration groups.</span>
-    <span class="scope">Descriptive pixelwise agreement; not field validation.</span>
+    <span class="meaning">against an independent alteration map. At Goldfield, Tanager Al-OH and gypsum-carbonate scores agree with independent ASTER alteration groups.</span>
+    <span class="scope">A remote-sensing comparison, not field validation.</span>
   </a>
   <a class="evidence-card" href="#emit-check">
-    <span class="metric">6 / 6 positive</span>
-    <span class="meaning">Target-mineral map correlations in a pinned Tanager–EMIT comparison.</span>
-    <span class="scope">r = +0.335 to +0.584; shared-pipeline consistency, not truth.</span>
+    <span class="metric">6 / 6 agree</span>
+    <span class="meaning">in direction across sensors. In the Tanager–EMIT comparison, all six target-mineral maps are positively correlated (r = 0.34–0.58).</span>
+    <span class="scope">Tests cross-sensor consistency, not mineral accuracy.</span>
   </a>
 </section>
 
 <div class="impact">
-  <h2>Impact statement</h2>
-  <p>Tanager's contiguous visible-to-shortwave-infrared imaging preserves narrow diagnostic structure that broadband sampling blurs. This is <b>library-anchored material screening</b>: each mapped class traces to a measured mineral spectrum, not a land-cover label. At two named US sites — Bingham&nbsp;Canyon and Goldfield — the maps show alteration-zone agreement with an independent USGS product, cross-sensor consistency with NASA's EMIT spectrometer, and a hedged acid-generating-potential layer for field follow-up. For state geological surveys and federal agencies (USGS, BLM, EPA) that characterize critical-mineral potential and mine-waste hazard, the deliverable is a reproducible candidate screening workflow — and a testable case for expanding the open Tanager archive over mining districts.</p>
+  <h2>Why this matters</h2>
+  <p>Tanager measures hundreds of contiguous wavelengths across the visible and shortwave infrared (VSWIR). Many minerals have narrow absorption features in this part of the spectrum, so those measurements can distinguish materials that look similar in ordinary satellite imagery.</p>
+  <p>Here we use measured USGS mineral spectra to identify alteration and mine-waste minerals — <b>material identification</b> against a reference library, not land-cover classification — at Goldfield, Nevada, and Bingham Canyon, Utah. We then ask three questions: Do those mineral signatures survive in real Tanager imagery? How much information would be lost with Sentinel-2's broader bands? And can the resulting mineral maps help identify mine waste that deserves closer investigation?</p>
+  <p>The result is a reproducible screening method. It does not replace field spectroscopy or geochemical sampling; it helps identify where those measurements may be most useful. This type of screening could be useful to geological surveys and land-management agencies (USGS, BLM, EPA) evaluating large mining districts where field sampling everywhere is impractical.</p>
 </div>
 
-<h2><span class="n">1</span>Two named sites</h2>
-<p>The work targets two well-characterized US districts. <b>Goldfield, Nevada</b> is a classic acid-sulfate hydrothermal system next to the USGS Cuprite spectral benchmark. <b>Bingham Canyon / Kennecott, Utah</b> is a large open-pit copper-porphyry mine with extensive tailings ground and a clear need for mineral screening before field follow-up.</p>
+<h2><span class="n">1</span>Two test sites</h2>
+<p>We test the approach at two well-studied mining districts in the western United States.</p>
+<p><b>Goldfield, Nevada</b> is a classic acid-sulfate hydrothermal system — one altered by hot, sulfuric-acid-bearing fluids — adjacent to the Cuprite spectral benchmark, giving unusually good independent information about its alteration mineralogy.</p>
+<p><b>Bingham Canyon, Utah</b> is a large porphyry-copper mine surrounded by extensive mine waste and tailings. It provides a practical test of whether surface mineralogy can help identify areas with greater potential for acid generation.</p>
 <div class="two">
   <figure><img src="figures/goldfield_rgb.png" alt="Goldfield true-color"><figcaption>Goldfield district — Tanager true color (visible bands).</figcaption></figure>
   <figure><img src="figures/bingham_rgb.png" alt="Bingham true-color"><figcaption>Bingham Canyon / Kennecott — Tanager true color.</figcaption></figure>
 </div>
 
 <h2><span class="n">2</span>The minerals leave a fingerprint</h2>
-<p>Mineral identity is anchored to the USGS spectral library (splib07a): every endmember is a measured library spectrum, nothing is synthesized. The diagnostic absorptions — the 2200&nbsp;nm Al-OH doublet, the 2265&nbsp;nm jarosite feature, the 2340&nbsp;nm gypsum-carbonate feature, and the visible-to-near-infrared ferric-iron bands — appear in both the library spectra and the mean spectrum of the scene pixels the model maps as each mineral.</p>
+<p>Minerals can be identified spectrally because their chemistry produces absorption features at characteristic wavelengths. We anchor every mineral class in this analysis to a measured reference spectrum (an "endmember") from the USGS spectral library (splib07a); no mineral spectra are synthesized.</p>
+<p>The features that matter here include the aluminum-hydroxyl (Al-OH) absorption near 2200&nbsp;nm, jarosite near 2265&nbsp;nm, gypsum and carbonate features near 2340&nbsp;nm, and ferric-iron absorption in the visible and near infrared.</p>
+<p>Most importantly, these features appear not only in the laboratory spectra but also in the Tanager pixels identified as those minerals.</p>
 <figure><img src="figures/goldfield_spectra.png" alt="Library vs scene spectra">
-<figcaption>USGS library spectra (solid) vs. the mean spectrum of the most-detected Tanager pixels (dashed), offset per mineral. The same diagnostic absorptions appear in both — the label traces back to the data.</figcaption></figure>
+<figcaption>Measured USGS mineral spectra (solid) compared with mean spectra from the Tanager pixels most strongly identified as each mineral (dashed). The diagnostic absorption features occur in both.</figcaption></figure>
 
 <h2 id="spectral-ablation"><span class="n">3</span>What Sentinel-2 spectral sampling blurs</h2>
-<p>The case for contiguous VSWIR is sharpest at the 2200&nbsp;nm Al-OH doublet, which separates alunite (advanced-argillic) from kaolinite (argillic) — a distinction that matters for both ore characterization and acid generation. Convolving the measured spectra with Sentinel-2's published response functions reduces their spectral-angle separability from <b>5.1° to 2.6°, a 50% loss</b>, because one broad Sentinel-2 band (B12) spans the whole doublet. The loss is specific to the shortwave infrared: the VNIR jarosite–goethite contrast survives degradation, the control showing the effect is the doublet itself, not a universal multispectral failure.</p>
+<p>The advantage of contiguous spectral sampling is easiest to see around 2200&nbsp;nm. Alunite and kaolinite have different absorption shapes here, allowing the two minerals — and the alteration environments they represent — to be distinguished spectrally.</p>
+<p>We took the measured mineral spectra and deliberately degraded them to Sentinel-2's spectral resolution using the published Sentinel-2 response functions. Their spectral-angle separation — the angle between two spectra treated as vectors — falls from <b>5.1° to 2.6°, a 50% loss</b>. Sentinel-2 band 12 spans most of the diagnostic structure that separates the two minerals.</p>
+<p>This is not a demonstration that hyperspectral data always outperform multispectral data. The jarosite–goethite contrast in the visible and near infrared survives the same degradation much better. The information loss is greatest where the diagnostic mineral structure falls within a broad satellite band.</p>
 <figure><img src="figures/bingham_20250911_191523_58_4001_band_ablation.png" alt="Tanager vs Sentinel-2 band ablation">
 <figcaption>Tanager full-resolution spectra vs. the same spectra degraded to Sentinel-2 bands at the Al-OH region. One S2 band spans the alunite–kaolinite doublet.</figcaption></figure>
 
 <h2><span class="n">4</span>Similar in RGB, separable in SWIR</h2>
-<p>A deterministic difficult-case probe tiled the two lead scenes into non-overlapping 11×11-pixel patches, assigned weak labels from the corrected MTMF maps, and retained patches with at least 70% label purity. Of 268 retained patches, 415 cross-label pairs were unusually similar in RGB; 18 of those exceeded the 95th-percentile same-label SWIR spectral-angle threshold. The result tests whether the extra bands carry discriminating structure. Because the labels come from this pipeline, it is <b>not</b> an independent mineral-accuracy benchmark.</p>
+<p>Some surfaces that look nearly identical in visible imagery have very different shortwave-infrared spectra. We tested whether that happens systematically in these scenes.</p>
+<p>We divided the images into non-overlapping 11×11-pixel patches and searched mechanically for pairs that looked unusually similar in RGB but had different mineral labels. Among 268 sufficiently pure patches (at least 70% one mineral label), 415 cross-mineral pairs were unusually similar in RGB. Eighteen of those pairs were more different in the SWIR than 95% of same-mineral pairs.</p>
+<p>The examples below are the strongest cases selected by that procedure, not hand-picked examples. Their visible images are difficult to distinguish, while their SWIR spectra are clearly different. The mineral labels come from our own mapping pipeline, so this experiment demonstrates additional spectral discrimination, <b>not</b> independent mineral-identification accuracy.</p>
 <figure><img src="figures/hard_pairs_story.png" alt="RGB-ambiguous patch pairs with distinct SWIR spectra" loading="lazy">
 <figcaption>The first three pairs ranked mechanically by SWIR spectral angle, with no manual selection. Their RGB chips look similar while their continuum-removed SWIR spectra differ; mineral names are model-derived weak labels.</figcaption></figure>
 
 <h2><span class="n">5</span>Mapping the alteration</h2>
-<p>A mixture-tuned matched filter (MTMF) estimates per-mineral abundance against each scene's own background, with an infeasibility score that suppresses spectrally implausible detections. Composited into a dominant-mineral map, Goldfield shows scene-relative library matches that are consistent with parts of the published alteration context: a muscovite-rich core and an alunite-rich center and lineament at Cuprite. Kaolinite and iron-oxide agreement is weaker and is evaluated explicitly against the independent map below.</p>
+<p>We next use those spectral fingerprints to map minerals across the scene.</p>
+<p>A mixture-tuned matched filter (MTMF) asks how strongly each pixel resembles a measured mineral spectrum relative to the spectral background of that scene. An additional infeasibility score suppresses matches that are spectrally implausible.</p>
+<p>At Goldfield, the resulting map recovers major features of the known alteration system, including a muscovite-rich core and an alunite-rich center and lineament near Cuprite. Agreement is weaker for kaolinite and iron oxides. Rather than adjusting the method to improve those cases, we evaluate the disagreement explicitly against the independent alteration map in the next section.</p>
 <figure><img src="figures/goldfield_20240925_185504_87_4001_hero_mineral_map.png" alt="Goldfield dominant-mineral map">
-<figcaption>Goldfield/Cuprite — dominant alteration mineral, each pixel coloured by the mineral most strongly expressed relative to its own detection floor.</figcaption></figure>
+<figcaption>Dominant alteration mineral at Goldfield/Cuprite. Each pixel shows the mineral with the strongest spectral match relative to that mineral's detection threshold.</figcaption></figure>
 <div class="mapwrap"><iframe src="goldfield_map.html" title="Goldfield interactive mineral map" loading="lazy"></iframe></div>
 <p class="maphint">Interactive: pan and zoom the Goldfield mineral classes over satellite imagery; toggle the overlay at top-right.</p>
 
-<h2 id="independent-map"><span class="n">6</span>Compared with an independent alteration map</h2>
-<p>At Goldfield the maps were compared with the USGS ASTER alteration map of the district (Rockwell &amp; Bonham 2017), an independent product with no shared calibration. In the corrected descriptive pixelwise analysis, the Al-OH and gypsum-carbonate band depths each reach a rank-AUC of <b>0.78</b>, while alunite and muscovite MTMF each reach <b>0.70</b>. The Fe-oxide and kaolinite layers separate less cleanly — the published categorical classes group these phases differently than the spectral library does — and that disagreement is reported, not tuned away. Spatially blocked estimates are reported separately, so adjacent pixels are not treated as independent replicates.</p>
+<h2 id="independent-map"><span class="n">6</span>Does the Tanager map agree with an independent map?</h2>
+<p>Goldfield provides an independent check because USGS previously mapped alteration in the district using ASTER data (Rockwell &amp; Bonham 2017). That product was not used to calibrate our Tanager analysis.</p>
+<p>Agreement is strongest for the Al-OH and gypsum-carbonate spectral indices, which each reach a rank AUC of <b>0.78</b> (1 would be perfect ranking; 0.5 is chance). The alunite and muscovite MTMF maps each reach <b>0.70</b>.</p>
+<p>Iron oxides and kaolinite agree less well. Some of this reflects differences between the mineral classes used here and the broader categories in the published map. We report those disagreements rather than tuning the Tanager classifications to reproduce the reference map.</p>
+<p>These are comparisons between two remote-sensing products, not field validation. Spatially blocked estimates are also reported so that neighboring pixels are not treated as independent observations.</p>
 <figure><img src="figures/goldfield_validation_pair.png" alt="Tanager alunite vs Rockwell zone">
 <figcaption>Tanager alunite abundance (left) beside the Rockwell ASTER alunite zone (right) on a shared grid. High Tanager abundance coincides with the published zone.</figcaption></figure>
 
-<h2 id="emit-check"><span class="n">7</span>Cross-checked with EMIT</h2>
-<p>Running the same library-driven pipeline on a pinned overlapping NASA EMIT scene gives a cross-sensor consistency check, not independent mineral truth, because the code and endmembers are shared. Scene-mean reflectance correlates at <b>r = 0.962</b> over 240 shared bands (spectral angle 3.72°), and all six target-mineral maps correlate positively, ranging from muscovite (<b>r = +0.335</b>) to jarosite (+0.584). The map agreement is moderate, as expected from the date offset and different delivered grids. In these products, Tanager's 30&nbsp;m ortho pixels cover about one-quarter the area of EMIT's ~60&nbsp;m pixels; this is not a native-footprint claim.</p>
+<h2 id="emit-check"><span class="n">7</span>Do we get similar results with another hyperspectral sensor?</h2>
+<p>We also ran the same mineral-mapping pipeline on an overlapping observation from NASA's EMIT imaging spectrometer.</p>
+<p>The overall spectra agree closely: mean scene reflectance has <b>r = 0.962</b> across 240 shared wavelengths, with a spectral angle of 3.72°. More importantly, all six target-mineral maps are positively correlated between the two sensors, from <b>r = +0.335</b> for muscovite to <b>+0.584</b> for jarosite. The agreement is moderate rather than exact, which is reasonable given the different acquisition dates, atmospheric corrections, and spatial grids.</p>
+<p>This is a cross-sensor consistency test, not independent validation: both analyses use the same code and mineral endmembers. Tanager's delivered 30&nbsp;m pixels cover roughly one-quarter the area of EMIT's ~60&nbsp;m pixels; we compare the delivered products, not native instrument footprints.</p>
 <figure><img src="figures/goldfield_20240925_185504_87_4001_emit_comparison.png" alt="Tanager vs EMIT comparison">
 <figcaption>Tanager vs. EMIT: scene-mean spectra (left) and the alunite MTMF map from each sensor at native resolution. The detection correlation carries the quantitative claim.</figcaption></figure>
 
-<h2><span class="n">8</span>Acid-generating-potential screening</h2>
-<p>The secondary minerals that record acid generation are spectrally distinct. Jarosite is stable only in acidic, oxidizing, sulfate-rich conditions and is the diagnostic active-acid indicator; the iron oxyhydroxides are the higher-pH oxidation products; gypsum, absent the acidic iron phases, points to a buffered setting (Swayze et al. 2000). Each pixel is assigned an ordinal acid-generating-potential tier from the most acidic indicator present. At Bingham the high-potential pixels cluster around the pit and tailings ground.</p>
+<h2><span class="n">8</span>Can the mineral maps help screen mine waste?</h2>
+<p>Acid-generating mine waste leaves mineralogical clues at the surface. Jarosite forms under acidic, oxidizing, sulfate-rich conditions, while iron oxyhydroxides generally represent oxidation at higher pH. Gypsum without the acidic iron phases is more consistent with a buffered setting (Swayze et al. 2000).</p>
+<p>We use those mineral indicators to assign each pixel a relative acid-generating-potential tier. This is deliberately a screening product: it identifies surface mineral assemblages associated with different geochemical conditions, but it does not measure pH or predict drainage chemistry directly.</p>
+<p>At Bingham Canyon, the highest-potential pixels cluster around the open pit and tailings areas.</p>
 <figure><img src="figures/bingham_20250911_191523_58_4001_amd_agp.png" alt="Bingham acid-generating-potential">
-<figcaption>Bingham — acid-generating-potential proxy. A spectral indicator of surface mineralogy, relative within the scene; not a measured pH.</figcaption></figure>
+<figcaption>Relative acid-generating-potential screening map for Bingham Canyon. The classes are based on surface mineral indicators detected spectrally; they are not measurements of pH or drainage chemistry.</figcaption></figure>
 <div class="mapwrap"><iframe src="bingham_map.html" title="Bingham interactive AMD map" loading="lazy"></iframe></div>
 <p class="maphint">Interactive: the acid-generating-potential tiers over the Bingham pit and tailings; toggle the overlay at top-right.</p>
 
 <div class="impact">
   <h3>Operational pathway</h3>
-  <p>Tanager scene → authoritative QA and atmospheric masking → measured-library mineral scores → scene-relative candidate zones → ranked field targets → field spectroscopy and geochemical confirmation. The map prioritizes where to investigate; it does not replace sampling.</p>
+  <p><b>Tanager imagery → quality and atmospheric screening → mineral identification → candidate zones → field targets → spectroscopy and geochemical sampling</b></p>
+  <p>The purpose is to decide where to investigate, not to replace field measurements.</p>
 </div>
 
-<h2><span class="n">9</span>Limits</h2>
+<h2><span class="n">9</span>What this cannot tell us</h2>
 <ul class="limits">
-  <li>The products have 30&nbsp;m pixels; isolated sub-pixel features and fine mine-waste structures cannot be resolved.</li>
-  <li>Surface mineralogy only — not bulk chemistry, not depth.</li>
-  <li>Validation is against another remote-sensing product, bounding agreement at the alteration-group level, not per-mineral abundance; no field validation.</li>
-  <li>The acid-generating-potential layer is a relative, within-scene spectral indicator, and is unvalidated at Bingham, where jarosite support in the regional reference overlap is too sparse for inference.</li>
+  <li><b>Features smaller than a pixel:</b> Tanager's delivered products have 30&nbsp;m pixels, so small or narrow mine-waste features may be mixed with surrounding materials.</li>
+  <li><b>What lies below the surface:</b> VSWIR spectroscopy measures surface mineralogy. It does not measure bulk composition or subsurface conditions.</li>
+  <li><b>Field-verified mineral abundance:</b> The independent comparison is against another remote-sensing alteration product, not field samples. It tests agreement at the alteration-group level, not absolute mineral abundance.</li>
+  <li><b>Validated acid-generation risk:</b> The Bingham acid-generating-potential map is a relative spectral screening layer. It has not been validated against field geochemistry, and the regional reference data contain too little overlapping jarosite to provide that test.</li>
 </ul>
 
-<h2><span class="n">10</span>Reproduce &amp; open tooling</h2>
-<p>The whole pipeline is one installed command over Tanager's Open STAC imagery:</p>
+<h2><span class="n">10</span>Reproduce the analysis</h2>
+<p>The analysis is packaged as a command-line workflow that runs directly from Tanager's Open STAC imagery:</p>
 <p><code>uv run tanager-minmap hero --site goldfield --output out/</code></p>
-<p>The repository contains the seven-stage <code>tanager-minmap</code> CLI and a declared reproduction path (see <code>REPRODUCIBILITY.md</code>). Public dependency resolution, clean-clone verification, and the citable derivative-map archive are release gates still to be completed.</p>
+<p>The repository contains the seven-stage <code>tanager-minmap</code> pipeline and reproduction instructions in <code>REPRODUCIBILITY.md</code>. The code and its shared data layer are public; the archival deposit of the derivative maps is the one release step still open.</p>
 
 <footer>
+  <p><b>Alex Bradley</b> · Department of Earth, Environmental, and Planetary Sciences, Washington University in St.&nbsp;Louis · <a href="mailto:abradley@wustl.edu">abradley@wustl.edu</a></p>
   <div class="links">
     <a href="https://github.com/fossettlab/tanager-rocks">GitHub repository</a>
     <a href="memo.md">Technical memo</a>
